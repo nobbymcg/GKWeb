@@ -1,0 +1,119 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.convoprint;
+
+option java_package = "com.nuance.rpc.biosec.v1.convoprint";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/convoprint/convoprints_management_messages.proto";
+import "google/api/annotations.proto";
+
+////////////////////////////////
+// Convoprint Manager Service //
+////////////////////////////////
+
+// This service allows managing convoprint profiles.
+// Methods are typically used in self-service applications, such as active authentication via the IVR.
+service ConvoprintsManager {
+
+  // Creates a new convoprint profile.
+  // Accepts a message with the print owner and a tag used to distinguish between multiple prints that belong to the same owner.
+  // Returns a unique ID for the newly created convoprint profile.
+  rpc CreateConvoprintProfile (CreateConvoprintProfileRequest) returns (CreateConvoprintProfileResponse) {
+    option (google.api.http) = {
+      post: "/v1/convoprints/profiles"
+      body: "*"
+    };
+  }
+
+  // Returns a convoprint profile ID that belongs to the specified owner, identified by a tag.
+  // The convoprint profile ID can be used for all other convoprint operations.
+  rpc GetGkConvoprintProfileId (GetGkConvoprintProfileIdRequest) returns (GetGkConvoprintProfileIdResponse) {
+    option (google.api.http) = {
+      get: "/v1/convoprints/profiles/gkid"
+    };
+  }
+
+  // Return details for a specific convoprint profile that can be specified either by using a convoprint profile ID, or an owner and a tag.
+  // The results include both read-only and writable attributes. Use fieldmask to select only a subset of the results.
+  rpc GetConvoprintProfileDetails (GetConvoprintProfileDetailsRequest) returns (GetConvoprintProfileDetailsResponse) {
+    option (google.api.http) = {
+      get: "/v1/convoprints/profiles"
+    };
+  }
+
+  // Updates any of the convoprint profile's writable attributes.
+  // The input is a convoprint profile (that can be specified either by using a convoprint profile ID
+  // or an owner and a tag) and the list of writable attributes that are set.
+  rpc UpdateConvoprintProfileDetails (UpdateConvoprintProfileDetailsRequest) returns (UpdateConvoprintProfileDetailsResponse) {
+    option (google.api.http) = {
+      patch: "/v1/convoprints/profiles"
+      body: "*"
+    };
+  }
+
+  // Locks a convoprint profile, preventing it from being used for authentication.
+  // It can be used on an account that is under attack to prevent it from being used, or to limit the usage of a low-quality print.
+  // The main input is a convoprint profile ID. Optionally, you can provide more context information about the locking reason.
+  // Can be called for a locked print to update the locking reason.
+  rpc LockConvoprintProfile (LockConvoprintProfileRequest) returns (LockConvoprintProfileResponse) {
+    option (google.api.http) = {
+      put: "/v1/convoprints/profiles/{gk_convoprint_profile_id.value}/attributes/lock"
+      body: "*"
+    };
+  }
+
+  // Unlocks a locked convoprint profile, allowing access to the biometrics system so that it can be used again for authentication.
+  // The input is a convoprint profile ID.
+  rpc UnlockConvoprintProfile (UnlockConvoprintProfileRequest) returns (UnlockConvoprintProfileResponse) {
+    option (google.api.http) = {
+      delete: "/v1/convoprints/profiles/{gk_convoprint_profile_id.value}/attributes/lock"
+    };
+  }
+
+  // Deletes the convoprint profile template created by [Train](#Train).
+  // It can be used to delete the template if it is created using a wrong calibration model.
+  rpc DeleteConvoprintTemplate (DeleteConvoprintTemplateRequest) returns (DeleteConvoprintTemplateResponse) {
+    option (google.api.http) = {
+      delete: "/v1/convoprints/templates/{gk_convoprint_profile_id.value}"
+    };
+  }
+
+  // Deletes all data associated with the convoprint profile.
+  rpc DeleteConvoprintProfile (DeleteConvoprintProfileRequest) returns (DeleteConvoprintProfileResponse) {
+    option (google.api.http) = {
+      delete: "/v1/convoprints/profiles/{gk_convoprint_profile_id.value}"
+    };
+  }
+
+  // Enumerates all text segments in the text segments collection.
+  // List includes segments used for a previous train and segments added later (signaled by a flag) and, if available, a biometric consistency indication.
+  // Input is a convoprint profile ID.
+  rpc ListEnrollmentSegments (ListEnrollmentSegmentsRequest) returns (ListEnrollmentSegmentsResponse) {
+    option (google.api.http) = {
+      get: "/v1/convoprints/profiles/{gk_convoprint_profile_id.value}/enrollment-segments"
+    };
+  }
+
+  // Removes one or more enrollment segments from the enrollment segments collection of the specified convoprint profile.
+  // Accepts a convoprint profile ID and the list of segments to remove.
+  rpc RemoveEnrollmentSegment (RemoveEnrollmentSegmentRequest) returns (RemoveEnrollmentSegmentResponse) {
+    option (google.api.http) = {
+      delete: "/v1/convoprints/profiles/{gk_convoprint_profile_id.value}/enrollment-segments/{gk_text_id.value}"
+    };
+  }
+}

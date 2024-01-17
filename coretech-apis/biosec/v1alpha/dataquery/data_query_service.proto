@@ -1,0 +1,44 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1alpha.dataquery;
+
+option java_package = "com.nuance.rpc.biosec.v1alpha.dataquery";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1alpha/dataquery/data_query_messages.proto";
+
+////////////////////////
+// Data Query Manager //
+////////////////////////
+
+// This service allows executing custom queries that extract data from the system.
+// The queries are formed using filters that limit the amount of data extracted from the system.
+service DataQueryManager {
+  // Executes a data query and returns a unique data query ID that can later be used to monitor the query's progress and status.
+  // Queries are executed one at a time. The [data_query_state](#nuance.biosec.v1alpha.dataquery.DataQueryState)
+  // specifies the query's progress.
+  rpc ExecuteDataQuery (ExecuteDataQueryRequest) returns (ExecuteDataQueryResponse);
+  // Returns the details of the query specified using its unique data query ID.
+  // Use fieldmask to select a subset of the results.
+  rpc GetDataQueryDetails (GetDataQueryDetailsRequest) returns (GetDataQueryDetailsResponse);
+  // Lists all data queries.
+  // You can filter queries by [data_query_state](#nuance.biosec.v1alpha.dataquery.DataQueryState).
+  // Use fieldmask to select a subset of the results.
+  rpc ListDataQueries (ListDataQueriesRequest) returns (ListDataQueriesResponse);
+  // Permanently deletes a data query and its results. Aborts the query if it is still running.
+  rpc DeleteDataQuery (DeleteDataQueryRequest) returns (DeleteDataQueryResponse);
+}

@@ -1,0 +1,56 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+ 
+syntax = "proto3";
+
+package nuance.biosec.v1alpha.license;
+
+option java_package = "com.nuance.rpc.biosec.v1alpha.license";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1alpha/license/license_messages.proto";
+import "google/api/annotations.proto";
+
+////////////////////////
+// LicenseManager API //
+////////////////////////
+
+// This service allows managing the license of the product.
+service LicenseManager {
+
+  // Uploads a new license (or updates an existing one).
+  rpc UploadLicense (UploadLicenseRequest) returns (UploadLicenseResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      post: "/nuance/biosec/v1alpha/license/upload"
+      body: "*"
+      additional_bindings {
+        post: "/v1alpha/license"
+        body: "*"
+      }
+    };
+  }
+
+  // Downloads a previously uploaded license.
+  rpc DownloadLicense (DownloadLicenseRequest) returns (DownloadLicenseResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1alpha/license/download"
+      additional_bindings {
+        get: "/v1alpha/license"
+      }
+    };
+  }
+
+}

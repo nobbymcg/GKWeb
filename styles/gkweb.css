@@ -1,0 +1,238 @@
+* {
+    box-sizing: border-box;
+  }
+
+  :root {
+    --gkweb_blue: #0073EA;
+    --gkweb_lightblue: #5dcaef;
+    --gkweb_grey: #f1f1f1;
+    --gkweb_darkgrey: #a5a5a5;
+    --gkweb_canvassize: 600;
+    --gkweb_lightgreen: #58f5a2;
+    --gkweb_lightred: #f56558;
+  }
+  
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  /* Style the header */
+  .header {
+    margin: auto;
+    background-image: linear-gradient(to right, #0073EA, #75178c);
+    text-align: left;
+    color: white;
+    height: 50px;
+    line-height: 50px;
+    padding-left: 55px;
+  }
+  
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  height: 550px;
+  background-image: linear-gradient(to right, #0073EA, #75178c);
+  align-items: stretch;
+}
+
+  /* Create two columns/boxes that floats next to each other */
+  .column {
+    float: left;
+    padding: 10px;
+  }
+
+  .column.sidenav {
+    width: 50px;
+    height: 100%;
+    background-color: var(--gkweb_darkgrey);
+    padding: 5px;
+    overflow-x: hidden;
+    padding-top: 20px;
+  }
+
+  .column.main.window {
+    width: 600px;
+    padding: 0px;
+    background-color: var(--gkweb_grey);
+    align-items: center;
+  }
+
+  .column.right {
+    flex-grow: 1;
+    width: auto;
+    height: 100%;
+  }
+
+  /* Clear floats after the columns */
+.row::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+  
+  /* Style the list inside the menu */
+  ul {
+    list-style-type: none;
+    padding: 0;
+    text-align: center;
+    align-items: center;
+  }
+
+  ul li {
+    font-size: 12px;
+    margin-bottom: 20px;
+  }
+  
+  
+  /* Clear floats after the columns
+  section::after {
+    content: "";
+    display: table;
+    clear: both;
+  } */
+  
+  /* Style the footer */
+  .footer {
+    background-image: linear-gradient(to right, #0073EA, #75178c);
+    padding: 10px;
+    text-align: center;
+    color: white;
+  }
+
+  .canvasContainer {
+    display: flex;
+    justify-content: center;
+  }
+
+  .visualizer{
+    display: block;
+    width: 400px;
+    height: 400px;
+    padding: 0px;
+    margin: 0px;
+  }
+  
+  /* Responsive layout - makes the two columns/boxes stack on top of each other instead of next to each other, on small screens */
+  @media (max-width: 600px) {
+    nav, article {
+      width: 100%;
+      height: auto;
+    }
+  }
+
+  .label {
+    color: white;
+  }
+
+  /* From old CSS file */
+
+  #buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  
+  #buttons button {
+    font-size: 1rem;
+    padding: 1rem;
+    width: 150px;
+    margin: auto;
+  }
+  
+  button {
+    font-size: 1rem;
+    background: #0088cc;
+    text-align: center;
+    color: white;
+    border: none;
+    transition: all 0.2s;
+    padding: 0.5rem;
+  }
+
+  .ready {
+    font-size: 1rem;
+    background: #0088cc;
+    text-align: center;
+    color: var(--gkweb_grey);
+    border: none;
+    transition: all 0.2s;
+    padding: 0.5rem;
+  }
+  
+  .recording {
+    font-size: 1rem;
+    background-color: #f45a6a;
+    text-align: center;
+    color: var(--gkweb_grey);
+    border: none;
+    transition: all 0.2s;
+    padding: 0.5rem;
+  }
+
+  /* Make the clips use as much space as possible, and
+ * also show a scrollbar when there are too many clips to show
+ * in the available space */
+.soundclips {
+  flex: 1;
+  overflow: auto;
+}
+
+.clip {
+  width:80%;
+  padding-bottom: 1rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+audio {
+  width: 100%;
+  display: block;
+  margin: 1rem auto 0.5rem;
+} 
+
+.clip p {
+  display: inline-block;
+  font-size: 1rem;
+}
+
+.clip button {
+  font-size: 1rem;
+  float: right;
+}
+
+button.delete {
+  background: #f00;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+.deletebutton {
+    stroke: #f00;
+    float: right;
+    height: 30px;
+}
+
+.results {
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  padding: 0;
+  color: rgb(56, 101, 235);
+  margin: 0;
+  width: 80%;
+}
+
+.gklogo {
+  height: 30px;
+  float: left;
+}
+
+.nav_icon {
+  stroke:white;
+  fill:none;
+  stroke-width:3.33px;
+  fill-rule:evenodd;
+  clip-rule:evenodd;
+  stroke-linejoin:round;
+  stroke-miterlimit:2;
+}

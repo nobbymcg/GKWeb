@@ -1,0 +1,223 @@
+/*-
+ * #%L
+ * call-session-manager-public-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.ivrbot;
+
+import "nuance/biosec/v1/ivrbot/ivr_bot_enums.proto";
+import "nuance/biosec/v1/ivrbot/ivr_bot_messages.proto";
+import "nuance/rpc/status.proto";
+import "google/api/annotations.proto";
+
+
+option java_multiple_files = true;
+option java_package = "com.nuance.rpc.biosec.v1.ivrbot";
+
+// IVR Bot service API. IVR Session flow steps:
+//
+// - [GetPersonStatus](#GetPersonStatus) - Optional. Checks if person is enrolled before starting the IVR session.
+// - [StartIVRSession](#StartIVRSession) - Mandatory. Starts the IVR session.
+// - [SubmitPersonId](#SubmitPersonId) - Mandatory. The claimed person, triggers biometric flow for verification or enrollment.
+// - [GetSessionDecision](#GetSessionDecision)  - Mandatory. Returns the session decision, if available. IVR could trigger the API several
+// times until the response would have a decision.
+// - [EndIVRSession](#EndIVRSession) - Mandatory. Ends the IVR session.
+service IVRBot {
+
+    // Gets person status unrelated to gatekeeper engagement. Could be used as pre-condition to check if
+    // a person is enrolled before starting the IVR session. The additional bindings support calling this API
+    // without exposing the person ID as part of the URL path (recommended when having Personally Identifiable Information (PII) 
+    // as part of the person ID).
+    rpc GetPersonStatus(GetPersonStatusRequest) returns (GetPersonStatusResponse) {
+      option (google.api.http) = {
+        get: "/v1/ivr-bot/scopes/{gk_scope_id}/persons/{person_id}/status"
+        additional_bindings {
+          post: "/v1/ivr-bot/scopes/{gk_scope_id}/persons/status:get"
+          body: "*"
+        }
+      };
+    }
+
+    // Starts the IVR session to trigger biometric operations based on person status.
+    rpc StartIVRSession(StartIVRSessionRequest) returns (StartIVRSessionResponse) {
+      option (google.api.http) = {
+        post: "/v1/ivr-bot/{gk_scope_id}/sessions"
+	    body: "*"
+      };
+    }
+
+    // Submits the person ID associated with the ongoing IVR Session.
+    rpc SubmitPersonId(SubmitPersonIdRequest) returns (SubmitPersonIdResponse) {
+      option (google.api.http) = {
+        patch: "/v1/ivr-bot/sessions/{call_session_id}/person"
+	    body: "*"
+      };
+    }
+
+    // Submits the person's consent. The person's consent is required for the enrollment flow. 
+    // Without consent, the person is not enrolled.
+    rpc SubmitOptIn(SubmitOptInRequest) returns (SubmitOptInResponse){
+      option (google.api.http) = {
+        post: "/v1/ivr-bot/sessions/{call_session_id}:optin"
+		body: "*"
+      };
+    }
+
+    // Gets the current session decision.
+    rpc GetSessionDecision(GetSessionDecisionRequest) returns (GetSessionDecisionResponse) {
+      option (google.api.http) = {
+        get: "/v1/ivr-bot/sessions/{call_session_id}/decision"
+      };
+    }
+
+    // Ends the IVR Session. Use the post command for passing custom data as part of the request.
+    rpc EndIVRSession(EndIVRSessionRequest) returns (EndIVRSessionResponse) {
+      option (google.api.http) = {
+        delete: "/v1/ivr-bot/sessions/{call_session_id}"
+        additional_bindings {
+          post: "/v1/ivr-bot/scopes/{call_session_id}:delete"
+          body: "*"
+        }
+      };
+    }
+}
+
+// Input message that defines parameters for [GetPersonStatus](#GetPersonStatus).
+message GetPersonStatusRequest {
+    // Mandatory. Gatekeeper scope ID.
+    string gk_scope_id = 1;
+    // Mandatory. Person ID.
+    string person_id = 2;
+
+    // Optional. Specific voice-print tag that checks the enrollment status. If not specified, one of the person's
+    // voice-prints is used.
+    string voice_print_tag = 3;
+}
+
+// Output message that defines parameters returned by [GetPersonStatus](#GetPersonStatus).
+message GetPersonStatusResponse {
+
+    // Optional. If the person did not opt-in nor opt-out, none of the options are set.
+    oneof opt_in_out {
+        // Person opted-in.
+        OptInInfo opt_in_info = 2;
+
+        // Person opted-out.
+        OptOutInfo opt_out_info = 3;
+    }
+
+    // Mandatory. Person's enrollment status.
+    EnrollStatus enroll_status = 4;
+
+    // Optional. Person's voiceprint lock information.
+    VoicePrintLockInfo voice_print_lock_info = 5;
+
+    // Mandatory. Returned status.
+    nuance.rpc.Status status = 6;
+}
+
+// Input message that defines parameters for [StartIVRSession](#StartIVRSession).
+message StartIVRSessionRequest {
+    // Mandatory. Gatekeeper scope ID.
+    string gk_scope_id = 2;
+    // Mandatory. The call ID is a unique call identification that is consistent for the whole call.
+    string call_id = 3;
+    // Mandatory. Recording identifier. Unique recording ID is used as correlation ID with SIPREC. 
+    // In case of a mismatch, recording requests fail.
+    string recording_id = 4;
+    // Optional. Caller Automatic Number Identification (ANI).
+    string ani = 5;
+    // Optional. Caller dialed number.
+    string dnis = 6;
+    // Optional. Key value pairs that is passed as KVPs to Gatekeeper (available for Business Logic Layer
+    // webhook and scope configuration)
+    map<string,string> custom_data = 7;
+}
+
+// Output message that defines parameters returned by [StartIVRSession](#StartIVRSession).
+message StartIVRSessionResponse {
+    // Mandatory. The call session unique ID is used as a key to other IVR session related APIs requests.
+    string call_session_id = 1;
+    // Mandatory. Returned status.
+    nuance.rpc.Status status = 2;
+}
+
+// Input message that defines parameters for [SubmitPersonId](#SubmitPersonId).
+message SubmitPersonIdRequest {
+    // Mandatory. The call session unique ID, returned by [StartIVRSession](#StartIVRSession).
+    string call_session_id = 1;
+    // Mandatory. The identified person ID.
+    string person_id = 2;
+}
+
+// Output message that defines parameters returned by [SubmitPersonId](#SubmitPersonId).
+message SubmitPersonIdResponse {
+    // Mandatory. Returned status.
+    nuance.rpc.Status status = 6;
+}
+
+// Input message that defines parameters for [SubmitOptIn](#SubmitOptIn).
+message SubmitOptInRequest {
+    // Mandatory. The call session unique ID, returned by [StartIVRSession](#StartIVRSession).
+    string call_session_id = 1;
+}
+
+// Output message that defines parameters returned by [SubmitOptIn](#SubmitOptIn).
+message SubmitOptInResponse {
+    // Mandatory. Returned status.
+    nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [GetSessionDecision](#GetSessionDecision).
+message GetSessionDecisionRequest {
+    // Mandatory. The call session unique ID, returned by [StartIVRSession](#StartIVRSession).
+    string call_session_id = 1;
+}
+
+// Output message that defines parameters returned by [GetSessionDecision](#GetSessionDecision).
+message GetSessionDecisionResponse {
+
+    // Optional. Provided when session decision is available. Could serve as condition to end the IVR Session.
+    SessionDecision session_decision = 1;
+    // Optional. Provided when the IVR Session verification starts.
+    ProgressInformation verify_progress_status = 2;
+    // Optional. Provided when the IVR Session audio spoofing started.
+    ProgressInformation detect_audio_spoofing_progress_status = 3;
+    // Optional. Provided when the IVR Session detect fraudsters started.
+    ProgressInformation detect_fraudsters_progress_status = 4;
+    // Optional. Provided when the IVR Session process audio for enroll started.
+    ProgressInformation process_audio_for_enroll_progress_status = 5;
+    // Optional. Provided when the IVR Session enroll started (after process audio for enroll completed and the person
+    // opted-in).
+    ProgressInformation enroll_progress_status = 6;
+    // Optional. Provided when the IVR Session voiceprint training started (after enrollment completed)
+    ProgressInformation train_progress_status = 7;
+
+    // Mandatory. Returned status.
+    rpc.Status status = 99;
+}
+
+// Input message that defines parameters for [EndIVRSession](#EndIVRSession).
+message EndIVRSessionRequest {
+    // Mandatory. The call session unique ID, returned by [StartIVRSession](#StartIVRSession).
+    string call_session_id = 1;
+    // Optional. Key value pairs that is passed as KVPs to Gatekeeper (available for Business Logic Layer
+    // webhook and scope configuration)
+    map<string,string> custom_data = 7;
+}
+
+// Output message that defines parameters returned by [EndIVRSession](#EndIVRSession).
+message EndIVRSessionResponse {
+    rpc.Status status = 1;
+}

@@ -1,0 +1,71 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.text;
+
+option java_package = "com.nuance.rpc.biosec.v1.text";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/common_types.proto";
+import "nuance/rpc/status.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+
+
+// Contains the readable fields of the text.
+message TextDetailsForRead {
+  // Optional. Unique ID of the text.
+  nuance.biosec.v1.UniqueId gk_text_id = 1;
+  // Optional. Formatted text of the result, for example, $500. Word details are referred to this field.
+  google.protobuf.StringValue formatted_text = 2;
+  // Optional. The text's language.
+  google.protobuf.StringValue actual_language = 3;
+  // Optional. The Unique ID of the person owning the text.
+  nuance.biosec.v1.UniqueId gk_person_id = 4;
+
+  // Optional. Original recording, if the text is a transcription.
+  RecordingAttributes recording_attributes = 10;
+  // Optional. Convoprint-only properties.
+  ProcessingAttributes processing_attributes = 11;
+
+  // Optional. Date and time of the text creation.
+  google.protobuf.Timestamp creation_timestamp = 997;
+  // Optional. Date and time of the text's last modification.
+  google.protobuf.Timestamp modification_timestamp = 998;
+  // Optional. Custom application data in a list of key-value pairs.
+  map<string, string> custom_data = 999;
+}
+
+// Contains the recording attributes - text is a transcription.
+message RecordingAttributes {
+  // Optional. Unique ID of the media segment.
+  nuance.biosec.v1.UniqueId gk_media_segment_id = 1;
+  // Optional. Unique ID of the processed audio.
+  nuance.biosec.v1.UniqueId gk_processed_audio_id = 2;
+  // Optional. Specifies the processed channel when processing media with multiple channels. This parameter is not set if the media has a single channel.
+  nuance.biosec.v1.AudioChannelSelector selected_channel = 10;
+}
+
+// Contains the processing attributes - text used for convoprint
+message ProcessingAttributes {
+  // Optional. Unique ID of the calibration model that the system used to create the text model.
+  nuance.biosec.v1.UniqueId gk_calibration_model_revision_id = 1;
+  // Optional. A score between 0 and 1 that represents the quality of the text. Relevant only for convoprint APIs.
+  google.protobuf.FloatValue quality_check = 2;
+  // Optional. A uncapped score that represents the quality of the text. Relevant only for convoprint APIs.
+  google.protobuf.FloatValue raw_quality = 3;
+}
+

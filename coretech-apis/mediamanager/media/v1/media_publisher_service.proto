@@ -1,0 +1,95 @@
+/*-
+ * #%L
+ * media-manager-api-proto
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.mediamanager.media.v1;
+
+import "nuance/mediamanager/media/v1/media_resources.proto";
+import "nuance/rpc/status.proto";
+
+option java_package = "com.nuance.rpc.mediamanager.media.v1";
+option java_multiple_files = true;
+
+// This service publishes media for external access, e.g. web playback.
+service MediaPublisherService {
+    // Creates and returns a short-lived URL
+    // which can be used to download the media or play back the media on a web page.
+    rpc PublishMedia (PublishMediaRequest) returns (PublishMediaResponse);
+
+    // Returns the media metadata saved by PublishMedia if not yet expired
+    rpc GetPublishMedia (GetPublishMediaRequest) returns (GetPublishMediaResponse);
+
+    // Publishes unmasked media
+    rpc PublishUnmaskedMedia (PublishUnmaskedMediaRequest) returns (PublishUnmaskedMediaResponse);
+}
+
+// Input message that defines parameters for [PublishMedia](#PublishMedia).
+message PublishMediaRequest {
+    // Optional. Determines the realm. Ignored if media_urn is in version 2 format.
+    string realm_id = 1;
+    // Required. Represents the identifier of an existing media segment.
+    string media_urn = 2;
+    // Optional. Requested media format. If not specified, the media will be published in its original format.
+    MediaFormat media_format = 3;
+    // Optional. If not specified, the file name will be the media identifier.
+    string file_name = 4;
+    // Optional. If only one channel of a stereo media is needed, specify the channel to be published here.
+    // For stereo, left is channel 1 and right is channel 2, and if not specified, all the channels will be published.
+    MediaSelector media_selector = 5;
+}
+
+// Output message that defines parameters returned by [PublishMedia](#PublishMedia).
+message PublishMediaResponse {
+    // Response status
+    nuance.rpc.Status status = 1;
+    // A generated short-lived URL which can be used to download the media or play back the media on a web page
+    string url = 2;
+}
+
+// Input message that defines parameters for [GetPublishMedia](#GetPublishMedia).
+message GetPublishMediaRequest {
+    // Required. This ID can be fetched from the end of the URL returned by PublishMedia API
+    string id = 1;
+}
+
+// Output message that defines parameters returned by [GetPublishMedia](#GetPublishMedia).
+message GetPublishMediaResponse {
+    // Response status
+    nuance.rpc.Status status = 1;
+    // The realm_id passed when calling PublishMedia API
+    string realm_id = 2;
+    // The media_urn passed when calling PublishMedia API
+    string media_urn = 3;
+    // The media_format passed when calling PublishMedia API
+    MediaFormat media_format = 4;
+    // The file_name passed when calling PublishMedia API
+    string file_name = 5;
+    // The media_selector passed when calling PublishMedia API
+    MediaSelector media_selector = 6;
+    // Flag indicating whether the unmasked media was requested or not
+    bool unmasked = 7;
+}
+
+// Input message that defines parameters for [PublishUnmaskedMedia](#PublishUnmaskedMedia).
+message PublishUnmaskedMediaRequest {
+    // Mandatory. Publish Media Request
+    PublishMediaRequest publish_media_request = 1;
+}
+
+// Output message that defines parameters returned by [PublishUnmaskedMedia](#PublishUnmaskedMedia).
+message PublishUnmaskedMediaResponse {
+    // Publish Media Response
+    PublishMediaResponse publish_media_response = 1;
+}

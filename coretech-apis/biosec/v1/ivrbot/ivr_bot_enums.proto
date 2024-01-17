@@ -1,0 +1,113 @@
+/*-
+ * #%L
+ * call-session-manager-public-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.ivrbot;
+
+option java_multiple_files = true;
+option java_package = "com.nuance.rpc.biosec.v1.ivrbot";
+
+
+// Specifies the current enrollment status of a person's voiceprint.
+enum EnrollStatus {
+    // Enroll status is not set.
+    ENROLL_STATUS_UNSPECIFIED = 0;
+    // Ready for enrollment.
+    ENROLL_STATUS_READY = 1;
+    // Ready for verification.
+    ENROLL_STATUS_TRAINED = 2;
+    // Missing additional audio segments.
+    ENROLL_STATUS_PARTIALLY_ENROLLED = 3;
+    // Not enrolled.
+    ENROLL_STATUS_NOT_ENROLLED = 4;
+}
+
+// The standard lock reasons.
+enum LockReason {
+    // Use to initialize the fields.
+    LOCK_REASON_UNSPECIFIED = 0;
+    // The print is locked due to too many consecutive mismatches
+    LOCK_REASON_CONSECUTIVE_MISMATCHES = 1;
+    // The print is locked due to a reason that is not standard. Details on the reason are available in another field.
+    LOCK_REASON_OTHER = 100;
+}
+
+// Biometric operation progress status.
+enum ProgressStatus {
+    // The biometric operation was not specified.
+    PROGRESS_STATUS_UNSPECIFIED = 0;
+    // The biometric operation started.
+    PROGRESS_STATUS_STARTED = 1;
+    // The biometric operation in progress.
+    PROGRESS_STATUS_IN_PROGRESS = 2;
+    // The biometric operation completed.
+    PROGRESS_STATUS_COMPLETED  = 3;
+}
+
+// Decision reason for voiceprint, convoprint and audio spoofing biometric factors.
+enum DecisionReason {
+    // Decision reason is not specified (all factors).
+    DECISION_REASON_UNSPECIFIED = 0;
+    // An error occurred while making the decision (all factors).
+    DECISION_REASON_INTERNAL_ERROR = 1;
+    // Audio is valid (voiceprint and audio spoofing factors).
+    DECISION_REASON_AUDIO_OK = 2;
+    // Processing requires more audio segments than provided (voiceprint and audio spoofing factors).
+    DECISION_REASON_NOT_ENOUGH_AUDIO = 3;
+    // Audio format is invalid or not supported (voiceprint and audio spoofing factors).
+    DECISION_REASON_INVALID_AUDIO = 4;
+    // Audio does not contain the amount of speech required to complete the process (voiceprint and audio spoofing factors).
+    DECISION_REASON_AUDIO_TOO_SHORT = 5;
+    // Audio speech level is lower than the level required to complete the process (voiceprint and audio spoofing factors).
+    DECISION_REASON_AUDIO_TOO_SOFT = 6;
+    // Audio is too loud and causes saturation (voiceprint and audio spoofing factors).
+    DECISION_REASON_AUDIO_TOO_LOUD = 7;
+    // Audio SNR (Signal to Noise Ratio) is too low (voiceprint and audio spoofing factors).
+    DECISION_REASON_AUDIO_TOO_NOISY = 8;
+    // Multiple speakers are detected (not supported).
+    DECISION_REASON_MULTI_SPEAKERS_DETECTED = 9;
+    // Synthetic speech is detected (audio spoofing factor).
+    DECISION_REASON_SYNTHETIC_SPEECH_DETECTED = 10;
+    // Playback is detected (audio spoofing factor).
+    DECISION_REASON_PLAYBACK_INDICATION = 11;
+    // Tone is detected (not supported).
+    DECISION_REASON_TONE_DETECTED = 12;
+    // Wrong passphrase is used (not supported).
+    DECISION_REASON_WRONG_PASSPHRASE = 13;
+    // A fraud attempt probably occurred (voiceprint and convoprint factors).
+    DECISION_REASON_FRAUDSTER_INDICATION = 14;
+    // This is probably an authentic person (voiceprint factor).
+    DECISION_REASON_VOICEPRINT_MATCH = 15;
+    // This is probably not an authentic person (voiceprint factor).
+    DECISION_REASON_VOICEPRINT_MISMATCH = 16;
+    // Could not determine if this is the authentic person (voiceprint factor).
+    DECISION_REASON_VOICEPRINT_UNCERTAIN = 17;
+    // The system could not reach a reliable decision (audio spoofing factor).
+    DECISION_REASON_UNRELIABLE_DECISION_THRESHOLDS = 18;
+    // Text is valid (convoprint factor).
+    DECISION_REASON_TEXT_OK = 19;
+    // Text format is invalid or not supported (convoprint factor).
+    DECISION_REASON_INVALID_TEXT = 20;
+    // This is probably the authentic person (convoprint factor).
+    DECISION_REASON_CONVOPRINT_MATCH = 21;
+    // This is probably not the authentic person (convoprint factor).
+    DECISION_REASON_CONVOPRINT_NO_MATCH = 22;
+    // Could not determine if this is the authentic person (convoprint factor).
+    DECISION_REASON_CONVOPRINT_UNCERTAIN = 23;
+    // Risk is not detected (convoprint factor).
+    DECISION_REASON_NO_RISK_DETECTED = 24;
+    // No available scores (convoprint factor).
+    DECISION_REASON_NO_SCORES = 25;
+}

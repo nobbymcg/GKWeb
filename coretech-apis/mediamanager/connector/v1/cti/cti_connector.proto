@@ -1,0 +1,103 @@
+/*-
+ * #%L
+ * media-manager-api-proto
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.mediamanager.connector.v1.cti;
+
+import "nuance/mediamanager/connector/v1/connector_resources.proto";
+
+option java_multiple_files = true;
+option java_package = "com.nuance.rpc.mediamanager.connector.v1.cti";
+
+// Command to be executed by the CTI Connector.
+message CtiConnectorCommand {
+  oneof connector_command {
+    // Mandatory. Instructs the CTI Connector to start monitoring an agent extension.
+    // A connector could receive multiple start monitor command for the same agent extension, but with different
+    // subscriptions. The connector must create events for each subscription even though it's for the same agent extension.
+    StartMonitorCommand start_monitor_command = 1;
+
+    // Mandatory. Instructs the CTI Connector to stop monitoring an agent extension for a specific subscription.
+    StopMonitorCommand stop_monitor_command = 2;
+
+    // Mandatory. Instructs the CTI Connector to update the data of a call for a specific subscription.
+    UpdateCallDataCommand update_call_data_command = 3;
+  }
+}
+
+// Start monitor command message.
+message StartMonitorCommand {
+  // Mandatory. Unique ID identifying the subscription.
+  string subscription_id = 1;
+
+  // Mandatory. Unique ID of the event stream used to create events.
+  string event_stream_id = 2;
+
+  // Optional. Metadata provided when a subscription is created.
+  // Metadata could be used to implement specific connector behaviour.
+  map<string, string> metadata = 3;
+
+  oneof monitor_info {
+    // Mandatory. Identifies the agent.
+    AgentInfo agent_info = 10;
+  }
+}
+
+// Stop monitor command message.
+message StopMonitorCommand {
+  // Mandatory. Unique ID identifying the subscription.
+  string subscription_id = 1;
+}
+
+// Update call data monitor command message.
+message UpdateCallDataCommand {
+  // Mandatory. Unique call ID created by the telephony system.
+  CallIdentifier call_identifier = 1;  // Required. Call identifier.
+
+  // Deprecated. Identifies the agent.
+  AgentInfo agent_info = 2;
+
+  // Mandatory. Call data to update in the form of key-value pairs.
+  map<string, string> call_data = 3;
+
+  // Mandatory. Unique ID identifying the subscription.
+  string subscription_id = 4;
+}
+
+// The command response executed by the CTI Connector.
+message CtiConnectorCommandResponse {
+  oneof connector_command_response {
+    // Mandatory. The response for a StartMonitorCommand.
+    StartMonitorCommandResponse start_monitor_command_response = 1;
+
+    // Mandatory. The response for a StopMonitorCommand.
+    StopMonitorCommandResponse stop_monitor_command_response = 2;
+
+    // Mandatory. The response for a UpdateCallDataCommand.
+    UpdateCallDataCommandResponse update_call_data_command_response = 3;
+    }
+}
+
+// The response for a StartMonitorCommand.
+message StartMonitorCommandResponse {
+}
+
+// The response for a StopMonitorCommand.
+message StopMonitorCommandResponse {
+}
+
+// The response for a UpdateCallDataCommand.
+message UpdateCallDataCommandResponse {
+}

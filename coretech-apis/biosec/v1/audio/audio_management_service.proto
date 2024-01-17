@@ -1,0 +1,107 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.audio;
+
+option java_package = "com.nuance.rpc.biosec.v1.audio";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/audio/audio_management_messages.proto";
+import "google/api/annotations.proto";
+
+///////////////////////////
+// Audio Manager Service //
+///////////////////////////
+
+// This service uploads and downloads audio to the system.
+service AudioManager {
+
+  // Gets a temporary URL endpoint for audio upload.
+  // The calling application should upload the audio to the provided URL.
+  rpc GetUploadUrl (GetUploadUrlRequest) returns (GetUploadUrlResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      post: "/nuance/biosec/v1/audio/upload-url"
+      body: "*"
+      additional_bindings {
+        post: "/v1/audios/upload-url"
+        body: "*"
+      }
+    };
+  }
+
+  // Gets a temporary URL endpoint for audio download.
+  // Audio is playable and not encrypted.
+  rpc GetDownloadUrl (GetDownloadUrlRequest) returns (GetDownloadUrlResponse) {
+    option (google.api.http) = {
+     // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/audio/download-url"
+      additional_bindings {
+        post: "/v1/audios/download-url"
+        body: "*"
+      }
+    };
+  }
+
+  // Gets detailed information about a processed audio including both read-only and writable properties.
+  rpc GetProcessedAudioDetails (GetProcessedAudioDetailsRequest) returns (GetProcessedAudioDetailsResponse) {
+    option (google.api.http) = {
+     // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/audio/{gk_processed_audio_id.value}/audio-details"
+      additional_bindings {
+        get: "/v1/audios/{gk_processed_audio_id.value}/process"
+      }
+    };
+  }
+
+  // Updates one or more processed audio properties.
+  rpc UpdateProcessedAudioDetails (UpdateProcessedAudioDetailsRequest) returns (UpdateProcessedAudioDetailsResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      patch: "/nuance/biosec/v1/audio/{gk_processed_audio_id.value}/audio-details"
+      body: "*"
+      additional_bindings {
+        patch: "/v1/audios/{gk_processed_audio_id.value}/process"
+        body: "*"
+      }
+    };
+  }
+
+  // Gets detailed information about a media segment including both read-only and writable properties.
+  rpc GetMediaSegmentDetails (GetMediaSegmentDetailsRequest) returns (GetMediaSegmentDetailsResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/audio/{gk_media_segment_id.value}/media-details"
+      additional_bindings {
+        get: "/v1/mediasegments/{gk_media_segment_id.value}"
+      }
+    };
+  }
+
+  // Updates one or more media segment properties.
+  rpc UpdateMediaSegmentDetails (UpdateMediaSegmentDetailsRequest) returns (UpdateMediaSegmentDetailsResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      patch: "/nuance/biosec/v1/audio/{gk_media_segment_id.value}/media-details"
+      body: "*"
+      additional_bindings {
+        patch: "/v1/mediasegments/{gk_media_segment_id.value}"
+        body: "*"
+      }
+    };
+  }
+
+}

@@ -1,0 +1,289 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.entities;
+
+option java_package = "com.nuance.rpc.biosec.v1.entities";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/common_types.proto";
+import "nuance/rpc/status.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+// Input message that defines parameters for [CreateGroup](#CreateGroup).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message CreateGroupRequest {
+  // Mandatory. General request context. Defines the scope in which the group is created.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Use to identify the group. Must be unique at least at the scope level.
+  string group_id = 2;
+  // Optional. Provides additional information about the group.
+  GroupDetailsForCreate details = 3;
+  // Optional. A field mask used to specify the [GroupDetailsForCreate](#nuance.biosec.v1.entities.GroupDetailsForCreate) fields that the method sets.
+  google.protobuf.FieldMask field_mask = 4;
+}
+
+// Output message that defines parameters returned by [CreateGroup](#CreateGroup).
+message CreateGroupResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Unique ID of the newly created group.
+  nuance.biosec.v1.UniqueId gk_group_id = 2;
+}
+
+// Input message that defines parameters for [RenameGroup](#RenameGroup).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message RenameGroupRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Group's unique ID.
+  nuance.biosec.v1.UniqueId gk_group_id = 2;
+  // Mandatory. Group's new id. Used to identify the group. Must be unique at least at the scope level.
+  string new_group_id = 3;
+}
+
+// Output message that defines parameters returned by [RenameGroup](#RenameGroup).
+message RenameGroupResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [GetGroupDetails](#GetGroupDetails).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message GetGroupDetailsRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Group's unique ID.
+  nuance.biosec.v1.UniqueId gk_group_id = 2;
+  // Optional. A field mask used to specify the [GroupDetailsForRead](#nuance.biosec.v1.entities.GroupDetailsForRead) fields that the method reads.
+  google.protobuf.FieldMask field_mask = 3;
+}
+
+// Output message that defines parameters returned by [GetGroupDetails](#GetGroupDetails).
+message GetGroupDetailsResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Group's details.
+  GroupDetailsForRead details = 2;
+}
+
+// Input message that defines parameters for [GetGkGroupId](#GetGkGroupId).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message GetGkGroupIdRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Group's identifier.
+  string group_id = 2;
+}
+
+// Output message that defines parameters returned by [GetGkGroupId](#GetGkGroupId).
+message GetGkGroupIdResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Group's unique ID.
+  nuance.biosec.v1.UniqueId gk_group_id = 2;
+}
+
+// Input message that defines parameters for [UpdateGroup](#UpdateGroup).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message UpdateGroupRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Group's unique ID.
+  nuance.biosec.v1.UniqueId gk_group_id = 2;
+  // Mandatory. Details that the method updates.
+  GroupDetailsForUpdate details = 4;
+  // Mandatory. A field mask used to specify the [GroupDetailsForUpdate](#nuance.biosec.v1.entities.GroupDetailsForUpdate) fields that the method sets.
+  google.protobuf.FieldMask field_mask = 5;
+}
+
+// Output message that defines parameters returned by [GroupDetailsForUpdate](#nuance.biosec.v1.entities.GroupDetailsForUpdate).
+message UpdateGroupResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [DeleteGroup](#DeleteGroup).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message DeleteGroupRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Group's unique ID.
+  nuance.biosec.v1.UniqueId gk_group_id = 2;
+}
+
+// Output message that defines parameters returned by [DeleteGroup](#DeleteGroup).
+message DeleteGroupResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [AddPersonToGroup](#AddPersonToGroup).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message AddPersonToGroupRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Group's unique ID.
+  nuance.biosec.v1.UniqueId gk_group_id = 2;
+  // Mandatory. Unique ID of the Person that the method adds to the group.
+  nuance.biosec.v1.UniqueId gk_person_id = 3;
+}
+
+// Output message that defines parameters returned by [AddPersonToGroup](#AddPersonToGroup).
+message AddPersonToGroupResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [RemovePersonsFromGroup](#RemovePersonsFromGroup).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message RemovePersonsFromGroupRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Group's unique ID.
+  nuance.biosec.v1.UniqueId gk_group_id = 2;
+  // Mandatory. Unique IDs of persons that the method removes.
+  repeated nuance.biosec.v1.UniqueId gk_person_ids = 3;
+}
+
+// Output message that defines parameters returned by [RemovePersonsFromGroup](#RemovePersonsFromGroup).
+message RemovePersonsFromGroupResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [IsPersonInGroup](#IsPersonInGroup).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message IsPersonInGroupRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Group's unique ID.
+  nuance.biosec.v1.UniqueId gk_group_id = 2;
+  // Mandatory. Person's unique ID.
+  nuance.biosec.v1.UniqueId gk_person_id = 3;
+}
+
+// Output message that defines parameters returned by [IsPersonInGroup](#IsPersonInGroup).
+message IsPersonInGroupResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Indicates whether the person is a member of the group or not.
+  bool is_in_group = 2;
+}
+
+// Input message that defines parameters for [ListGroupPersons](#ListGroupPersons).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message ListGroupPersonsRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Group's unique ID.
+  nuance.biosec.v1.UniqueId gk_group_id = 2;
+}
+
+// Output message that defines parameters returned by [ListGroupPersons](#ListGroupPersons).
+message ListGroupPersonsResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // List of person IDs.
+  repeated nuance.biosec.v1.UniqueId gk_person_id = 2;
+}
+
+// Contains the readable fields of the Group. Included in [GetGroupDetailsResponse](#nuance.biosec.v1.entities.GetGroupDetailsResponse).
+message GroupDetailsForRead {
+  // Group's unique ID.
+  nuance.biosec.v1.UniqueId gk_group_id = 1;
+  // Group's identifier. Must be unique at least at the scope level.
+  string group_id = 2;
+  // Date and time of group creation.
+  google.protobuf.Timestamp creation_timestamp = 997;
+  // Date and time of group's last update.
+  google.protobuf.Timestamp modification_timestamp = 998;
+  // List of custom application data in key-value pairs.
+  map<string,string> custom_data = 999;
+}
+
+// Contains fields that the system uses to create a group. Included in [CreateGroupRequest](#nuance.biosec.v1.entities.CreateGroupRequest).
+message GroupDetailsForCreate {
+  // List of custom application data in key-value pairs.
+  map<string,string> custom_data = 999;
+}
+
+// Contains the writable fields of the group. Included in [UpdateGroupRequest](#nuance.biosec.v1.entities.UpdateGroupRequest).
+message GroupDetailsForUpdate {
+  // List of custom application data in key-value pairs.
+  map<string,string> custom_data = 999;
+}

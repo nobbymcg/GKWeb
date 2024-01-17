@@ -1,0 +1,157 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.voiceprint;
+
+option java_package = "com.nuance.rpc.biosec.v1.voiceprint";
+
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/voiceprint/voiceprints_processing_messages.proto";
+import "google/api/annotations.proto";
+
+//////////////////////////////////
+// Voiceprint gRPC APIs Service //
+//////////////////////////////////
+
+// This service allows performing basic voice biometrics operations.
+// Service methods are typically used in self-service applications such as active authentication via the IVR.
+//
+// #### Enrollment workflow
+// Here is a typical Enrollment workflow:
+//
+// {{< alert >}}Do not forget to upload audio using the Media Manager API anytime in the workflow before calling ProcessAudio (step 5).{{< /alert >}}
+// 1. [StartEngagement](#StartEngagement)
+// 2. [StartSession](#StartSession)
+// 3. [GetGkVoiceprintProfileId](#GetGkVoiceprintProfileId) to get the internal ID.
+// 4. If the voiceprint profile exists, continue to step b. If not, create one in step a.
+//    1. [CreateVoiceprintProfile](#CreateVoiceprintProfile)
+//    2. [GetEnrollStatus](#GetEnrollStatus) - Checks if the voiceprint profile is trained.
+// 5. [ProcessAudio](#ProcessAudio)
+// 6. [Enroll](#Enroll) - Repeat steps five and six, typically three times, until the voiceprint is ready to be trained.
+// 7. [Train](#Train)
+// 8. [StopSession](#StopSession)
+// 9. [StopEngagement](#StopEngagement)
+//
+// #### Verification workflow
+// Here is a typical verification workflow:
+//
+// {{< alert >}}Do not forget to upload audio using the Media Manager API anytime in the workflow before calling Verify (step 5).{{< /alert >}}
+// 1. [StartEngagement](#StartEngagement)
+// 2. [StartSession](#StartSession)
+// 3. [GetGkVoiceprintProfileId](#GetGkVoiceprintProfileId) to get the internal ID.
+// 4. [GetEnrollStatus](#GetEnrollStatus) - Checks if the voiceprint profile is trained.
+// 5. [Verify](#Verify)
+// 6. [GetSessionDecision](#GetSessionDecision)
+// 7. [StopSession](#StopSession)
+// 8. [StopEngagement](#StopEngagement)
+service VoiceprintsProcessor {
+
+  // Processes the audio and checks its quality.
+  // Creates an audio model identified by gk_processed_audio_id that the system uses in consequent operations such as [Enroll](#Enroll) or [Verify](#Verify).
+  rpc ProcessAudio (ProcessAudioRequest) returns (ProcessAudioResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      post: "/nuance/biosec/v1/voiceprints-profiles/process-audio"
+      body: "*"
+      additional_bindings {
+        post: "/v1/audios/process"
+        body: "*"
+      }
+    };
+  }
+
+  // Adds processed audio to the voiceprint's enrollment segments collection.
+  // The system uses the processed audio in this collection when it creates the voiceprint's template ([Train](#Train)).
+  // Accepts a voiceprint profile ID and a processed audio ID returned by the [ProcessAudio](#ProcessAudio) method.
+  // Returns information about the status of the voiceprint, indicating whether it is ready to be trained or not.
+  rpc Enroll (EnrollRequest) returns (EnrollResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      post: "/nuance/biosec/v1/voiceprints-profiles/{gk_voiceprint_profile_id.value}/enroll"
+      body: "*"
+      additional_bindings {
+        post: "/v1/voiceprints/{gk_voiceprint_profile_id.value}/enrollment"
+        body: "*"
+      }
+    };
+  }
+
+  // Returns information about the status of the voiceprint, indicating whether it is trained, ready to be trained, or not ready.
+  rpc GetEnrollStatus(GetEnrollStatusRequest) returns (GetEnrollStatusResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/voiceprints-profiles/{gk_voiceprint_profile_id.value}/enroll-status"
+      additional_bindings {
+        get: "/v1/voiceprints/{gk_voiceprint_profile_id.value}/enrollment-status"
+      }
+    };
+  }
+
+  // Creates a new voice template for a voiceprint profile using audio (typically audio models) from the enrollment segments collection.
+  rpc Train (TrainRequest) returns (TrainResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      post: "/nuance/biosec/v1/voiceprints-profiles/{gk_voiceprint_profile_id.value}/train"
+      body: "*"
+      additional_bindings {
+        post: "/v1/voiceprints/{gk_voiceprint_profile_id.value}/training"
+        body: "*"
+      }
+    };
+  }
+
+  // Checks whether a given audio matches the specified voiceprint profile.
+  rpc Verify (VerifyRequest) returns (VerifyResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      post: "/nuance/biosec/v1/voiceprints-profiles/{gk_voiceprint_profile_id.value}/verify"
+      body: "*"
+      additional_bindings {
+        post: "/v1/voiceprints/{gk_voiceprint_profile_id.value}/verification"
+        body: "*"
+      }
+    };
+  }
+
+  // Checks whether a given audio matches any of the voiceprint profiles specified.
+  // Typically used with a small or medium size group (1-100).
+  rpc Identify (IdentifyRequest) returns (IdentifyResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      post: "/nuance/biosec/v1/voiceprints-profiles/identify"
+      body: "*"
+      additional_bindings {
+        post: "/v1/voiceprints/identification"
+        body: "*"
+      }
+    };
+  }
+
+  // Checks whether a given audio matches any of the voiceprint profiles specified in a watchlist.
+  rpc DetectKnownFraudsters (DetectKnownFraudstersRequest) returns (DetectKnownFraudstersResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      post: "/nuance/biosec/v1/voiceprints-profiles/detect-known-fraudsters"
+      body: "*"
+      additional_bindings {
+        post: "/v1/voiceprints/known-fraudsters-detection"
+        body: "*"
+      }
+    };
+  }
+
+}

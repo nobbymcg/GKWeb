@@ -1,0 +1,67 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.calleridvalidation;
+
+option java_package = "com.nuance.rpc.biosec.v1.calleridvalidation";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/common_types.proto";
+import "nuance/rpc/status.proto";
+import "nuance/biosec/v1/calleridvalidation/caller_id_risk_assessment_enums.proto";
+
+// Input message that defines parameters for [AssessCallerIdRisk](#AssessCallerIdRisk).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Mandatory
+message AssessCallerIdRiskRequest {
+  // Mandatory. General request context. Defines the scope in which the caller ID rule should be created.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. The ID of caller ID watchlist which contains the caller ID rules.
+  // For each scope there is a default caller ID watchlist with the ID "00000000-0000-0000-0000-000000000000" created at the time of the scope creation, empty by default.
+  nuance.biosec.v1.UniqueId gk_callerid_watchlist_id = 2;
+  // Mandatory. Telephone number to be evaluated against caller ID rules.
+  string caller_id = 3;
+  // Optional, owner of the caller ID.
+  // When set, the system handles the caller ID as personal information.
+  nuance.biosec.v1.UniqueId gk_person_id =  4;
+}
+
+// Output message that defines parameters returned by [AssessCallerIdRisk](#AssessCallerIdRisk).
+message AssessCallerIdRiskResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // The caller ID risk assessment result.
+  AssessCallerIdRiskResult result = 2;
+}
+
+// Contains the caller ID risk assessment result. Included in [AssessCallerIdRiskResponse](#nuance.biosec.v1.calleridvalidation.AssessCallerIdRiskResponse).
+message AssessCallerIdRiskResult {
+  // Optional. The caller ID rule matched for given caller ID. It is set only when the match is found.
+  nuance.biosec.v1.UniqueId reference_gk_callerid_rule_id =  1;
+  // Mandatory. The Risk level of the caller ID rule
+  CallerIdRiskLevel risk_level = 2;
+  // Mandatory. The level of risk and its reliability, computed by the risk engine.
+  nuance.biosec.v1.RiskEngineResult risk_engine_result = 3;
+  // Mandatory. The caller ID risk evaluation decision.
+  nuance.biosec.v1.Decision decision = 4;
+  // Mandatory. The reason for the decision.
+  DecisionReason decision_reason = 5;
+}

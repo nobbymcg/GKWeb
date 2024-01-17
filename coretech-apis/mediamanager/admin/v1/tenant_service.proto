@@ -1,0 +1,157 @@
+/*-
+ * #%L
+ * admin-proto
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.mediamanager.admin.v1;
+
+import "nuance/rpc/status.proto";
+
+option java_package = "com.nuance.rpc.mediamanager.admin.v1";
+option java_multiple_files = true;
+
+// The TenantService is responsible for managing and organizing Tenants within Media Manager.
+// The Tenant contains information for the following entities.
+// 1. Data centers: Where IT and telephony components are deployed typically one or more.
+// 2. Environments: Multiple environments for example production, development etc.
+// 3. Realms: Multiple Realms cam be associated to a Tenant.
+service TenantService {
+
+  // Create new Tenant.
+  // When a request to create a new Tenant is made the service will verify if Tenant already exists in storage.
+  // If the Tenant exists the service will apply an update to the Tenant and return the status
+  // already exists. If the Tenant does not exist the service will create and return the new Tenant.
+  // If mandatory fields are missing or incorrectly formatted the response will return a listing of the violations.
+  rpc CreateTenant (CreateTenantRequest) returns (CreateTenantResponse) {}
+
+  // Get specified Tenant.
+  // When request to get a Tenant is made we search based on the provided Tenant ID.
+  // If found service will return the Tenant otherwise will return the status not found.
+  // If mandatory fields are missing or incorrectly formatted the response will return a listing of the violations.
+  rpc GetTenant (GetTenantRequest) returns (GetTenantResponse) {}
+
+  // Update specified Tenant.
+  // When a request to update a Tenant is made the service will verify if it exist in storage.
+  // If the Tenant exists the service will apply an update to the Tenant and return the updated
+  // Tenant in the response. If the Tenant does not exist the service will return a response with a status not found.
+  // If mandatory fields are missing or incorrectly formatted the response will return a listing of the violations.
+  rpc UpdateTenant (UpdateTenantRequest) returns (UpdateTenantResponse) {}
+
+  // Delete specified Tenant.
+  // When request to delete a Tenant is made we search based on the provided Tenant ID.
+  // If found the Tenant is flagged as deleted, otherwise service returns the status not found.
+  // If mandatory fields are missing or incorrectly formatted the response will return a listing of the violations.
+  rpc DeleteTenant (DeleteTenantRequest) returns (DeleteTenantResponse) {}
+
+  // List all Tenants.
+  // When request to list the Tenants is made we return the listing of Tenants.
+  // If found, the list of Tenants will be returned, otherwise service returns the status not found.
+  rpc ListTenants (ListTenantsRequest) returns (ListTenantsResponse) {}
+}
+
+// Input message that defines the parameters for [CreateTenant](#CreateTenant).
+message CreateTenantRequest {
+  // Mandatory. Fields that method will use for Tenant creation.
+  TenantInfo tenant_info = 1;
+}
+
+// Output message that defines the parameters for [CreateTenant](#CreateTenant).
+message CreateTenantResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Tenant data.
+  Tenant tenant = 2;
+}
+
+// Input message that defines the parameters for [GetTenant](#GetTenant).
+message GetTenantRequest {
+  // Mandatory. Unique ID of the Tenant.
+  string tenant_id = 1;
+}
+
+// Output message that defines the parameters for [GetTenant](#GetTenant).
+message GetTenantResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Tenant data.
+  Tenant tenant = 2;
+}
+
+// Input message that defines the parameters for [UpdateTenant](#UpdateTenant).
+message UpdateTenantRequest {
+  // Mandatory. Unique ID of the Tenant.
+  string tenant_id = 1;
+  // Mandatory. Fields that the method will set or update.
+  TenantInfo tenant_info = 2;
+}
+
+// Output message that defines the parameters for [UpdateTenant](#UpdateTenant).
+message UpdateTenantResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Tenant data.
+  Tenant tenant = 2;
+}
+
+// Input message that defines the parameters for [DeleteTenant](#DeleteTenant).
+message DeleteTenantRequest {
+  // Mandatory. Unique ID of the Tenant.
+  string tenant_id = 1;
+}
+
+// Output message that defines the parameters for [DeleteTenant](#DeleteTenant).
+message DeleteTenantResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines the parameters for [ListTenants](#ListTenants).
+message ListTenantsRequest {
+}
+
+// Output message that defines the parameters for [ListTenants](#ListTenants).
+message ListTenantsResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // The list of Tenants.
+  repeated Tenant tenant = 2;
+}
+
+// Contains the fields of the Tenant entity.
+message Tenant {
+  // Unique ID of the Tenant.
+  string tenant_id = 1;
+  // Tenant details.
+  TenantInfo tenant_info = 2;
+  // Unique ID of the associated environment.
+  repeated string environments = 3;
+  // Unique ID of the associated datacenters.
+  repeated string datacenters = 4;
+  // Unique IDs of associated realms.
+  repeated string realms = 5;
+}
+
+// Contains the detail fields of the Tenant entity.
+message TenantInfo {
+  // Mandatory. Tenant name (length 2 maximum length 50).
+  string name = 1;
+  // Mandatory. Tenant short name (minimum length 2 maximum length 25).
+  string short_name = 2;
+  // Optional. Tenant description (minimum length 2 maximum length 250).
+  string description = 3;
+  // Deprecated.
+  string key_space = 4;
+  // Deprecated.
+  string bucket_name = 5;
+}

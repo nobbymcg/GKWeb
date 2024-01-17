@@ -1,0 +1,58 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1alpha.dataquery;
+
+option java_package = "com.nuance.rpc.biosec.v1alpha.dataquery";
+option java_multiple_files = true;
+
+// Defines the different types of operators.
+enum StringFilterOperator {
+  // String filter is not specified. Do not use this value.
+  STRING_FILTER_OPERATOR_UNDEFINED = 0;
+  // Compares between two strings.
+  STRING_FILTER_OPERATOR_EQUAL_TO = 1;
+  // Checks if the string contains the specified substring.
+  STRING_FILTER_OPERATOR_CONTAINS = 2;
+}
+
+// Rule types.
+enum RuleType {
+  // Rule type is not specified. Do not use this value.
+  RULE_TYPE_UNSPECIFIED = 0;
+  // Conjunctive normal form.
+  RULE_TYPE_AND_OF_ORS = 1;
+  // Disjunctive normal form.
+  RULE_TYPE_OR_OF_ANDS = 2;
+}
+
+// Specifies different data query states.
+enum DataQueryState {
+  // Data query state wisas not specified. Do not use this value.
+  DATA_QUERY_STATE_UNSPECIFIED = 0;
+  // Data query is created but not started.
+  DATA_QUERY_STATE_PENDING = 1;
+  // Data query started and is in running state.
+  DATA_QUERY_STATE_STARTED = 2;
+  // Data query is completed and its results are published.
+  DATA_QUERY_STATE_COMPLETED = 3;
+  // Data query is completed and data is not found.
+  DATA_QUERY_STATE_COMPLETED_NO_DATA_FOUND = 4;
+  // Data query is cancelled.
+  DATA_QUERY_STATE_CANCELLED = 5;
+  // An error occurred while running the data query.
+  DATA_QUERY_STATE_ERROR = 6;
+}

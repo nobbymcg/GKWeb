@@ -1,0 +1,444 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1;
+
+option java_package = "com.nuance.rpc.biosec.v1";
+option java_multiple_files = true;
+
+import "nuance/rpc/status.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+//////////////////////////////////////////////////////////////////////////
+// This proto file includes definitions of common messages and types    //
+// used across Gatekeeper API                                           //
+//////////////////////////////////////////////////////////////////////////
+
+// Defines unique identifier for various system entities.
+message UniqueId {
+    // The unique ID as String.
+    string value = 1;
+}
+
+// List of unique IDs.
+message ListOfUniqueId {
+    // Optional. Repeated, list of Unique IDs.
+    repeated UniqueId unique_ids = 1;
+}
+
+// A combination of entity ID and a tag, used to specify a print or set of prints associated with an entity filtered by the tag.
+message UniqueIdAndTag {
+    // Unique ID.
+    UniqueId unique_id = 1;
+    // Optional. The tag filter.
+    string tag = 2;
+}
+
+// Defines the context in which the public API method is executed.
+// Some fields may be optional or mandatory depending on the specific API method they are used in.
+// See the method documentation for detailed information on required fields.
+message Context {
+    // Unique ID of the engagement, used to aggregate several sessions of the same customer/user engagement with the system.
+    UniqueId gk_engagement_id = 1;
+    // Unique ID of the session, used to aggregate several API methods calls of the same customer/user on the same channel.
+    UniqueId gk_session_id = 2;
+    // Unique ID of the scope the method should operate in.
+    UniqueId gk_scope_id = 3;
+    // Identifies the active config set to use to control the method's execution.
+    string configset_id = 4;
+}
+
+// Contains member details. A member can either be a user or a group that is granted permissions to operate in the system.
+// Some fields may be optional or mandatory depending on the specific API method they are used in.
+// A member is identified by the sub and issuer claims in the OIDC token or by a user name (typically an email address).
+message Member {
+    oneof member_id {
+        // Mandatory. The client ID or group ID, depending on the member type.
+        string external_id = 1;
+        // Mandatory. Well-known user name, typically an email address.
+        string member_name = 2;
+    }
+    // Mandatory. Identifies the token issuer.
+    string issuer = 3;
+    // Optional or Mandatory according to specific cases. Indicates the member type.
+    MemberType type = 4;
+    // Optional. Indicates a readable association for types client and group
+    string label = 5;
+    // Optional. ReadOnly. Timestamp of member last visit.
+    google.protobuf.Timestamp last_visit = 6;
+}
+
+// The possible session types associated with each session.
+// A session is classified as either online session or offline session.
+// Online session represents a interactive session with the end customer (person).
+// Offline session represents activities done offline by application, system administrator, or fraud analyst.
+// For more information about a session, refer to product specifications.
+enum SessionType {
+
+    //////////////////////
+    // Online Sessions  //
+    //////////////////////
+
+    // Session type not set.
+    SESSION_TYPE_UNSPECIFIED = 0;
+    // Call center Session.
+    SESSION_TYPE_CALL_CENTER = 1;
+    // Self service IVR (Interactive Voice Response) session.
+    SESSION_TYPE_IVR = 2;
+    // Interactive mobile or web session.
+    SESSION_TYPE_DIGITAL = 3;
+
+    ///////////////////////
+    // Offline Sessions  //
+    ///////////////////////
+
+    // Fraud analyst session.
+    SESSION_TYPE_FRAUD_ANALYST = 500;
+    // Administrator session.
+    SESSION_TYPE_ADMINISTRATION = 501;
+    // Batch media processing session.
+    SESSION_TYPE_OFFLINE_MEDIA_PROCESSING = 502;
+    // A web session
+    SESSION_TYPE_WEB = 503;
+    // A post call workflow session.
+    SESSION_TYPE_POST_CALL = 504;
+    // A pre call workflow session.
+    SESSION_TYPE_PRE_CALL = 505;
+    // Any other session type doesn't fall under any of the other categories.
+    SESSION_TYPE_OTHER = 999;
+}
+
+// The session's main purpose.
+enum SessionIntent {
+    // Intent is not specified.
+    SESSION_INTENT_UNSPECIFIED = 0;
+    // The person status is opted out or an opt out is performed (with or without fraud detection).
+    SESSION_INTENT_OPT_OUT = 1;
+    // Any time prints are enrolled. This remains an enrollment intent, even if other factors are executed.
+    SESSION_INTENT_ENROLLMENT = 2;
+    // Voiceprint adaptation is performed following a verification match result (note that this context is not set if the verification match audio has insufficient net audio or did not pass an additional verification check).
+    SESSION_INTENT_ADAPTATION = 3;
+    // Any time prints are verified or identified. The intent remains verification, even if other non-enrollment factors or detect known fraudsters are performed.
+    SESSION_INTENT_VERIFICATION = 4;
+    // Any time detect known fraudsters (any type) is performed without enrollment, verification, or other factors.
+    SESSION_INTENT_FRAUD = 5 [deprecated=true];
+    // Any time detect known fraudsters (any type) is performed without enrollment, verification, or other factors.
+    SESSION_INTENT_FRAUD_DETECTION = 6;
+    // The context when no claimed identity is provided.
+    SESSION_INTENT_ORPHAN = 998;
+    // The default context when no other context applies (for example, session only processed the audio or transcribed it).
+    SESSION_INTENT_OTHER = 999;
+}
+
+// Various types of decision. Could be factor specific decision or session decision made based on multiple factors.
+enum Decision {
+    // Decision not set.
+    DECISION_UNSPECIFIED = 0;
+    // Most likely to be the authentic person.
+    DECISION_AUTHENTIC = 1;
+    // Most likely not to be the authentic person but rather someone else.
+    DECISION_NO_MATCH = 2;
+    // Most likely to be a fraud attempt.
+    DECISION_FRAUD = 3;
+    // System cannot make a reliable decision.
+    DECISION_UNCERTAIN = 4;
+    // There was a failure while making the decision.
+    DECISION_FAILED = 5;
+    // No risk was detected.
+    DECISION_NO_RISK_DETECTED = 6;
+}
+
+// The engagement's verdict set by the fraud analyst to specify the result of the analysis.
+enum EngagementVerdict {
+    // Engagement's verdict is not set.
+    ENGAGEMENT_VERDICT_UNSPECIFIED = 0;
+    // Engagement's verdict is authentic.
+    ENGAGEMENT_VERDICT_AUTHENTIC = 1;
+    // Engagement's verdict is fraud.
+    ENGAGEMENT_VERDICT_FRAUD = 2;
+    // Engagement's verdict is someone else.
+    ENGAGEMENT_VERDICT_SOMEONE_ELSE = 3;
+    // Engagement's verdict is inconclusive.
+    ENGAGEMENT_VERDICT_UNCERTAIN = 4;
+}
+
+// The phone call type.
+enum CallType {
+    // The call type is not specified.
+    CALL_TYPE_UNSPECIFIED = 0;
+    // An incoming call from an external party (a customer) to an agent.
+    CALL_TYPE_INBOUND = 1;
+    // An outgoing call from an agent to an external party (a customer).
+    CALL_TYPE_OUTBOUND = 2;
+    // A call occurring between with an external party (a customer) and an agent. Can either be but we are not able to differentiate between an inbound or an outbound calls.
+    CALL_TYPE_EXTERNAL = 3;
+    // A call between two agents.
+    CALL_TYPE_INTERNAL = 4;
+    // An internal call occurring between two agents. Another call that was in progress was put on hold.
+    CALL_TYPE_CONSULT = 5;
+    // A call in progress with an external party that has been was transferred to another agent.
+    CALL_TYPE_TRANSFER = 6;
+    // A call occurring with between an external party and two or more agents.
+    CALL_TYPE_CONFERENCE = 7;
+}
+
+// A person's gender.
+enum Gender {
+    // Gender is not specified.
+    GENDER_UNSPECIFIED = 0;
+    // Gender is male.
+    GENDER_MALE = 1;
+    // Gender is female.
+    GENDER_FEMALE = 2;
+    // Gender is unknown.
+    GENDER_UNKNOWN = 3;
+    // Gender is nonbinary.
+    GENDER_NON_BINARY = 4;
+}
+
+// A print profile owner type.
+enum OwnerType {
+    // Owner type is not specified.
+    OWNER_TYPE_UNSPECIFIED = 0;
+    // Owner type is person.
+    OWNER_TYPE_PERSON = 1;
+    // Owner type is fraudster.
+    OWNER_TYPE_FRAUDSTER = 2;
+}
+
+// The print lock status.
+enum LockStatus {
+    // Print lock status is not specified.
+    LOCK_STATUS_UNSPECIFIED = 0;
+    // Print can be used for verification.
+    LOCK_STATUS_UNLOCKED = 1;
+    // Print is locked and cannot be used for verification.
+    LOCK_STATUS_LOCKED = 2;
+}
+
+// Enumerator for the different members types.
+enum MemberType {
+    // Member type is not set.
+    MEMBER_TYPE_UNSPECIFIED = 0;
+    // Member is an interactive user (human).
+    MEMBER_TYPE_USER = 1;
+    // Member is an applicative client (application).
+    MEMBER_TYPE_CLIENT = 2;
+    // Member is a group of users.
+    MEMBER_TYPE_GROUP = 3;
+}
+
+// Received CTI call event that describes the detected call operation along with its details.
+message CtiEvent {
+    // Mandatory. The CTI operation type detected.
+    CallEventType event_type = 1;
+    // Mandatory. Primary call identifier received from the CTI layer, usually unique to the call leg.
+    string call_id = 2;
+    // Mandatory. Describes the call type of the incoming CTI event.
+    CallType call_type = 3;
+    // Optional. Call-related metadata received from the CTI layer.
+    CallMetadata call_metadata = 4;
+    // Mandatory. Information about the call center agent receiving the event.
+    AgentInfo agent_info = 5;
+    // Optional. Additional call attributes received from the CTI layer.
+    map<string, string> call_attributes = 7;
+    // Optional. Custom call data received from the CTI layer.
+    map<string, string> custom_data = 8;
+	  // Optional. Unique recording ID used as correlation ID with SIPREC.
+    string recording_id = 9;
+}
+
+// The CTI operation type detected.
+enum CallEventType {
+    // Call Event Type is not specified.
+    CALL_EVENT_UNSPECIFIED = 0;
+    // A call is established.
+    CALL_STARTED = 1;
+    // A call is ended.
+    CALL_ENDED = 2;
+    // The call is put on hold (pause).
+    CALL_HOLD = 3;
+    // The call is retrieved or resumed from pause.
+    CALL_RESUMED = 4;
+    // Another party has been added to the conference.
+    CALL_PARTY_ADDED = 5;
+    // Another party has been removed from the conference.
+    CALL_PARTY_DELETED = 6;
+    // Call data changed.
+    CALL_DATA_UPDATED = 7;
+    // The audio channel information has changed.
+    AUDIO_CHANNEL_CHANGED = 8;
+}
+
+// Information about the call center agent receiving the CTI event.
+message AgentInfo {
+    // Optional. Used to distinguish which agent is using the extension at a specific time.
+    string agent_id = 1;
+    // Optional. The extension of the agent receiving the call.
+    string agent_extension = 2;
+}
+
+// Call-related metadata received from the CTI layer.
+message CallMetadata {
+    // Optional. Automatic Number Identification received from the CTI layer.
+    string ani = 1;
+    // Optional. Dialed Number Identification Service received from the CTI layer
+    string dnis = 2;
+}
+
+// [Train](#Train) operation status.
+enum TrainStatus {
+    // Train status is not set.
+    TRAIN_STATUS_UNSPECIFIED = 0;
+    // The print is trained successfully.
+    TRAIN_STATUS_TRAINED = 1;
+    // The training process failed.
+    TRAIN_STATUS_FAILED = 2;
+}
+
+// [Train](#Train) operation result.
+enum TrainReason {
+    // Train status is not set.
+    TRAIN_REASON_UNSPECIFIED = 0;
+    // Train completed successfully.
+    TRAIN_REASON_TRAIN_OK = 1;
+    // Train failed due to inconsistent audio segments (Segments seem to belong to different people).
+    TRAIN_REASON_INCONSISTENCY = 2;
+    // Train failed because the number of segments in the enrollment segments collection is too small, or because the segments do not contain enough usable audio.
+    TRAIN_REASON_NOT_READY_TO_TRAIN = 3;
+    // An internal error prevented the system from completing the operation.
+    TRAIN_REASON_INTERNAL_ERROR = 999;
+}
+
+// Information about the audio.
+message AudioDetails {
+    // Optional. Unique ID of the media segment.
+    nuance.biosec.v1.UniqueId gk_media_segment_id = 1;
+    // Optional. Unique ID of the audio returned by a processing method.
+    nuance.biosec.v1.UniqueId gk_processed_audio_id = 2;
+    // Optional. Amount of gross audio including speech, noise, and silence.
+    google.protobuf.Duration gross_audio = 3;
+    // Optional. Amount of speech.
+    google.protobuf.Duration net_audio = 4;
+    // Optional. Signal noise ratio, expressed in decibels.
+    google.protobuf.FloatValue snr_db = 5;
+    // Optional. Audio energy level.
+    google.protobuf.FloatValue speech_level = 6;
+    // Optional. Audio saturation level represented as the number of saturated samples in one minute.
+    google.protobuf.FloatValue saturation_level = 7;
+    // Optional. Number of audio input channels. Values are 1 for mono and 2 for stereo.
+    google.protobuf.Int32Value media_number_of_channels = 8;
+    // Optional. Sampling rate of the input audio in Hertz. Can be different from the one used for processing.
+    google.protobuf.Int32Value media_sampling_rate_hz = 9;
+    // Optional. Specifies the processed channel when processing media with multiple channels. This parameter is not set if the media has a single channel.
+    nuance.biosec.v1.AudioChannelSelector selected_channel = 10;
+    // Optional. Number of audio channels in the processed audio. Values are 1 for mono and 2 for stereo.
+    google.protobuf.Int32Value processed_audio_number_of_channels = 11;
+    // Optional. Sampling rate used for processing the audio. Value is in Hertz and can differ from the value of the input audio.
+    google.protobuf.Int32Value processed_audio_sampling_rate_hz = 12;
+    // Optional. Specifies the number of speakers detected in the processed audio. It is available only if segmentation is enabled using the EnableSegmentation configuration parameter.
+    google.protobuf.Int32Value number_of_detected_speakers = 13;
+    // Optional. Specifies a score between -10 and 10 representing how similar the voices of different speakers are. The higher the score, more similar the voices are. Note that it is available only if segmentation is enabled using the EnableSegmentation configuration parameter and multiple speakers are detected during processing.
+    google.protobuf.FloatValue segmentation_score = 14;
+}
+
+// Results computed by the risk engine.
+// The system assesses the risk associated with one or more factors used in a session based on two scores returned by the AI Risk Engine: reliability and risk.
+// When the reliability is too low, the decision is uncertain.
+// When the reliability is high enough, the decision is taken based on the risk score.
+// A high risk score indicates that this is a fraud attack, while a low risk score indicates that the interaction is with an authentic person.
+// Risk scores that are not high enough or low enough indicate that this is not the expected person, but not necessarily a fraud attack.
+message RiskEngineResult {
+    // Optional. A number between 0 and 1000 that represents the risk level (The higher number means the higher risk).
+    google.protobuf.Int32Value risk = 1;
+    // Optional. A number between 0 and 100 that represents the level of confidence in the risk score.
+    google.protobuf.Int32Value reliability = 2;
+}
+
+// Audio validity and the reason that the audio segment is not valid (when relevant).
+enum AudioValidity {
+    // Use to initialize the fields.
+    REASON_UNSPECIFIED = 0;
+    // Audio is satisfactory for processing.
+    REASON_AUDIO_OK = 1;
+    // The number of audio segments provided is not enough for processing.
+    REASON_NOT_ENOUGH_SEGMENTS = 2;
+    // Audio format is invalid or not supported.
+    REASON_INVALID_AUDIO = 3;
+    // Audio does not contain the amount of speech required to complete the process.
+    REASON_AUDIO_TOO_SHORT = 4;
+    // Audio speech level is lower than the level required to complete the process.
+    REASON_AUDIO_TOO_SOFT = 5;
+    // Audio is too loud and causes saturation.
+    REASON_AUDIO_TOO_LOUD = 6;
+    // Audio SNR is too low.
+    REASON_AUDIO_TOO_NOISY = 7;
+    //Multiple speakers detected in the audio instead of one speaker.
+    REASON_MULTIPLE_SPEAKERS_DETECTED = 8;
+    // An internal error prevented the system from checking if the audio is valid or not.
+    REASON_INTERNAL_ERROR = 999;
+}
+
+// Message used to select an audio channel when processing media with multiple channels (such as a stereo audio file).
+//message ChannelSelector {
+//    google.protobuf.Int32Value channel = 1;
+//}
+
+// Message used to select an audio channel when processing media with multiple channels (such as a stereo audio file).
+message AudioChannelSelector {
+    // Mandatory. The channel to select. For stereo, left is channel 1 and right is channel 2. When channel=0, all channels will be selected.
+    google.protobuf.Int32Value channel = 1;
+}
+
+// The possible print types
+enum PrintType {
+    // Use to initialize the fields.
+    PRINT_TYPE_UNSPECIFIED = 0;
+    // Voiceprint is the print that identifies a voice.
+    PRINT_TYPE_VOICEPRINT = 1;
+    // Deviceprint is the print that identifies a device.
+    PRINT_TYPE_DEVICEPRINT = 2;
+    // Convoprint is the print that identifies a person in a conversation.
+    PRINT_TYPE_CONVOPRINT = 3;
+}
+
+// The standard lock reasons.
+enum LockReason {
+    // Use to initialize the fields.
+    LOCK_REASON_UNSPECIFIED = 0;
+    // The print is locked due to too many consecutive mismatches
+    LOCK_REASON_CONSECUTIVE_MISMATCHES = 1;
+    // The print is locked due to a reason that is not standard. Details on the reason are available in another field.
+    LOCK_REASON_OTHER = 100;
+}
+
+
+// The caller ID risk level.
+enum CallerIdRiskLevel {
+    // Risk level is not set.
+    CALLER_ID_RISK_LEVEL_UNSPECIFIED = 0;
+    // No Risk.
+    CALLER_ID_RISK_LEVEL_NO_RISK = 1;
+    // Risk level is low.
+    CALLER_ID_RISK_LEVEL_LOW = 2;
+    // Risk level is medium.
+    CALLER_ID_RISK_LEVEL_MEDIUM = 3;
+    // Risk level is high.
+    CALLER_ID_RISK_LEVEL_HIGH = 4;
+}

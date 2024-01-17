@@ -1,0 +1,89 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.scopes;
+
+option java_package = "com.nuance.rpc.biosec.v1.scopes";
+option java_multiple_files = true;
+
+///////////
+// Enums //
+///////////
+
+// In case the scope is deleted before it is set to active, the system deletes the scope immediately.
+// In case the scope is deleted after it is set to active, it is pending for deletion (but still operational) for 30 days.
+// If the pending for deletion is revoked, the scope is set back to the ready state.
+enum ScopeState {
+  // Scope state is not set.
+  SCOPE_STATE_UNSPECIFIED = 0;
+  // Scope entity is created but not ready for use.
+  SCOPE_STATE_CREATED = 1;
+  // Scope settings are done, waiting for microservices to complete their initialization.
+  SCOPE_STATE_INITIALIZED = 2;
+  // Failure during initialization.
+  SCOPE_STATE_INITIALIZATION_FAILURE = 3;
+  // All microservices reported ready.
+  SCOPE_STATE_READY = 4;
+  // Scope is activated.
+  SCOPE_STATE_ACTIVE = 5;
+  // Scope is marked for deletion.
+  SCOPE_STATE_PENDING_DELETION = 6;
+  // Scope-related data is deleted, and scope is marked as deleted.
+  SCOPE_STATE_DELETED = 7;
+}
+
+// The scope profile. Serves as an indication of the scope size. Contact your system administrator for more information about profile options.
+enum ScopeProfile {
+  // Scope profile is not set.
+  SCOPE_PROFILE_UNSPECIFIED = 0;
+  // Scope profile is set to small.
+  SCOPE_PROFILE_SMALL = 1 [deprecated=true];
+  // Scope profile is set to medium.
+  SCOPE_PROFILE_MEDIUM = 2 [deprecated=true];
+  // Scope profile is set to large.
+  SCOPE_PROFILE_LARGE = 3 [deprecated=true];
+  // Scope profile is set to a predefined default value.
+  SCOPE_PROFILE_DEFAULT = 4;
+  // Scope profile is set to a minimum of 0k annual transactions.
+  SCOPE_PROFILE_0 = 10;
+  // Scope profile is set to a minimum of 100k annual transactions.
+  SCOPE_PROFILE_100K = 20;
+  // Scope profile is set to a minimum of 5M annual transactions.
+  SCOPE_PROFILE_5M = 30;
+  // Scope profile is set to a minimum of 10M annual transactions.
+  SCOPE_PROFILE_10M = 40;
+  // Scope profile is set to a minimum of 50M annual transactions.
+  SCOPE_PROFILE_50M = 50;
+  // Scope profile is set to a minimum of 100M annual transactions.
+  SCOPE_PROFILE_100M = 60;
+  // Scope profile is set to a minimum of 200M annual transactions.
+  SCOPE_PROFILE_200M = 70;
+}
+
+// The scope type.
+enum ScopeType {
+  // Scope type is not set.
+  SCOPE_TYPE_UNSPECIFIED = 0;
+  // Scope type is set to production.
+  SCOPE_TYPE_PRODUCTION = 1;
+  // Scope type is set to internal.
+  SCOPE_TYPE_INTERNAL = 2;
+  // Scope type is set to demo.
+  SCOPE_TYPE_DEMO = 3;
+  // Scope type is set to silent mode data collection.
+  SCOPE_TYPE_SMDC = 4;
+}
+

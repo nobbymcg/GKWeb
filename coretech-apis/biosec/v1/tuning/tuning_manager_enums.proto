@@ -1,0 +1,69 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.tuning;
+
+option java_package = "com.nuance.rpc.biosec.v1.tuning";
+option java_multiple_files = true;
+
+///////////
+// Enums //
+///////////
+
+// Calibration model type.
+enum CalibrationModelType {
+  // Type is not set.
+  CALIBRATION_MODEL_TYPE_UNSPECIFIED = 0;
+  // Calibration model for voiceprint processing operations.
+  CALIBRATION_MODEL_TYPE_VOICEPRINTS = 1;
+  // Calibration model for channel playback detection.
+  CALIBRATION_MODEL_TYPE_PLAYBACK = 2;
+  // Calibration model for the risk assessment.
+  CALIBRATION_MODEL_TYPE_RISK_ENGINE = 3;
+  // Calibration model for convoprint processing operations.
+  CALIBRATION_MODEL_TYPE_CONVOPRINTS = 4;
+  // Calibration model for deviceprint processing operations.
+  CALIBRATION_MODEL_TYPE_DEVICEPRINTS = 5;
+}
+
+enum CalibrationModelMode {
+  // Mode is not set.
+  CALIBRATION_MODEL_MODE_UNSPECIFIED = 0;
+  // Factory calibration model. This model is shared by all scopes and cannot be edited or removed.
+  CALIBRATION_MODEL_MODE_FACTORY = 1;
+  // Calibration model is a basic calibration.
+  CALIBRATION_MODEL_MODE_BASIC = 2;
+  // Calibration model is an extended calibration.
+  CALIBRATION_MODEL_MODE_EXTENDED = 3;
+}
+
+// Calibration model state.
+// Only active calibration models are used when creating new voiceprints.
+// Inactive calibration models can still be used if the voiceprint is not updated.
+enum CalibrationModelState {
+  // State is not set.
+  CALIBRATION_MODEL_STATE_UNSPECIFIED = 0;
+  // Calibration model entity is created, but awaits for the model itself to be uploaded and validated.
+  CALIBRATION_MODEL_STATE_INITIALIZING = 1;
+  // Calibration model is validated.
+  CALIBRATION_MODEL_STATE_VALIDATED = 2;
+  // Calibration model failed validation. Invalid calibration model cannot be activated.
+  CALIBRATION_MODEL_STATE_INVALID = 3;
+  // Calibration model is activated.
+  CALIBRATION_MODEL_STATE_ACTIVE = 4;
+  // Calibration model is explicitly deactivated or another revision of the calibration model is activated.
+  CALIBRATION_MODEL_STATE_INACTIVE = 5;
+}

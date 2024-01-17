@@ -1,0 +1,467 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.deviceprint;
+
+option java_package = "com.nuance.rpc.biosec.v1.deviceprint";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/deviceprint/deviceprints_common_types.proto";
+import "nuance/biosec/v1/common_types.proto";
+import "nuance/rpc/status.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+//////////////////
+// ProcessAudio //
+//////////////////
+
+// Input message that defines parameters for [ProcessAudio](#ProcessAudio).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Mandatory
+message ProcessAudioRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Specifies the input audio.
+  oneof input {
+    // Unique ID of the new media Segment.
+    nuance.biosec.v1.UniqueId gk_media_segment_id = 2;
+    // Unique ID of the processed audio segment that is re-processed.
+    nuance.biosec.v1.UniqueId gk_processed_audio_id = 3;
+  }
+  // Optional. Specifies the processed channel when processing media with multiple channels. This parameter is ignored if the media has a single channel or if the input is gk_processed_audio_id.
+  nuance.biosec.v1.AudioChannelSelector channel_selector = 10;
+}
+
+// Output message that defines parameters returned by [ProcessAudio](#ProcessAudio).
+message ProcessAudioResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Audio processing result.
+  AudioProcessingResult result = 2;
+}
+
+// Contains audio metrics and information about the audio model. Included in [ProcessAudioResponse](#nuance.biosec.v1.deviceprint.ProcessAudioResponse).
+message AudioProcessingResult {
+  // Unique ID of the audio used for enrollment (in case only a subset of audio is used, value may be different from the input audio ID).
+  nuance.biosec.v1.UniqueId gk_media_segment_id = 1;
+  // Unique ID of the processed audio.
+  nuance.biosec.v1.UniqueId gk_processed_audio_id = 2;
+  // Audio validity status. Indicates invalidity reason in case of invalid audio.
+  AudioValidity validity = 3;
+  // General audio metrics (such as gross audio, net audio, SNR, and so on).
+  AudioDetails audio_details = 4;
+  // Unique ID of the calibration model that the system uses to create the audio model.
+  nuance.biosec.v1.UniqueId gk_calibration_model_revision_id = 6;
+}
+
+////////////
+// Enroll //
+////////////
+
+// Input message that defines parameters for [Enroll](#Enroll).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Mandatory
+message EnrollRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Unique ID of the deviceprint profile for enrollment.
+  nuance.biosec.v1.UniqueId gk_deviceprint_profile_id = 2;
+  // Mandatory. Unique ID of audio that was processed and added to the deviceprint's enrollment segments collection. The ID is returned by [ProcessAudio](#ProcessAudio).
+  nuance.biosec.v1.UniqueId gk_processed_audio_id = 3;
+}
+
+// Output message that defines parameters returned by [Enroll](#Enroll).
+message EnrollResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Enrollment result.
+  EnrollResult result = 2;
+}
+
+// Contains information about the deviceprint profile and the audio that belongs to the enrollment set. Included in [EnrollResponse](#nuance.biosec.v1.deviceprint.EnrollResponse).
+message EnrollResult {
+  // Status of the deviceprint profile after adding the new enrollment segment. Indicates if the deviceprint can or should be trained.
+  EnrollStatus enroll_status = 1;
+  // General information about the deviceprint profile.
+  DeviceprintDetails deviceprint_details = 2;
+  // It is true if audio is added to print, false otherwise.
+  google.protobuf.BoolValue enrolled = 3;
+  // In case of failed enrollment, reason of the failure.
+  EnrollReason reason = 4;
+  // General audio metrics (such as gross audio, net audio, SNR, and so on) of the input audio of the EnrollRequest.
+  AudioDetails audio_details = 5;
+}
+
+/////////////////////
+// GetEnrollStatus //
+/////////////////////
+
+// Input message that defines parameters for [GetEnrollStatus](#GetEnrollStatus). Contains information about whether the deviceprint can or should be trained.
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Mandatory
+message GetEnrollStatusRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Unique ID of the deviceprint profile.
+  nuance.biosec.v1.UniqueId gk_deviceprint_profile_id = 2;
+}
+
+// Output message that defines parameters returned by [GetEnrollStatus](#GetEnrollStatus).
+message GetEnrollStatusResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // The status of the deviceprint profile. Indicates if the deviceprint can or should be trained.
+  EnrollStatus result = 2;
+  // Indicates if the deviceprint is trained and can be used for verification.
+  google.protobuf.BoolValue is_trained = 3;
+}
+
+///////////
+// Train //
+///////////
+
+// Input message that defines parameters for [Train](#Train).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Mandatory
+message TrainRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Unique ID of the deviceprint profile for training.
+  nuance.biosec.v1.UniqueId gk_deviceprint_profile_id = 2;
+}
+
+// Output message that defines parameters returned by [Train](#Train).
+message TrainResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // The result of the train operation.
+  TrainResult result = 2;
+}
+
+// Contains information about the outcome of the operation and the current status of the deviceprint profile. Included in [TrainResponse](#nuance.biosec.v1.deviceprint.TrainResponse).
+message TrainResult {
+  // Specifies the completion status of the train operation.
+  TrainStatus train_status = 1;
+  // Specifies the outcome of the train operation and failure reason when applicable.
+  TrainReason reason = 2;
+  // Indicates whether the deviceprint profile is trained or not.
+  DeviceprintProfileStatus status = 3;
+  // General information about the deviceprint profile.
+  DeviceprintDetails deviceprint_details = 4;
+  // Unique ID of the calibration model that the system uses to train the template.
+  nuance.biosec.v1.UniqueId gk_calibration_model_revision_id = 5;
+  // Total number of enrollment segments considered in template training.
+  google.protobuf.Int32Value total_segments = 6;
+  // Number of enrollment segments that are used to create the template.
+  google.protobuf.Int32Value total_valid_segments = 7;
+  // Minimum number of segments required for a successful training.
+  google.protobuf.Int32Value min_segments_required = 8;
+   // Total amount of net speech in all valid segments.
+  google.protobuf.Duration total_net_audio = 9;
+  // Minimum amount of net speech required to train a valid template.
+  google.protobuf.Duration min_net_audio_required = 10;
+  // Additional information about the enrollment segments that are used for training.
+  repeated EnrollmentSegmentDetails enrollment_segments_details = 11;
+  // Total amount of net anything but speech, such as noise and silence, in all valid segments.
+  google.protobuf.Duration total_not_speech = 12;
+  // Minimum amount of net anything but speech, such as noise and silence, required to train a valid template.
+  google.protobuf.Duration min_not_speech_required = 13;
+}
+
+// Contains detailed information about a single enrollment segment that the system uses in the training process.
+// Included in [TrainResponse](#nuance.biosec.v1.deviceprint.TrainResponse) and in [ListEnrollmentSegments](#ListEnrollmentSegments).
+message EnrollmentSegmentDetails {
+  // Unique ID of the media segment.
+  nuance.biosec.v1.UniqueId gk_media_segment_id = 1;
+  // Unique ID of the processed audio.
+  nuance.biosec.v1.UniqueId gk_processed_audio_id = 2;
+  // Indicates whether the segment is consistent or not.
+  ConsistencyDecision consistency_decision = 3;
+  // Biometric consistency score compared to other segments.
+  google.protobuf.FloatValue consistency_score = 4;
+  // Indicates if the segment is used for training for reasons such as inconsistency, missing model, missing samples, and so on.
+  google.protobuf.BoolValue used_for_train = 5;
+  // General audio metrics (such as gross audio, net audio, SNR, and so on).
+  nuance.biosec.v1.deviceprint.AudioDetails audio_details = 6;
+  // Unique ID of the calibration model that the system uses to create the audio model.
+  nuance.biosec.v1.UniqueId gk_calibration_model_revision_id = 8;
+}
+
+////////////
+// Verify //
+////////////
+
+// Input message that defines parameters for [Verify](#Verify).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Mandatory
+message VerifyRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Specifies the audio that is processed.
+  oneof audio {
+    // Unique ID of a new media segment.
+    nuance.biosec.v1.UniqueId gk_media_segment_id = 2;
+	// Unique ID of the processed audio.
+    nuance.biosec.v1.UniqueId gk_processed_audio_id = 3;
+  }
+  // Mandatory. Unique ID of the deviceprint profile that the method verifies.
+  nuance.biosec.v1.UniqueId gk_deviceprint_profile_id = 4;
+  // Optional. Specifies the processed channel when processing media with multiple channels. This parameter is ignored if the media has a single channel or if the input is gk_processed_audio_id.
+  nuance.biosec.v1.AudioChannelSelector channel_selector = 10;
+  // Optional. If true, disable the checkpoints defined in configset (checkpointsForAuthentication and checkpointsForFraudDetection configuration parameters are ignored) to process the whole audio. If false or not defined, processing might stop before the end of audio (for example, if a match is found for any of the checkpoints defined).
+  bool ignore_checkpoints = 11;
+}
+
+// Output message that defines parameters returned by [Verify](#Verify).
+message VerifyResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Result of the verify operation.
+  VerifyResult result = 2;
+}
+
+// Contains detailed information about the operation's result. Included in [VerifyResponse](#nuance.biosec.v1.deviceprint.VerifyResponse).
+message VerifyResult {
+  // General information about the deviceprint profile.
+  DeviceprintDetails deviceprint_details = 1;
+  // The media ID of the audio segment.
+  nuance.biosec.v1.UniqueId gk_media_segment_id = 2;
+  // Unique ID of the processed audio. In case, the system needs to reprocess the audio,
+  // a new gk_processed_audio_id is created, even if the input audio is specified by gk_processed_audio_id.
+  nuance.biosec.v1.UniqueId gk_processed_audio_id = 3;
+  // Indicates if the given audio matches the specified deviceprint profile.
+  nuance.biosec.v1.Decision decision = 4;
+  // The reason for the decision.
+  DecisionReason reason = 5;
+  // Authentication scores.
+  AuthenticationScore authentication_score = 6;
+  // Level of risk and reliability, computed by the risk engine.
+  nuance.biosec.v1.RiskEngineResult risk_engine_result = 8;
+  // Unique ID of the calibration model that the system used.
+  nuance.biosec.v1.UniqueId gk_calibration_model_revision_id = 9;
+  // General audio metrics (such as gross audio, net audio, SNR, and so on).
+  AudioDetails audio_details = 10;
+
+}
+
+//////////////
+// Identify //
+//////////////
+
+// Input message that defines parameters for [Identify](#Identify).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Mandatory
+message IdentifyRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. The input audio.
+  oneof audio {
+    // Unique ID of a new media segment.
+    nuance.biosec.v1.UniqueId gk_media_segment_id = 2;
+	// Unique ID of the processed audio.
+    nuance.biosec.v1.UniqueId gk_processed_audio_id = 3;
+  }
+  // Mandatory. The set of prints, specified as an array of deviceprint IDs or as a group ID and tag.
+  oneof target {
+    // An array of deviceprint profile IDs.
+    nuance.biosec.v1.ListOfUniqueId gk_deviceprint_profile_ids = 4;
+	// A group ID and a tag used as a filter to select the right prints, in case the person has more than one print.
+    nuance.biosec.v1.UniqueIdAndTag group = 5;
+  }
+  // Optional. Specifies the processed channel when processing media with multiple channels. This parameter is ignored if the media has a single channel or if the input is gk_processed_audio_id.
+  nuance.biosec.v1.AudioChannelSelector channel_selector = 10;
+  // Optional. If true, disable the checkpoints defined in configset (checkpointsForAuthentication and checkpointsForFraudDetection configuration parameters are ignored) to process the whole audio. If false, processing might stop before the end of audio (for example, if a match is found for any of the checkpoints defined).
+  bool ignore_checkpoints = 11;
+}
+
+// Output message that defines parameters returned by [Identify](#Identify).
+message IdentifyResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Result of the identify operation.
+  IdentifyResult result = 2;
+}
+
+// Contains detailed information about the operation's outcome. Included in [IdentifyResponse](#nuance.biosec.v1.deviceprint.IdentifyResponse).
+message IdentifyResult {
+  // General information about the deviceprint profile.
+  DeviceprintDetails deviceprint_details = 1;
+  // Media ID of the audio used.
+  nuance.biosec.v1.UniqueId gk_media_segment_id = 2;
+  // Unique ID of the processed audio. In case the system needs to reprocess the audio,
+  // a new gk_processed_audio_id is created, even if input audio is specified by gk_processed_audio_id.
+  nuance.biosec.v1.UniqueId gk_processed_audio_id = 3;
+  // The decision if the given audio matches any of the specified deviceprint profiles.
+  nuance.biosec.v1.Decision decision = 4;
+  // The reason for the decision.
+  DecisionReason reason = 5;
+  // Authentication scores.
+  AuthenticationScore authentication_score = 6;
+  // Level of risk and reliability, computed by the risk engine.
+  nuance.biosec.v1.RiskEngineResult risk_engine_result =8;
+  // Unique ID of the calibration model used for the identification process.
+  nuance.biosec.v1.UniqueId gk_calibration_model_revision_id = 9;
+  // General audio metrics (such as gross audio, net audio, SNR, and so on).
+  AudioDetails audio_details = 10;
+  // Detailed results for a specific deviceprint profile.
+  repeated DeviceprintResult deviceprint_results = 11;
+}
+
+///////////////////////////
+// DetectKnownFraudsters //
+///////////////////////////
+
+// Input message that defines parameters for [DetectKnownFraudsters](#DetectKnownFraudsters).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Mandatory
+message DetectKnownFraudstersRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. The input audio.
+  oneof audio {
+    // Unique ID of a new media segment.
+    nuance.biosec.v1.UniqueId gk_media_segment_id = 2;
+	// Unique ID of the processed audio.
+    nuance.biosec.v1.UniqueId gk_processed_audio_id = 3;
+  }
+  // Mandatory. The set of prints, specified as an array of deviceprint IDs or as a watchlist ID and tag.
+  oneof target {
+    // An array of deviceprint profile IDs.
+    nuance.biosec.v1.ListOfUniqueId gk_deviceprint_profile_ids = 4;
+	// A watchlist ID and a tag used as a filter to select the right prints, in case the person has more than one print.
+    nuance.biosec.v1.UniqueIdAndTag watchlist = 5;
+  }
+  // Optional. Specifies the processed channel when processing media with multiple channels. This parameter is ignored if the media has a single channel or if the input is gk_processed_audio_id.
+  nuance.biosec.v1.AudioChannelSelector channel_selector = 10;
+  // Optional. If true, disable the checkpoints defined in configset (checkpointsForAuthentication and checkpointsForFraudDetection configuration parameters are ignored) to process the whole audio. If false, processing might stop before the end of audio (for example, if a match is found for any of the checkpoints defined).
+  bool ignore_checkpoints = 11;
+}
+
+// Output message that defines parameters returned by [DetectKnownFraudsters](#DetectKnownFraudsters).
+message DetectKnownFraudstersResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Result of the DetectKnownFraudsters operation.
+  DetectKnownFraudstersResult result = 2;
+}
+
+// Contains detailed information about the operation's outcome. Included in [DetectKnownFraudsters](#DetectKnownFraudsters).
+message DetectKnownFraudstersResult {
+  // General information about the deviceprint profile.
+  DeviceprintDetails deviceprint_details = 1;
+  // Media ID of the audio used.
+  nuance.biosec.v1.UniqueId gk_media_segment_id = 2;
+  // Unique ID of the processed audio. In case, the system needs to reprocess the audio,
+  // a new gk_processed_audio_id is created, even if input audio is specified by gk_processed_audio_id.
+  nuance.biosec.v1.UniqueId gk_processed_audio_id = 3;
+  // Indicates if the given audio matches any of the specified fraudsters deviceprint profiles.
+  nuance.biosec.v1.Decision decision = 4;
+  // Reason of the decision.
+  DecisionReason reason = 5;
+  // The fraud detection scores.
+  FraudDetectionScore fraud_detection_score = 6;
+  // Level of risk and reliability, computed by the risk engine.
+  nuance.biosec.v1.RiskEngineResult risk_engine_result =8;
+  // Unique ID of the calibration model used.
+  nuance.biosec.v1.UniqueId gk_calibration_model_revision_id = 9;
+  // General audio metrics (such as gross audio, net audio, SNR, and so on).
+  AudioDetails audio_details = 10;
+  // Detailed results for a specific deviceprint profile.
+  repeated DeviceprintResult deviceprint_results = 11;
+  // Number of valid print used for known fraudster detection.
+  int32 number_of_prints = 12;
+}
+
+//////////////////////
+// Common messages  //
+//////////////////////
+
+// Contains general information about a single deviceprint profile.
+message DeviceprintDetails {
+  // Unique ID of the deviceprint profile.
+  nuance.biosec.v1.UniqueId gk_deviceprint_profile_id = 1;
+  // Unique ID of the person or fraudster that the print belongs to.
+  nuance.biosec.v1.UniqueId gk_owner_id = 2;
+  // The type of owner (person or fraudster).
+  OwnerType owner_type = 3;                                  
+  // The profile tag used to label one of the owner's prints.
+  string profile_tag = 4;                                    
+  // Print version, incremented each time a print is retrained.
+  google.protobuf.Int32Value print_version = 5;
+}
+
+// Detailed results of a specific print used in [Verify](#Verify), [Identify](#Identify), and [DetectKnownFraudsters](#DetectKnownFraudsters).
+message DeviceprintResult {
+  // Unique ID of the deviceprint profile.
+  nuance.biosec.v1.UniqueId gk_deviceprint_profile_id = 1;
+  // The print score.
+  oneof score {                                             
+    // The person's print score, used in [Verify](#Verify) or [Identify](#Identify).
+    AuthenticationScore authentication_score = 2;           
+	// The fraudster's print score, used in [DetectKnownFraudsters](#DetectKnownFraudsters).
+    FraudDetectionScore fraud_detection_score = 3;          
+  }
+}
+
+// Authentication score for a person's print, used in [Verify](#Verify) or [Identify](#Identify).
+message AuthenticationScore {
+  // Raw score of the comparison between the print and the audio.
+  google.protobuf.FloatValue score = 1;
+}
+
+// Fraud detection score for a fraudster's print, used in [DetectKnownFraudsters](#DetectKnownFraudsters).
+message FraudDetectionScore {
+  // Raw score of the comparison between the print and the audio.
+  google.protobuf.FloatValue score = 1;
+}

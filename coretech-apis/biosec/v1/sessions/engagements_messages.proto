@@ -1,0 +1,285 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.sessions;
+
+option java_package = "com.nuance.rpc.biosec.v1.sessions";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/common_types.proto";
+import "nuance/biosec/v1/sessions/sessions_manager_enums.proto";
+import "nuance/rpc/status.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+// Input message that defines parameters for [StartEngagement](#StartEngagement).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Optional
+message StartEngagementRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Optional. Additional engagement data.
+  EngagementDetailsForCreate details = 2;
+  // Optional. A field mask used to specify the [EngagementDetailsForCreate](#nuance.biosec.v1.sessions.EngagementDetailsForCreate) fields that the method sets.
+  google.protobuf.FieldMask field_mask = 3;
+}
+
+// Output message that defines parameters returned by [StartEngagement](#StartEngagement).
+message StartEngagementResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Unique ID of the newly created engagement.
+  nuance.biosec.v1.UniqueId gk_engagement_id = 2;
+}
+
+// Input message that defines parameters for [StopEngagement](#StopEngagement).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Optional
+message StopEngagementRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+}
+
+// Output message that defines parameters returned by [StopEngagement](#StopEngagement).
+message StopEngagementResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [UpdateEngagement](#UpdateEngagement).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Optional
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message UpdateEngagementRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Optional. Engagement's unique ID.
+  nuance.biosec.v1.UniqueId gk_engagement_id = 2;
+  // Mandatory. Details that the method updates.
+  EngagementDetailsForUpdate details = 3;
+  // Mandatory. A field mask used to specify the [EngagementDetailsForUpdate](#nuance.biosec.v1.sessions.EngagementDetailsForUpdate) fields that the method sets.
+  google.protobuf.FieldMask field_mask = 4;
+}
+
+// Output message that defines parameters returned by [UpdateEngagement](#UpdateEngagement).
+message UpdateEngagementResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [GetEngagementDetails](#GetEngagementDetails).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Optional
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message GetEngagementDetailsRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Optional. Engagement's unique ID.
+  nuance.biosec.v1.UniqueId gk_engagement_id = 2;
+  // Optional. A field mask used to specify the [EngagementDetailsForRead](#nuance.biosec.v1.sessions.EngagementDetailsForRead) fields that the method reads.
+  google.protobuf.FieldMask field_mask = 3;
+}
+
+// Output message that defines parameters returned by [GetEngagementDetails](#GetEngagementDetails).
+message GetEngagementDetailsResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Engagement details.
+  EngagementDetailsForRead details = 2;
+}
+
+// Input message that defines parameters for [SetEngagementVerdict](#SetEngagementVerdict).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Optional
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message SetEngagementVerdictRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Optional. Engagement's unique ID.
+  nuance.biosec.v1.UniqueId gk_engagement_id = 2;
+  // Mandatory. Engagement's verdict.
+  nuance.biosec.v1.EngagementVerdict verdict = 3;
+  // Optional. Additional description for the verdict and the reasons for reaching it.
+  string description = 4;
+  // Optional. Amount of money associated with this interaction.
+  google.protobuf.Int64Value amount = 5;
+  // Optional. Cleanup enrollments that have been performed and consents that have been given during the engagement, upon fraud verdict.
+  bool reset_enroll_attributes_on_fraud = 6;
+}
+
+// Output message that defines parameters returned by [SetEngagementVerdict](#SetEngagementVerdict).
+message SetEngagementVerdictResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [GetGkEngagementId](#GetGkEngagementId).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message GetGkEngagementIdRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Identifies the engagement.
+  string engagement_id = 2;
+}
+
+// Output message that defines parameters returned by [GetGkEngagementId](#GetGkEngagementId).
+message GetGkEngagementIdResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Engagement's unique ID.
+  nuance.biosec.v1.UniqueId gk_engagement_id = 2;
+}
+
+// Input message that defines parameters for [ListCorrelatedEngagements](#ListCorrelatedEngagements).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message ListCorrelatedEngagementsRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Engagements correlation ID.
+  string correlation_id = 2;
+}
+
+// Output message that defines parameters returned by [ListCorrelatedEngagements](#ListCorrelatedEngagements).
+message ListCorrelatedEngagementsResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1;
+  // Mandatory. List of engagements details.
+  repeated CorrelatedEngagementDetails engagements = 2;
+}
+
+// Contains the readable fields of the engagement. Included in [ListCorrelatedEngagementsResponse](#nuance.biosec.v1.sessions.ListCorrelatedEngagementsResponse).
+message CorrelatedEngagementDetails {
+  // Mandatory. Engagement's unique ID.
+  nuance.biosec.v1.UniqueId gk_engagement_id = 1;
+  // Optional. The engagement's external ID provided by the client.
+  string engagement_id = 2;
+  // Mandatory. Specifies if the engagement is still active.
+  bool is_active = 3;
+  // Mandatory. Date and time of the engagement's creation.
+  google.protobuf.Timestamp creation_timestamp = 4;
+}
+
+// Contains the readable fields of the engagement. Included in [GetEngagementDetailsResponse](#nuance.biosec.v1.sessions.GetEngagementDetailsResponse).
+message EngagementDetailsForRead {
+  // Engagement's unique ID.
+  nuance.biosec.v1.UniqueId gk_engagement_id = 1;
+  // List of sessions associated with this engagement.
+  repeated nuance.biosec.v1.UniqueId gk_session_ids = 2;
+  // Specifies if the engagement is still active.
+  bool is_active = 3;
+  // The engagement's external ID provided by the client.
+  string engagement_id = 4;
+  // The user ID of the analyst who reviewed the engagement.
+  string analyst_id = 5;
+  // Information about the engagement's verdict, if it is set.
+  EngagementVerdictInfo verdict_info = 10;
+  // The engagement's risk scores and decision.
+  EngagementRiskInfo risk_info = 11;
+  // The engagement's correlation ID provided by the client.
+  string correlation_id = 12;
+  // Date and time of the engagement's creation.
+  google.protobuf.Timestamp creation_timestamp = 996;
+  // Date and time of the engagement's completion.
+  google.protobuf.Timestamp completion_timestamp = 997;
+  // Date and time of the last update.
+  google.protobuf.Timestamp modification_timestamp = 998;
+  // List of custom application data in key-value pairs.
+  map<string, string> custom_data = 999;
+}
+
+// Contains fields that the system uses to create an engagement. Included in [StartEngagement](#StartEngagement).
+message EngagementDetailsForCreate {
+  // Optional. The engagement's external ID provided by the client.
+  string engagement_id = 1;
+  // Optional. The engagement's correlation ID provided by the client.
+  string correlation_id = 2;
+  // List of custom application data in key-value pairs.
+  map<string, string> custom_data = 999;
+}
+
+// Contains the writable fields of the engagement. Included in [StartEngagement](#StartEngagement).
+message EngagementDetailsForUpdate {
+  // Optional. The engagement's external ID provided by the client.
+  string engagement_id = 1;
+  // Identifier of the analyst who analyzes the call.
+  string analyst_id = 2;
+  // Optional. The engagement's correlation ID provided by the client.
+  string correlation_id = 3;
+  // List of custom application data in key-value pairs.
+  map<string, string> custom_data = 999;
+}
+
+// Information about the engagement verdict.
+message EngagementVerdictInfo {
+  // The verdict's decision.
+  nuance.biosec.v1.EngagementVerdict verdict = 1;
+  // Additional description for the verdict and the reasons for reaching it.
+  string description = 2;
+  // Amount of money associated with this interaction.
+  google.protobuf.Int64Value amount = 3;
+  // Date and time at which the verdict is set.
+  google.protobuf.Timestamp verdict_timestamp = 4;
+  // Name of the analyst who analyzes the call and sets the verdict.
+  // Previously set automatically via the SetEngagementVerdict API.
+  string analyst_id = 5;
+}
+
+// The engagement's risk scores and decision.
+message EngagementRiskInfo {
+  // The risk score.
+  google.protobuf.Int32Value risk = 1;
+  // The risk score's reliability.
+  google.protobuf.Int32Value reliability = 2;
+  // The engagement decision.
+  nuance.biosec.v1.Decision decision = 3;
+  // The engagement decision reason.
+  DecisionReason decision_reason = 4;
+}

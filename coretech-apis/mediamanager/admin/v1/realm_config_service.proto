@@ -1,0 +1,227 @@
+/*-
+ * #%L
+ * admin-proto
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.mediamanager.admin.v1;
+
+import "nuance/rpc/status.proto";
+
+option java_package = "com.nuance.rpc.mediamanager.admin.v1";
+option java_multiple_files = true;
+
+
+// The RealmConfigurationService is responsible for managing and organizing configuration settings for
+// realms within Media Manager. The managed configurations structure is hierarchical with the
+// following nodes.
+// 1. Realm configuration is the root under which all configuration sets reside.
+// 2. Realm configuration sets are the logical grouping of specific application domains that hold the
+//    parameters needed for that area of the application.
+// 3. Realm configuration parameters hold the collection key value pairs used by the application.
+// Realm configurations will be treated as immutable objects that will be audited for rolling back changes
+// in case of misconfiguration.
+service RealmConfigurationService {
+
+  // Create a new RealmConfig for specified Realm and Tenant.
+  // When a CreateRealmConfig request is received if mandatory fields are missing or
+  // incorrectly formatted the response will return a listing of the violations.
+  // If there are no violations the RealmConfig will be created and the new RealmConfig
+  // ID will be added to the associated Realm.
+  rpc CreateRealmConfig (CreateRealmConfigRequest) returns (CreateRealmConfigResponse) {}
+
+  // Update specified RealmConfig.
+  // When a request to update a RealmConfig is made the service will verify if the RealmConfig exists.
+  // If the RealmConfig exists the service will merge the existing RealmConfig with the update request RealmConfig
+  // and return a new RealmConfig in the response. If the Realm does not exist the service will return a response with a status not found.
+  // If mandatory fields are missing or incorrectly formatted the response will return a listing of the violations.
+  rpc UpdateRealmConfig (UpdateRealmConfigRequest) returns (UpdateRealmConfigResponse) {}
+
+  // Get specified RealmConfig.
+  // When request to get a RealmConfig is made the service will search based on the provided RealmConfig ID.
+  // If found service will return the RealmConfig otherwise will return status not found.
+  // If mandatory fields are missing or incorrectly formatted the response will return a listing of the violations.
+  rpc GetRealmConfig (GetRealmConfigRequest) returns (GetRealmConfigResponse) {}
+
+  // Delete specified RealmConfig.
+  // When request to delete a RealmConfig is made the service will search based on the provided RealmConfig ID.
+  // If found the RealmConfig ID is removed from the Realm entity. If not found the service
+  // returns the status not found.
+  // If mandatory fields are missing or incorrectly formatted the response will return a listing of the violations.
+  rpc DeleteRealmConfig (DeleteRealmConfigRequest) returns (DeleteRealmConfigResponse) {}
+
+  // List specified RealmConfigs.
+  // When request to get a listing of RealmConfigs is made the service will search based on the provided Tenant ID.
+  // If found, the list of RealmConfigs will be returned, otherwise service returns the status not found.
+  rpc ListRealmConfigs (ListRealmConfigsRequest) returns (ListRealmConfigsResponse) {}
+}
+
+// Input message that defines the parameters for [CreateRealmConfig](#CreateRealmConfig).
+message CreateRealmConfigRequest {
+  // Mandatory. Unique Realm ID.
+  string realm_id = 1;
+  // Mandatory. Unique Tenant ID.
+  string tenant_id = 2;
+  // Mandatory. The Realm configuration data.
+  RealmConfiguration realm_configuration = 3;
+}
+
+// Output message that defines the parameters returned by [CreateRealmConfig](#CreateRealmConfig).
+message CreateRealmConfigResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Realm  configuration data.
+  RealmConfiguration realm_configuration = 2;
+  // Unique ID of the created Realm configuration.
+  string configuration_id = 3;
+}
+
+// Input message that defines the parameters for [UpdateRealmConfig](#UpdateRealmConfig).
+message UpdateRealmConfigRequest {
+  // Mandatory. Unique ID of the Realm configuration.
+  string configuration_id = 1;
+  // Mandatory. The Realm configuration data.
+  RealmConfiguration realm_configuration = 2;
+}
+
+// Output message that defines the parameters returned by [UpdateRealmConfig](#UpdateRealmConfig).
+message UpdateRealmConfigResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Mandatory. Realm configuration details that the method will set or update.
+  RealmConfiguration realm_configuration = 2;
+  // Mandatory. Unique ID of the Realm configuration.
+  string configuration_id = 3;
+}
+
+// Input message that defines the parameters for [GetRealmConfig](#GetRealmConfig).
+message GetRealmConfigRequest {
+  // Mandatory. Unique ID of the Realm configuration.
+  string configuration_id = 1;
+}
+
+// Output message that defines the parameters returned by [GetRealmConfig](#GetRealmConfig).
+message GetRealmConfigResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Realm configuration data.
+  RealmConfiguration realm_configuration = 2;
+}
+
+// Input message that defines the parameters for [DeleteRealmConfig](#DeleteRealmConfig).
+message DeleteRealmConfigRequest {
+  // Mandatory. Unique ID of the Realm configuration.
+  string configuration_id = 1;
+}
+
+// Output message that defines the parameters returned by [DeleteRealmConfig](#DeleteRealmConfig).
+message DeleteRealmConfigResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines the parameters for [ListRealmConfigs](#ListRealmConfigs).
+message ListRealmConfigsRequest {
+  // Mandatory. Unique ID of the Tenant.
+  string tenant_id = 1;
+}
+
+// Output message that defines the parameters returned by [ListRealmConfigs](#ListRealmConfigs).
+message ListRealmConfigsResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // The list of RealmConfigs.
+  repeated RealmConfiguration realm_configurations = 2;
+}
+
+// Contains the fields of the RealmConfiguration message used by [CreateRealmConfig](#CreateRealmConfig).
+message RealmConfiguration {
+  // Optional. List of RealmConfigSet containing key value pairs.
+  repeated RealmConfigSet realm_config_set = 1;
+  // Mandatory. Realm storage configuration
+  StorageConfig storage_config = 2;
+}
+
+// Contains the fields of the RealmConfigSet message.
+message RealmConfigSet {
+  // Mandatory. Configuration name.
+  string config_set_name = 1;
+  // Optional. Configuration description.
+  string config_set_description = 2;
+  // Mandatory. RealmConfigParameter values.
+  repeated ConfigParameter config_parameters = 3;
+}
+
+
+// Message that defines the ConfigParameter.
+message ConfigParameter {
+  // Mandatory. ConfigParameter key.
+  string key = 1;
+  // Mandatory. ConfigParameter value.
+  oneof value {
+    string string_value = 2;
+    bool boolean_value = 3;
+    int32 integer_value = 4;
+    int64 long_value = 5;
+    float float_value = 6;
+  }
+}
+
+// Contains the fields for StorageConfig, one per realm.
+message StorageConfig {
+  // Object storage configuration.
+  ObjectStorageConfig object_storage_config = 1;
+  // Database configuration.
+  DatabaseConfig database_config = 2;
+  // Encryption config data.
+  EncryptionConfig encryption_config = 3;
+}
+
+// Message that defines the object storage configuration.
+message ObjectStorageConfig {
+  // Mandatory. Flag indicating if Object Storage is enabled or not.
+  bool enabled = 1;
+  // Mandatory if Object Storage is enabled otherwise Optional. The object storage endpoint identifier.
+  string endpoint_id = 2;
+  // Mandatory if Object Storage is enabled otherwise Optional. Bucket name of the object storage (minimum length 2 maximum length 50).
+  string bucket_name = 3;
+}
+
+// Message that defines the Database configuration.
+message DatabaseConfig {
+  // Mandatory. The database endpoint identifier.
+  string endpoint_id = 1;
+  // Mandatory. The keyspace where the data will be stored.
+  string keyspace = 2;
+}
+
+
+// Message that defines the EncryptionConfig.
+message EncryptionConfig {
+  // Mandatory. Indicates if realm ConfigParameter & storage is encrypted or not.
+  bool enabled = 1;
+  // Mandatory. Name/ID to retrieve the key/secrets configuration via the provider interface. Configuration and secrets must already exist.
+  string config_id = 2;
+  // Mandatory. Name of Data Encryption Key (DEK) secret. Contains all DEKs for the scope/tenant.
+  string dek_secret_name = 3;
+  // Mandatory. Type of the provider that maintains the KEK secrets.
+  string provider_type = 4;
+  // Mandatory. Name of the mount point of the KEK secret.
+  string vault_name = 5;
+  // Mandatory. Name of Key Encryption Key (KEK) secret.
+  string kek_secret_name = 6;
+  // Mandatory. Name/ID of the KEK.
+  string master_key_name = 7;
+  // Mandatory. Indicate that data key swapping is in progress.
+  bool data_key_transitioning = 8;
+}

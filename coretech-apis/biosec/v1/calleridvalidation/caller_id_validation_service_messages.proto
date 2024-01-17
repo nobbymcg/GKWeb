@@ -1,0 +1,91 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.calleridvalidationservice;
+
+option java_package = "com.nuance.rpc.biosec.v1.calleridvalidationservice";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/common_types.proto";
+import "nuance/rpc/status.proto";
+import "google/protobuf/timestamp.proto";
+
+//////////////////////
+// ProcessPreAnswer //
+//////////////////////
+
+// Input message that defines parameters for [ProcessPreAnswer](#ProcessPreAnswer).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Optional
+// * gk_session_id: Optional
+// * gk_scope_id: Mandatory
+// * configset_id: Optional
+message ProcessPreAnswerRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Caller ID details.
+  CallerIdData caller_id_data = 2;
+  // Optional. The engagement's correlation ID provided by the client.
+  string correlation_id = 3;
+}
+
+// Output message that defines parameters returned by [ProcessPreAnswer](#ProcessPreAnswer).
+message ProcessPreAnswerResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1;
+  // Mandatory. Reference ID of the caller ID processing result.
+  string reference_id = 2;
+  // Mandatory. Caller ID processing result.
+  ProcessPreAnswerResult result = 3;
+  // Mandatory. Unique ID of the newly created engagement.
+  nuance.biosec.v1.UniqueId gk_engagement_id = 4;
+}
+
+// Contains caller ID processing results. Included in [ProcessPreAnswerResponse](#nuance.biosec.v1.calleridvalidationservice.ProcessPreAnswerResponse).
+message ProcessPreAnswerResult {
+  // Mandatory. Caller ID processing result attributes.
+  // Contains a list of results for the configured caller ID vendor.
+  map<string,string> result_attributes = 1;
+}
+
+//////////////////////
+// Common messages  //
+//////////////////////
+
+// Input caller ID data. Included in [ProcessPreAnswerRequest](#nuance.biosec.v1.calleridvalidationservice.ProcessPreAnswerRequest).
+message CallerIdData {
+  // Optional. Reference ID of the caller ID processing result.
+  string reference_id = 1;
+  // Mandatory. Date and time when the call started.
+  google.protobuf.Timestamp call_start_timestamp = 2;
+  // Mandatory. The calling phone number.
+  // May contain numbers, spaces, dashes, the plus sign, or parenthesis.
+  // Included in the user of the 'FROM' header URI.
+  string calling_number = 3;
+  // Mandatory. The called phone number.
+  // May contain numbers, spaces, dashes, the plus sign, or parenthesis.
+  // Included in the user of the 'TO' header URI.
+  string called_number = 4;
+  // Mandatory. The telecom network ID.
+  string telecom_network_id = 5;
+  // Mandatory. The call signaling information.
+  oneof call_signaling_info {
+    // The SIP message in the RFC-3261 format. It must contain the raw SIP-INVITE message including headers and body.
+    string sip_message = 6;
+  }
+}

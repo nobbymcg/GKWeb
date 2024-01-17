@@ -1,0 +1,38 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.calleridvalidationprocessor.ne;
+
+option java_package = "com.nuance.rpc.biosec.v1.calleridvalidationprocessor.ne";
+option java_multiple_files = true;
+
+///////////
+// Enums //
+///////////
+
+/// The reason for the decision
+enum DecisionReason {
+  // Decision reason is not specified.
+  DECISION_REASON_UNSPECIFIED = 0;
+  // The system could not reach a reliable decision.
+  DECISION_REASON_LOW_RELIABILITY = 1;
+  // Risk is not detected.
+  DECISION_REASON_NO_RISK_DETECTED = 2;
+  // Fraud risk is detected.
+  DECISION_REASON_FRAUD_RISK = 3;
+  // An error occurred while making the decision.
+  DECISION_REASON_INTERNAL_ERROR = 999;
+}

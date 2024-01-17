@@ -1,0 +1,347 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.entities;
+
+option java_package = "com.nuance.rpc.biosec.v1.entities";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/entities/entities_manager_enums.proto";
+import "nuance/biosec/v1/common_types.proto";
+import "nuance/rpc/status.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+// Input message that defines parameters for [CreatePerson](#CreatePerson).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message CreatePersonRequest {
+    // Mandatory. General request context. Defines the scope in which the person is created.
+    nuance.biosec.v1.Context context = 1;
+    // Mandatory. Identifies the person. Must be unique at least at the scope level.
+    string person_id = 2;
+    // Optional. Additional information about the person.
+    PersonDetailsForCreate details = 3;
+    // Optional. A field mask used to specify the [PersonDetailsForCreate](#nuance.biosec.v1.entities.PersonDetailsForCreate) fields that the method sets.
+    google.protobuf.FieldMask field_mask = 4;
+}
+
+// Output message that defines parameters returned by [CreatePerson](#CreatePerson).
+message CreatePersonResponse {
+    // General operation status.
+    nuance.rpc.Status status = 1;
+    // Unique ID of the newly created person.
+    nuance.biosec.v1.UniqueId gk_person_id = 2;
+}
+
+// Input message that defines parameters for [RenamePerson](#RenamePerson).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message RenamePersonRequest {
+    // Mandatory. General request context.
+    nuance.biosec.v1.Context context = 1;
+    // Mandatory. Person's unique ID.
+    nuance.biosec.v1.UniqueId gk_person_id = 2;
+    // Mandatory. Person's new id to identify the person. Must be unique at least at the scope level.
+    string new_person_id = 3;
+}
+
+// Output message that defines parameters returned by [RenamePerson](#RenamePerson).
+message RenamePersonResponse {
+    // Mandatory. General operation status.
+    nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [GetPersonDetails](#GetPersonDetails).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message GetPersonDetailsRequest {
+    // Mandatory. General request context.
+    nuance.biosec.v1.Context context = 1;
+    // Mandatory. Person's unique ID.
+    nuance.biosec.v1.UniqueId gk_person_id = 2;
+    // Optional. A field mask used to specify the [PersonDetailsForRead](#nuance.biosec.v1.entities.PersonDetailsForRead) fields that the method reads.
+    google.protobuf.FieldMask field_mask = 3;
+}
+
+// Output message that defines parameters returned by [GetPersonDetails](#GetPersonDetails).
+message GetPersonDetailsResponse {
+    // General operation status.
+    nuance.rpc.Status status = 1;
+    // Person's details.
+    PersonDetailsForRead details = 2;
+}
+
+// Input message that defines parameters for [GetGkPersonId](#GetGkPersonId).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message GetGkPersonIdRequest {
+    // Mandatory. General request context.
+    nuance.biosec.v1.Context context = 1;
+    // Mandatory. Identifies the person.
+    string person_id = 2;
+}
+
+// Output message that defines parameters returned by [GetGkPersonId](#GetGkPersonId).
+message GetGkPersonIdResponse {
+    // General operation status.
+    nuance.rpc.Status status = 1;
+    // Person's unique ID.
+    nuance.biosec.v1.UniqueId gk_person_id = 2;
+}
+
+// Input message that defines parameters for [UpdatePerson](#UpdatePerson).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message UpdatePersonRequest {
+    // Mandatory. General request context.
+    nuance.biosec.v1.Context context = 1;
+    // Mandatory. Person's unique ID.
+    nuance.biosec.v1.UniqueId gk_person_id = 2;
+    // Mandatory. Details that the method updates.
+    PersonDetailsForUpdate details = 4;
+    // Mandatory. A field mask used to specify the [PersonDetailsForUpdate](#nuance.biosec.v1.entities.PersonDetailsForUpdate) fields that the method sets.
+    google.protobuf.FieldMask field_mask = 5;
+}
+
+// Output message that defines parameters returned by [UpdatePerson](#UpdatePerson).
+message UpdatePersonResponse {
+    // General operation status.
+    nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [OptPersonIn](#OptPersonIn).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message OptPersonInRequest {
+    // Mandatory. General request context.
+    nuance.biosec.v1.Context context = 1;
+    // Mandatory. Person's unique ID.
+    nuance.biosec.v1.UniqueId gk_person_id = 2;
+}
+
+// Output message that defines parameters returned by [OptPersonIn](#OptPersonIn).
+message OptPersonInResponse {
+    // General operation status.
+    nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [OptPersonOut](#OptPersonOut).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message OptPersonOutRequest {
+    // Mandatory. General request context.
+    nuance.biosec.v1.Context context = 1;
+    // Mandatory. Person's unique ID.
+    nuance.biosec.v1.UniqueId gk_person_id = 2;
+    // Optional. Additional information about the reason for the consent status provided.
+    string reason = 3;
+    // Optional. Number of days that need to pass before the agent can offer the person to opt-in.
+    google.protobuf.Int32Value days_for_opt_in = 4;
+}
+
+// Output message that defines parameters returned by [OptPersonOut](#OptPersonOut).
+message OptPersonOutResponse {
+    // General operation status.
+    nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [DeletePerson](#DeletePerson).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message DeletePersonRequest {
+    // Mandatory. General request context.
+    nuance.biosec.v1.Context context = 1;
+    // Mandatory. Person's unique ID.
+    nuance.biosec.v1.UniqueId gk_person_id = 2;
+}
+
+// Output message that defines parameters returned by [DeletePerson](#DeletePerson).
+message DeletePersonResponse {
+    // General operation status.
+    nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [DeletePersonalData](#DeletePersonalData).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message DeletePersonalDataRequest {
+    // Mandatory. General request context.
+    nuance.biosec.v1.Context context = 1;
+    // Mandatory. Person's Unique ID.
+    nuance.biosec.v1.UniqueId gk_person_id = 2;
+}
+
+// Output message that defines parameters returned by [DeletePersonalData](#DeletePersonalData).
+message DeletePersonalDataResponse {
+    // General operation status.
+    nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [ListPersonProfiles](#ListPersonProfiles).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message ListPersonProfilesRequest {
+    // Mandatory. General request context.
+    nuance.biosec.v1.Context context = 1;
+    // Mandatory. Person's Unique ID.
+    nuance.biosec.v1.UniqueId gk_person_id = 2;
+    // Optional. Contains the types of prints that the method should filer by.
+    ListPersonProfilesFilter filter = 3;
+}
+
+// Contains an array of the types of prints that the method should filer by.
+message ListPersonProfilesFilter {
+    // Optional. An array of the types of prints that the method should filer by.
+    repeated nuance.biosec.v1.PrintType print_type = 1;
+}
+
+// Output message that defines parameters returned by [ListPersonProfiles](#ListPersonProfiles).
+message ListPersonProfilesResponse {
+    // Mandatory. General operation status.
+    nuance.rpc.Status status = 1;
+    // Optional. The voiceprint profile unique identifier.
+    repeated nuance.biosec.v1.UniqueId gk_voiceprint_profile_ids = 2;
+    // Optional. The convoprint profile unique identifier.
+    repeated nuance.biosec.v1.UniqueId gk_convoprint_profile_ids = 3;
+    // Optional. The deviceprint profile unique identifier.
+    repeated nuance.biosec.v1.UniqueId gk_deviceprint_profile_ids = 4;
+}
+
+// Contains the readable fields of the person. Included in [GetPersonDetailsResponse](#nuance.biosec.v1.entities.GetPersonDetailsResponse).
+message PersonDetailsForRead {
+    // Person's unique ID.
+    nuance.biosec.v1.UniqueId gk_person_id = 1;
+    // Person's identifier. Must be unique at least at the scope level.
+    string person_id = 2;
+    // Person's first name.
+    string first_name = 3;
+    // Person's last name.
+    string last_name = 4;
+    // Person's gender.
+    Gender gender_identity = 5;
+    // Average voice class scores of the person's voiceprints. It selectively find persons with specific voice characteristics.
+    google.protobuf.FloatValue voice_class_score_avg = 6;
+    // Person's preferred language.
+    string preferred_language = 7;
+    // Repeated. Set of phone numbers associated with this person.
+    repeated string phone_numbers = 8;
+    // The consent status.
+    ConsentInfo consent_info = 9;
+    // Date and time of the person's creation.
+    google.protobuf.Timestamp creation_timestamp = 997;
+    // Date and time of the person's last update.
+    google.protobuf.Timestamp modification_timestamp = 998;
+    // List of custom application data in key-value pairs.
+    map<string,string> custom_data = 999;
+}
+
+// Contains fields that the system uses to create a person entity. Included in [CreatePersonRequest](#nuance.biosec.v1.entities.CreatePersonRequest).
+message PersonDetailsForCreate {
+    // Person's first name.
+    string first_name = 1;
+    // Person's last name.
+    string last_name = 2;
+    // Person's gender.
+    Gender gender_identity = 3;
+    // Person's preferred language.
+    string preferred_language = 4;
+    // Repeated. Set of phone numbers associated with this person.
+    repeated string phone_numbers = 5;
+    // List of custom application data in key-value pairs.
+    map<string, string> custom_data = 999;
+}
+
+// Contains the writable fields of the Person. Included in [UpdatePersonRequest](#nuance.biosec.v1.entities.UpdatePersonRequest).
+message PersonDetailsForUpdate {
+    // Person's first name.
+    string first_name = 1;
+    // Person's last name.
+    string last_name = 2;
+    // Person's gender.
+    Gender gender_identity = 3;
+    // Person's preferred language.
+    string preferred_language = 4;
+    // Repeated. Set of phone numbers associated with this person.
+    repeated string phone_numbers = 5;
+    // List of custom application data in key-value pairs.
+    map<string, string> custom_data = 999;
+}
+
+// Detailed information regarding the consent status.
+message ConsentInfo {
+    // Identifier of the agent who handled the call.
+    string agent_id = 1;
+    // The consent status.
+    ConsentStatus status = 2;
+    // Additional information about the reason for the consent status.
+    string reason = 3;
+    // Date and time when the consent status is set.
+    google.protobuf.Timestamp timestamp = 4;
+    // Date and time at which the agent offers the person to opt-in.
+    google.protobuf.Timestamp opt_in_time = 5;
+}

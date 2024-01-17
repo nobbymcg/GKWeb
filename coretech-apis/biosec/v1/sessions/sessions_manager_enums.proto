@@ -1,0 +1,52 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.sessions;
+
+option java_package = "com.nuance.rpc.biosec.v1.sessions";
+option java_multiple_files = true;
+
+///////////
+// Enums //
+///////////
+
+// The risk engine's decision reason.
+enum DecisionReason {
+  // Decision reason is not set.
+  DECISION_REASON_UNSPECIFIED = 0;
+  // The system could not reach a reliable decision.
+  DECISION_REASON_LOW_RELIABILITY = 1;
+  // Risk is not detected.
+  DECISION_REASON_NO_RISK_DETECTED = 2;
+  // This is probably the authentic person.
+  DECISION_REASON_AUTHENTIC = 3;
+  // A fraud attempt probably occurred.
+  DECISION_REASON_FRAUD_RISK = 4;
+  // This is probably not the authentic person.
+  DECISION_REASON_NO_MATCH = 5;
+  // System cannot reach a decision due to lack of supporting data.
+  DECISION_REASON_NO_DATA = 100;
+  // System cannot reach a decision due to bad configuration.
+  DECISION_REASON_BAD_CONFIGURATION = 101;
+  // System cannot reach a decision due to lack of scores.
+  DECISION_REASON_NO_AVAILABLE_SCORES = 102;
+  // System cannot reach a decision due to bad audio.
+  DECISION_REASON_BAD_AUDIO = 103;
+  // System cannot reach a decision due to bad text.
+  DECISION_REASON_BAD_TEXT = 104;
+  // An error occurred while making the decision.
+  DECISION_REASON_INTERNAL_ERROR = 999;
+}

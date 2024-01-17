@@ -1,0 +1,46 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.calleridvalidationservice;
+
+option java_package = "com.nuance.rpc.biosec.v1.calleridvalidationservice";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/calleridvalidation/caller_id_validation_service_messages.proto";
+import "google/api/annotations.proto";
+
+////////////////////////////////////////
+// CallerIdValidationService Service  //
+////////////////////////////////////////
+
+// This service allows validating caller IDs before the agent answers the call.
+service CallerIdValidationService {
+  // This method processes the caller ID once the call is initiated, before the agent answers the call.
+  // The system implicitly starts a new Engagement and a pre-call session after returning an API response.
+  // The reference_id sets to the engagement_id of the new engagement automatically.
+  rpc ProcessPreAnswer (ProcessPreAnswerRequest) returns (ProcessPreAnswerResponse){
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      post: "/nuance/biosec/v1/calleridvalidation/process-pre-answer"
+      body: "*"
+      additional_bindings {
+        post: "/v1/calleridvalidation/pre-answer"
+        body: "*"
+      }
+    };
+  }
+
+}

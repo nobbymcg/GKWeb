@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gatekeeper Web Demo</title>
+    <style>
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(180deg); }
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            /* background-color: #333; */
+            background-image: url('images/GKBanner3.svg');
+            background-repeat: no-repeat;
+            background-size: cover;
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 40px;
+            font-weight: normal;
+            margin: 15px;
+            color: rgb(29, 14, 137);
+            text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white;
+        }
+
+        nav {
+            width: 200px;
+            background-color: #f0f0f0;
+            float: left;
+            height: 100vh;
+        }
+
+        nav a {
+            display: block;
+            padding: 15px;
+            text-decoration: none;
+            color: #333;
+            border-bottom: 1px solid #ccc;
+        }
+
+        nav a:hover {
+            background-color: #ddd;
+        }
+
+        nav a.clicked {
+            color: rgb(122, 167, 239); /* Change text color to white */
+            font-weight: bold;
+        }
+
+        main {
+            margin-left: 220px;
+            padding: 20px;
+        }
+
+        main input {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 16px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        canvas {
+            border: 1px solid #000;
+            display: block;
+            margin: auto;
+        }
+
+        .myAudio {
+            width: 300px;
+            height: 50px;
+        }
+
+        .gkResultWaiting {
+            animation: rotate 0.5s linear infinite;
+        }
+
+        #audioTable {
+            margin-top: 10px;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        #audioTable th, #audioTable td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center; /* Center justification */
+        }
+
+        #audioTable th {
+            background-color: #f2f2f2;
+            border-right: none; /* Remove right border for each cell */
+            border-left: none; /* Remove left border for each cell */
+            font-size: 14px;
+        }
+
+        #audioTable td {
+            border-right: none; /* Remove right border for each cell */
+            border-left: none; /* Remove left border for each cell */
+            font-size: 14px;
+        }
+
+        #audioTable td p {
+            line-height: 1.1; /* line height will be 1.1 times the text size */
+        }
+
+        #gkResultImage {
+            height: 30;
+        }
+
+        #audioVisualization {
+            width: 100%;
+            height: 200px;
+        }
+
+        #settings-panel {
+            position: fixed; /* position fixed so it doesn't scroll with the page */
+            right: -330px; /* start off the screen */
+            top: 103px;
+            width: 300px;
+            height: 50%;
+            background: #fff;
+            padding: 15px;
+            border: 1px solid #a7a7a7;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+            transition: right 0.3s ease-in-out;
+        }
+
+        #settings-panel.open {
+            right: 0; /* slide in */
+        }
+
+        #settings-button {
+            position: fixed;
+            right: 0px;
+            top: 103px;
+            height: 40px;
+            width: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #fff;
+            padding: 0;
+            border: 1px solid #a7a7a7;
+            border-radius: 4px;
+            border-right: 4px solid white;
+            transition: right 0.3s ease-in-out;
+        }
+
+        #settings-panel.p {
+            padding: 0;
+            margin: 0;
+        }
+
+        #settings-button.open {
+            right: 328px; /* slide in */
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 30px;
+            height: 20px;
+        }
+
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px #2196F3;
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(10px); /* for older chrome based browsers */
+            -ms-transform: translateX(10px); /* for older Microsoft browsers */
+            transform: translateX(10px); /* for modern browsers. (Previous two lines should be redundent) */
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        #tagInfoText {
+            font-size: 60%;
+        }
+
+        .helpIcon {
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+            stroke: #2196F3;
+        }
+
+        .popup {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            padding: 12px 16px;
+            z-index: 1;
+            border: 1px solid #908f8f;
+            border-radius: 10px; 
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Gatekeeper Web Demo</h1>
+    </header>
+
+    <nav>
+        <a href="#" onclick="changeColor(this)" class='clicked'>Verify</a>
+        <a href="#" onclick="changeColor(this)">Enrol</a>
+        <a href="#" onclick="changeColor(this)">Fraud Check</a>
+    </nav>
+
+    <main>
+
+        <h2 id="functionHeader">Verify</h2>
+        <p><label for="inputField">Speaker ID: </label><input type="text" id="speakerID" placeholder="Speaker ID" value="IanMcG"></p>
+        <p id="someText">Click the Microphone to start recording.</p>
+
+        <!-- Canvas element -->
+        <!-- <canvas id="audioVisualization" width="400" height="200"></canvas> -->
+        <canvas id="audioVisualization"></canvas>
+
+        <table id="audioTable">
+            <thead>
+                <tr>
+                    <th>Date and Time</th>
+                    <th>Recording</th>
+                    <th>VB Result</th>
+                    <th>VB Score</th>
+                    <th>Risk Score</th>
+                    <th></th>
+                    <th><img src="images/delete(black).svg" width="20px" onclick="deleteAllRows()" alt="Delete all rows" title="Delete All"></th>
+                </tr>
+            </thead>
+            <tbody id="audioTableBody"></tbody>
+        </table>
+
+        <!-- the settings panel -->
+        <div id="settings-panel">
+            <p>Settings</p>
+            <!-- Add your settings controls here -->
+            <label class="switch">
+                <input type="checkbox" id="toggleTagId">
+                <span class="slider round"></span>
+            </label>
+            <label for="tagId">Tag ID:</label>
+            <input type="text" id="tagId" name="tagId" size="10">
+            <svg class="helpIcon" id="tagIdHelpIcon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g>
+                <circle cx="8" cy="8" r="6.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></circle>
+                <circle cx="8" cy="11" r="0.5"></circle>
+                <path d="M6.5 4.99999C7.3 4.36999 8.56 4.36999 9.1998 4.8C10.0561 5.37086 10.0561 6.62914 9.1998 7.2L7.9998 8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                </g>
+            </svg>
+            <div id="tagHelpPopup" class="popup">
+                <p>If a TagID is provided then this will be used for verifications and for enrolment.</p>
+                <p>If TagID isn't used then the first voiceprint for that speaker will be used for verifications, and TagID of "TI" will be used for enrolments.</p>
+            </div>
+
+        </div>
+        <!-- Placing the settings-button after the settings-panel means that it's white right hand border
+        overwrites the border of the settings-panle where they overlap -->
+        <div id="settings-button">
+            <img src="images/settings.svg" width="30px" onclick="toggleSettingsPanel()" alt="Settings" title="Settings">
+        </div>
+
+        <script>
+    
+            // Get the settings panel
+            const settingsPanel = document.getElementById('settings-panel');
+            // Get the settings button
+            const settingsButton = document.getElementById('settings-button');
+
+            // Add an event listener to the toggleTagId checkbox
+            document.getElementById('toggleTagId').addEventListener('change', function() {
+                document.getElementById('tagId').disabled = !this.checked;
+            });
+
+            // Add an event listener to the help icon
+            document.getElementById('tagIdHelpIcon').addEventListener('click', function(event) {
+                var popup = document.getElementById('tagHelpPopup');
+                popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
+                console.log(popup.style.display);
+            });
+
+            // Function to open the settings panel
+            function toggleSettingsPanel() {
+                if (settingsPanel.classList.contains('open')) {
+                    settingsButton.classList.remove('open');
+                    settingsPanel.classList.remove('open');
+                } else {
+                    settingsButton.classList.add('open');
+                    settingsPanel.classList.add('open');
+                }
+            }
+
+            // Get the canvas and its context
+            const visualizationCanvas = document.getElementById('audioVisualization');
+            const visualizationContext = visualizationCanvas.getContext('2d');
+
+            visualizationCanvas.width = visualizationCanvas.offsetWidth;
+            visualizationCanvas.height = visualizationCanvas.offsetHeight;
+
+            // MediaRecorder variables
+            let mediaRecorder;
+            let isRecording = false;
+            let recordedChunks = [];
+            let audioContext;
+            let analyser;
+            let dataArray;
+            let gkResultCounter = 0;
+            let animationFrameId;
+            let isPulsing = false;
+            let pulseSize = 0;
+
+
+            // Load Gatekeeper logo SVG file
+            const gatekeeperImg = new Image();
+            gatekeeperImg.src = 'images/gatekeeper-nuance-colors.svg';
+            gatekeeperImg.onload = function () {
+                // Draw the Gatekeeper logo onto the canvas
+                drawGatekeeperLogo();
+            };
+
+            // Load the microphone SVG file
+            const microphoneImg = new Image();
+            microphoneImg.src = 'images/microphone.svg';
+            microphoneImg.onload = function () {
+                // Draw the microphone onto the canvas
+                resetVisualisation();
+                //drawMicrophone('#58f5a2');
+            };
+            
+            
+            function drawMicrophone(color) {
+                // visualizationContext.clearRect(0, 0, visualizationCanvas.width, visualizationCanvas.height); // this was hiding the audio wave
+                visualizationContext.fillStyle = color;
+                visualizationContext.beginPath();
+                visualizationContext.arc(visualizationCanvas.width / 2, visualizationCanvas.height / 2, 50, 0, 2 * Math.PI);
+                visualizationContext.fill();
+
+                // Calculate the position to center the image
+                const x = (visualizationCanvas.width - 100) / 2;
+                const y = (visualizationCanvas.height - 100) / 2;
+
+                // Draw the SVG onto the canvas at the center with dimensions 50x50
+                visualizationContext.strokeStyle = '#000';
+                visualizationContext.drawImage(microphoneImg, x, y, 100, 100);
+            }
+
+            function drawGatekeeperLogo() {
+                // visualizationContext.clearRect(0, 0, visualizationCanvas.width, visualizationCanvas.height); // this was hiding the audio wave
+                visualizationContext.fillStyle = '#fff'; 
+                visualizationContext.beginPath();
+                visualizationContext.arc(visualizationCanvas.width / 2, visualizationCanvas.height / 2, 70, 0, 2 * Math.PI);
+                visualizationContext.fill();
+
+                // draw the gatekeeperImg in the centre of the canvas
+                // Calculate the scale factor
+                const gkHeight = 100;
+                const scaleFactor = gkHeight / gatekeeperImg.height;
+
+                // Calculate the new width and height
+                // const newWidth = gatekeeperImg.width * scaleFactor;
+                // const newHeight = 100; // the height is set to 100px
+
+                // Allow for logo to pulse
+                const newWidth = (gatekeeperImg.width * scaleFactor) + pulseSize;
+                const newHeight = gkHeight + pulseSize; // the height is set to 100px
+
+
+                // Calculate the position to center the image
+                const x = (visualizationCanvas.width - newWidth) / 2;
+                const y = (visualizationCanvas.height - newHeight) / 2;
+
+                visualizationContext.strokeStyle = '#000';
+                visualizationContext.drawImage(gatekeeperImg, x, y, newWidth, newHeight);
+            }
+
+            function pulseLogo() {
+                if (!isPulsing) return;
+
+                pulseSize = Math.sin(Date.now() / 200) * 25; // adjust numbers for different effects
+
+                drawGatekeeperLogo();
+
+                requestAnimationFrame(pulseLogo);
+            }
+
+            // Add an onclick event handler to display coordinates
+            visualizationCanvas.onclick = function (event) {
+                const rect = visualizationCanvas.getBoundingClientRect();
+                const mouseX = event.clientX - rect.left;
+                const mouseY = event.clientY - rect.top;
+                const text = document.getElementById('someText');
+                var inzone = "no";
+
+                // alert(`Clicked at coordinates: (${mouseX}, ${mouseY})`);
+
+                const centreX = visualizationCanvas.width / 2;
+                const centreY = visualizationCanvas.height / 2;
+
+                const minx = centreX - 50;
+                const maxx = centreX + 50;
+                const miny = centreY - 50;
+                const maxy = centreY + 50;
+
+                if(mouseX > minx && mouseX < maxx && mouseY > miny && mouseY < maxy){
+                    inzone = "yes";
+                    // Clicked on microphone so toggle recording
+                    toggleRecording();
+                }
+                else{
+                    inzone = "no";
+                }
+                // text.innerHTML = `Clicked at coordinates: (${mouseX}, ${mouseY}) ${inzone}: ${isRecording}`;
+
+            };
+
+            // Add mouseover and mouseout event handlers to change cursor style
+            visualizationCanvas.addEventListener('mousemove', function (event) {
+                const rect = visualizationCanvas.getBoundingClientRect();
+                const mouseX = event.clientX - rect.left;
+                const mouseY = event.clientY - rect.top;
+                const text = document.getElementById('someText');
+
+                const centreX = visualizationCanvas.width / 2;
+                const centreY = visualizationCanvas.height / 2;
+
+                const minx = centreX - 50;
+                const maxx = centreX + 50;
+                const miny = centreY - 50;
+                const maxy = centreY + 50;
+
+                if(mouseX > minx && mouseX < maxx && mouseY > miny && mouseY < maxy){
+                    inzone = "yes";
+                    visualizationCanvas.style.cursor = 'pointer';
+                }
+                else{
+                    inzone = "no";
+                    visualizationCanvas.style.cursor = 'default';
+                }
+                // text.innerHTML = `Mouse at coordinates: (${mouseX}, ${mouseY}) ${inzone}`;
+
+            });
+
+            visualizationCanvas.addEventListener('mouseout', function () {
+                visualizationCanvas.style.cursor = 'default';
+            });
+            
+            // Initialise mediaRecorder
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    mediaRecorder = new MediaRecorder(stream);
+
+                    mediaRecorder.ondataavailable = event => {
+                        if (event.data.size > 0) {
+                            recordedChunks.push(event.data);
+                        }
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        const blob = new Blob(recordedChunks, { type: 'audio/wav' });
+                        const audioUrl = URL.createObjectURL(blob);
+                        const dateTime = new Date().toLocaleString();
+
+                        // Create a new row in the table
+                        const tableBody = document.getElementById('audioTableBody');
+                        const newRow = tableBody.insertRow(0);
+                        const cell1 = newRow.insertCell(0);
+                        const cell2 = newRow.insertCell(1);
+                        const cell3 = newRow.insertCell(2);
+                        const cell4 = newRow.insertCell(3);
+                        const cell5 = newRow.insertCell(4);
+                        const cell6 = newRow.insertCell(5);
+                        const cell7 = newRow.insertCell(6);
+
+                        // Set values in the cells
+                        cell1.textContent = dateTime;
+                        cell2.innerHTML = `<audio class="myAudio" controls controlsList="nodownload"><source src="${audioUrl}" type="audio/wav"></audio>`;
+                        var imageHolder = document.createElement('img');
+                        imageHolder.className = 'gkResultWaiting';
+                        imageHolder.id = 'gkResultImage' + gkResultCounter;
+                        imageHolder.src = 'images/hourglass.svg';
+                        imageHolder.width = 20;
+                        var resultText = document.createElement('p');
+                        resultText.id = 'gkResultText' + gkResultCounter;
+                        cell3.innerHTML = imageHolder.outerHTML;
+                        cell4.innerHTML = '...';
+                        cell5.innerHTML = '...';
+                        cell6.innerHTML = `<a href="${audioUrl}" download="recording_${dateTime}.wav"><img width="20px" src="images/download_icon.svg" title="Download Audio"></a>`;
+                        cell7.innerHTML = `<img width="20px" src="images/delete.svg" onclick="deleteRow(this)" title="Delete">`;
+
+                        // Now do the verification
+                        var blobToSend = new Blob(recordedChunks, {type: 'octet/stream;'});
+                        recordedChunks = [];
+                        // Replace the microphone image in the canvas with the Gatekeeper image
+                        drawGatekeeperLogo();
+                        if (verifyWithMiddleware(blobToSend, gkResultCounter++) == 'ERROR') {
+                            console.log("Failed to connect...");
+                        }
+                        
+                    };
+
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    analyser = audioContext.createAnalyser();
+                    analyser.fftSize = 1024;  // Reduce the buffer size for potential performance improvement
+                    analyser.smoothingTimeConstant = 0.8;
+                    dataArray = new Uint8Array(analyser.fftSize);
+
+                    const source = audioContext.createMediaStreamSource(stream);
+                    source.connect(analyser);
+
+                })
+                .catch(error => console.error('Error accessing microphone:', error));
+
+            // Toggle recording function
+            function toggleRecording() {
+                const text = document.getElementById('someText');
+
+                if (!isRecording) {
+                    startRecording();
+                    text.innerHTML = `Click the microphone to stop recording...`;
+                } else {
+                    stopRecording();
+                    text.innerHTML = `Click the Microphone to start recording...`;
+                }
+            }
+
+            // Start recording function
+            function startRecording() {
+                // drawMicrophone('#f56558'); // Change circle color to red
+                mediaRecorder.start();
+                isRecording = true;
+                drawVisualization();
+            }
+
+            // Stop recording function
+            function stopRecording() {         
+                mediaRecorder.stop();
+                isRecording = false;
+
+                // Stop the animation frame
+                cancelAnimationFrame(animationFrameId);
+
+                // drawMicrophone('#58f5a2'); // Change circle color back to green
+                resetVisualisation();
+
+            }
+
+            function clearCanvas() {
+                // visualizationContext.clearRect(0, 0, visualizationCanvas.width, visualizationCanvas.height);
+                visualizationContext.fillStyle = '#031748';
+                visualizationContext.fillRect(0, 0, visualizationCanvas.width, visualizationCanvas.height);
+            }
+
+            function resetVisualisation() {
+                clearCanvas();
+                // visualizationContext.clearRect(0, 0, visualizationCanvas.width, visualizationCanvas.height);
+                // Draw a horizontal line through the middle of the canvas
+                visualizationContext.strokeStyle = '#1AE6C1';
+                visualizationContext.lineWidth = 2;
+                visualizationContext.beginPath();
+                visualizationContext.moveTo(0, visualizationCanvas.height / 2);
+                visualizationContext.lineTo(visualizationCanvas.width, visualizationCanvas.height / 2);
+                visualizationContext.stroke();
+
+                drawMicrophone('#58f5a2'); // Change circle color back to green
+
+            }
+
+            function visualizeAudio() {
+                analyser.getByteTimeDomainData(dataArray);
+
+                // visualizationContext.clearRect(0, 0, visualizationCanvas.width, visualizationCanvas.height);
+                clearCanvas();
+                visualizationContext.beginPath();
+
+                const bufferLength = analyser.fftSize;
+                const sliceWidth = visualizationCanvas.width / bufferLength;
+
+                visualizationContext.strokeStyle = '#1AE6C1';
+                visualizationContext.lineWidth = 2;
+                for (let i = 0; i < bufferLength; i++) {
+                    const x = i * sliceWidth;
+                    const y = (dataArray[i] / 128.0) * (visualizationCanvas.height / 2);
+                    if (i === 0) {
+                        visualizationContext.moveTo(x, y);
+                    } else {
+                        visualizationContext.lineTo(x, y);
+                    }
+                }
+
+                visualizationContext.stroke();
+            }
+
+            function drawVisualization() {
+                visualizeAudio();
+
+                // Add the microphone to sit on top
+                drawMicrophone('#f56558');
+
+                animationFrameId = requestAnimationFrame(drawVisualization);
+            }
+
+            // Delete row function
+            function deleteRow(button) {
+                const row = button.parentNode.parentNode;
+                row.parentNode.removeChild(row);
+            }
+
+            // Delete all rows in the audioTable
+            function deleteAllRows() {
+                if (confirm('Are you sure you want to delete all rows?')) {
+                    const tableBody = document.getElementById('audioTableBody');
+                    
+                    while (tableBody.firstChild) {
+                        tableBody.removeChild(tableBody.firstChild);
+                    }
+                }
+            }
+
+            // Change color function
+            function changeColor(link) {
+                // Remove 'clicked' class from all navigation links
+                const navLinks = document.querySelectorAll('nav a');
+                navLinks.forEach(navLink => navLink.classList.remove('clicked'));
+
+                // Add 'clicked' class to the clicked navigation link
+                link.classList.add('clicked');
+                // Change heading text
+                document.getElementById('functionHeader').innerHTML = link.innerHTML;
+
+                // Unless the user has clicked the Verify link hide the table
+                if (link.innerHTML !== 'Verify') {
+                    document.getElementById('audioTable').style.display = 'none';
+                } else {
+                    document.getElementById('audioTable').style.display = 'block';
+                }
+            }
+
+            // VerifyWithMiddleware sends the audio blob to the middleware with the speakerID, 
+            // and optional tag, contained in the URL. The middleware returns a JSON object
+            // containing the result and reason for the result, and if available the biometric 
+            // and risk scores.
+            function verifyWithMiddleware(blob, resultCounter){
+                var request = new XMLHttpRequest();
+                const speakerID = document.getElementById('speakerID').value;
+                // request.open("POST", "http://localhost:8080/verify/"+speakerID+"/TI");
+
+                // Update canvas to show Gatekeeper logo pulsing
+                // drawGatekeeperLogo();
+                isPulsing = true;
+                pulseLogo();
+
+                request.open("POST", "http://localhost:8080/verify/"+speakerID);
+                request.send(blob);
+                var response = '';
+                request.onload = function() {
+                    let imageHolder = document.getElementById('gkResultImage' + resultCounter);
+                    // Stop the anumation by changing class of the image from gkResultWaiting to gkResultImage
+                    imageHolder.className = 'gkResultImage';
+                    processingState = false;
+                    if (request.status == 200) {
+                        console.log("Middleware returned 200");
+                        console.log(request.response);
+
+                        // Get the top table row
+                        const tableRow = document.getElementById('audioTableBody').rows[0];
+
+                        var jsonResponse = JSON.parse(request.response);
+                        console.log(jsonResponse);
+                        response = jsonResponse.result;
+                        if (response == 'DECISION_AUTHENTIC') {
+                            imageHolder.src = 'images/gatekeeper_open_green.svg';
+                        } else if (response == 'DECISION_NO_MATCH') {
+                            imageHolder.src = 'images/gatekeeper_red.svg';
+                        } else if (response == 'ERROR') {
+                            imageHolder.src = 'images/gatekeeper_error.svg';
+                        } else {
+                            imageHolder.src = 'images/gatekeeper_grey.svg';
+                        }
+                        imageHolder.width = 30;
+                        imageHolder.title = jsonResponse.reason;
+                        tableRow.cells[3].innerHTML = jsonResponse.biometricScore;
+                        tableRow.cells[4].innerHTML = jsonResponse.riskScore;
+
+                    } else {
+                        console.log("Middleware returned " + request.status);
+                        console.log(request.response);
+                        response = request.response;
+                    }
+                    // Reset the canvas to show the microphone
+                    isPulsing = false;
+                    resetVisualisation();
+                }
+            }
+
+            window.onresize = function() {
+                // Update the canvas width and height
+                visualizationCanvas.width = visualizationCanvas.offsetWidth;
+                visualizationCanvas.height = visualizationCanvas.offsetHeight;
+
+                // If we are recoring or interacting with the middleware then the canvas will be redrawn automatically
+                // otherwoise redraw it now
+                if (!isRecording && !isPulsing) {
+                    resetVisualisation();
+                }
+
+            };
+        </script>
+    </main>
+
+</body>
+</html>

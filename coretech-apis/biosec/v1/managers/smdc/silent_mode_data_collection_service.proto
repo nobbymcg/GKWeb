@@ -1,0 +1,151 @@
+/*-
+ * #%L
+ * call-session-manager-public-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.managers.smdc;
+
+option java_multiple_files = true;
+option java_package = "com.nuance.rpc.biosec.v1.managers.smdc";
+
+import "google/protobuf/duration.proto";
+import "nuance/biosec/v1/common_types.proto";
+import "nuance/rpc/status.proto";
+
+// The nuance.biosec.v1.managers.smdc package contains the Gatekeeper SMDC (Silent Mode Data Collection) API.
+
+
+// This service allows managing data collection.
+service SilentModeDataCollection {
+
+    // Starts data collection. The API triggers data collection in the background and immediately returns a response (it is a non-blocking API).
+    // If the requested channel for the same scope has started already, the specific channel start request is ignored. When failing to subscribe
+    // the requested channel, the specific channel start request is ignored.
+    // To get the status per channel, use the [GetDataCollectionStats](#GetDataCollectionStats) method.
+	rpc StartDataCollection(StartDataCollectionRequest) returns (StartDataCollectionResponse);
+
+    // Gets the current data collection statistics.
+    // Returns information about extensions that are currently used for data collection in the specified scope.
+    rpc GetDataCollectionStats(GetDataCollectionStatsRequest) returns (GetDataCollectionStatsResponse);
+
+    // Stops on-going data collection.
+    // If the requested channel collection is not running, the specific channel stop request is ignored.
+    // Channels that are not requested to stop continues to process calls.
+    rpc StopDataCollection(StopDataCollectionRequest) returns (StopDataCollectionResponse);
+
+}
+
+// Input message that defines parameters for [StartDataCollection](#StartDataCollection).
+message StartDataCollectionRequest {
+
+    // Mandatory. General request context. Only the scope ID is mandatory.
+    nuance.biosec.v1.Context context = 1;
+
+    // Optional. Specifies the amount of time that data is being collected.
+    // If not provided, the default is 24 hours.
+    google.protobuf.Duration data_collection_duration = 2;
+
+    // Required. List of extensions to subscribe as agents.
+    repeated Extensions extensions = 3;
+
+    // Optional. When set to true, data collection includes a consent for enrollment that  results in
+	// creating a voiceprint based on verification results from other calls made by the same speaker. Default is false.
+    bool simulate_enrollment_consent = 4;
+
+    // Optional. Allows overriding a session. When set to true, if a session with the specified agent_extension
+    // exists, it will be terminated. Also known as "session theft".
+    bool session_override = 5;
+}
+
+// Output message that defines parameters returned by [StartDataCollection](#StartDataCollection).
+// If there are field violations in the request or if the client ID is not authorized to call this method, an error status code is returned.
+// Otherwise, the method returns the OK status.
+// To get the current channels status for a scope, use the [GetDataCollectionStats](#GetDataCollectionStats) method.
+message StartDataCollectionResponse {
+
+    // Required. General operation status.
+    nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [StopDataCollection](#StopDataCollection).
+message StopDataCollectionRequest {
+
+    // Mandatory. General request context. Only the scope ID is mandatory.
+    nuance.biosec.v1.Context context = 1;
+
+    // Optional. List of extensions to unsubscribe agents from. If no extensions are provided, all running extensions are unsubscribed.
+    repeated Extensions extensions = 3;
+
+}
+
+// Output message that defines parameters returned by [StopDataCollection](#StopDataCollection).
+// If there are field violations in the request or if the client ID is not authorized to call this method, an error status code is returned.
+// Otherwise, the method returns the OK status.
+message StopDataCollectionResponse {
+
+    // Required. General operation status.
+    nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [GetDataCollectionStats](#GetDataCollectionStats).
+message GetDataCollectionStatsRequest {
+
+    // Mandatory. General request context. Only the scope ID is mandatory.
+    nuance.biosec.v1.Context context = 1;
+}
+
+// Output message that defines parameters returned by [GetDataCollectionStats](#GetDataCollectionStats). 
+// If there are field violations in the request or if the client is not authroized to call this method, error status code is returned.
+// Otherwise the returned status is OK. 
+message GetDataCollectionStatsResponse {
+
+    // Required. General operation status.
+    nuance.rpc.Status status = 1;
+
+    // Required. List of extensions that are currently used for data collection. An empty list indicates that currently data is not collected for the requested scope.
+    repeated ActiveExtensionInfo active_extension_info = 2;
+}
+
+// Monitored extension information.
+message ActiveExtensionInfo {
+
+    // Required. The data collection extension.
+    string extension = 1;
+
+    // Required. Specified the amount of time that data is being collected.
+    google.protobuf.Duration data_collection_duration = 2;
+
+    // Required. Number of calls processed so far.
+    int32 processed_calls = 3;
+
+}
+
+// List of extensions to include or exclude.
+message Extensions {
+
+    // Optional. When set to true, associated extensions are excluded from the aggregated list. Default is false.
+    bool exclude_extensions = 1;
+
+    // Required. The extension to start from when forming the extension list. Must contain only digits.
+    string from_extension = 2;
+
+    // Optional. The last extension when forming the extension list. Must contain only digits.
+    // If set, value must be higher or equal to the value of from_extension. The extension list is based on increments of one from the value of from_extension up to the value of to_extension.
+    // When not set, a single extension is aggregated based on the value of from_extension.
+    string to_extension = 3;
+
+    // Optional. The metadata is part of Agent Session Manager's start agent session method request.
+    // It is simulating metadata that is passed from the Web Agent Console to the Connector service.
+    map<string,string> metadata = 4;
+}

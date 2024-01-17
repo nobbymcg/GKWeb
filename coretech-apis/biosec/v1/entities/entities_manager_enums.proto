@@ -1,0 +1,64 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.entities;
+
+option java_package = "com.nuance.rpc.biosec.v1.entities";
+option java_multiple_files = true;
+
+///////////
+// Enums //
+///////////
+
+// The consent status.
+enum ConsentStatus {
+  // Consent is not set.
+  CONSENT_STATUS_UNSPECIFIED = 0;
+  //Consent is given.
+  CONSENT_STATUS_OPTED_IN = 1;
+  //Consent is not given.
+  CONSENT_STATUS_OPTED_OUT = 2;
+}
+
+// The file upload type.
+enum UploadType {
+  // Upload type is not set.
+  UPLOAD_TYPE_UNSPECIFIED = 0;
+  // Upload type is merge.
+  UPLOAD_TYPE_MERGE = 1;
+  // Upload type is replace.
+  UPLOAD_TYPE_REPLACE = 2;
+}
+
+/// The reason for the decision.
+enum DecisionReason {
+  // Decision reason is not specified.
+  DECISION_REASON_UNSPECIFIED = 0;
+  // The system could not reach a reliable decision.
+  DECISION_REASON_LOW_RELIABILITY = 1;
+  // Risk is not detected.
+  DECISION_REASON_NO_RISK_DETECTED = 2;
+  // Fraud risk is detected.
+  DECISION_REASON_FRAUD_RISK = 3;
+  // An error occurred while making the decision.
+  DECISION_REASON_INTERNAL_ERROR = 999;
+}
+
+enum CallerIdDataEncoding {
+  CALLER_ID_DATA_ENCODING_UNSPECIFIED = 0;
+  CALLER_ID_DATA_ENCODING_PLAIN = 1;
+  CALLER_ID_DATA_ENCODING_BASE64 = 2;
+}

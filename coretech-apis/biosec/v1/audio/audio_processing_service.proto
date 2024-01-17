@@ -1,0 +1,128 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.audio;
+
+option java_package = "com.nuance.rpc.biosec.v1.audio";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/audio/audio_processing_messages.proto";
+import "google/api/annotations.proto";
+
+///////////////////////////////////////
+// Audio Processing Manager Service  //
+///////////////////////////////////////
+
+// This service offers methods to ensure audio is genuine and valid.
+// Available operations are:
+//  - Antispoofing - Detects if the audio is a playback or contains synthetic speech.
+//  - Text Validation - Checks if the speaker in the supplied audio says the expected text.
+//  - Transcription and Redaction - Transcribes supplied spoken audio into text, and optionally remove sensitive data.
+//  - Liveness Detection - Compares audio samples to determine if the Media Segment is a recording.
+//
+// Normally, these operations are executed after a successful authentication to confirm that the audio is trustworthy.
+service AudioProcessor {
+
+  // Detects playback or synthesized audio attacks.
+  // Supported playback detection includes:<ul>
+  // <li>Channel playback detection — Detects the presence of signal artifacts introduced by the recording and playback process.</li>
+  // <li>Footprint playback detection — Detects if a fraudster attempts to play surreptitiously recorded audio. The operation determines if two audio buffers correspond to the same utterance by comparing the current audio with a footprint of a previously collected verification passphrase.</li></ul>
+  // If a match is detected, the current audio is marked as a recording (only applicable for active authentication).
+  // In addition, this method can detect speech that is electronically modified to sound like a legitimate speaker, such as synthetic speech.
+  rpc DetectAudioSpoofing (DetectAudioSpoofingRequest) returns (DetectAudioSpoofingResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      post: "/nuance/biosec/v1/audio/detect-spoofing"
+      body: "*"
+      additional_bindings {
+        post: "/v1/audios/spoofing"
+        body: "*"
+      }
+    };
+  }
+
+  // Checks that the speaker in the supplied audio is saying the required text.
+  rpc ValidateText (ValidateTextRequest) returns (ValidateTextResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      post: "/nuance/biosec/v1/audio/validate-text"
+      body : "*"
+      additional_bindings {
+        post: "/v1/audios/text-validation"
+        body: "*"
+      }
+    };
+  }
+
+  // Detects intra-session voice variation using a random prompt in order to confirm that a real live person is seeking access.
+  // Liveness detection is performed after successful text-dependent voice biometrics authentication. See [Verify](#Verify).<br>
+  // During liveness detection, the audio is compared with the text-dependent utterance to make sure that the same person is speaking in both recordings.
+  // The randomness of the prompts ensures that fraudsters cannot use the pre-recorded audio of the authentic speaker.
+  // Text validation ensures that the speaker is saying the expected random phrase.<br>
+  // The input is a reference audio for active authentication and one or more recordings of random phrases.
+  // The system can assist with selecting a random phrase using the [GetLivenessPrompt](#GetLivenessPrompt) method.
+  rpc DetectLiveness (DetectLivenessRequest) returns (DetectLivenessResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      post: "/nuance/biosec/v1/audio/detect-liveness"
+      body: "*"
+      additional_bindings {
+        post: "/v1/audios/liveness"
+        body: "*"
+      }
+    };
+  }
+
+  // Randomly selects a prompt from a large list of pre-configured prompts.
+  // The semi-random prompt can be used for liveness detection.
+  rpc GetLivenessPrompt (GetLivenessPromptRequest) returns (GetLivenessPromptResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/prompts/liveness"
+      additional_bindings {
+        get: "/v1/prompts/liveness"
+      }
+    };
+  }
+
+  // Provides a transcription of an audio segment and returns details about each recognized word. When specified via input parameters
+  // or configuration, the method also redacts all credit card information and returns locations of the redacted text.
+  rpc Transcribe (TranscribeRequest) returns (TranscribeResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      post: "/nuance/biosec/v1/audio/transcribe"
+      body : "*"
+      additional_bindings {
+        post: "/v1/audios/transcription"
+        body: "*"
+      }
+    };
+  }
+
+  // Provides a transcription of an audio segment after redacting all credit card information. If the audio was already transcribed,
+  // unless the input parameters or configuration require transcribing again, the method  performs redaction on the transcribed audio.
+  rpc Redact (TranscribeRequest) returns (TranscribeResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      post: "/nuance/biosec/v1/audio/redact"
+      body : "*"
+      additional_bindings {
+        post: "/v1/audios/redaction"
+        body: "*"
+      }
+    };
+  }
+}

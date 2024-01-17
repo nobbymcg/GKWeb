@@ -1,0 +1,385 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.deviceprint;
+
+option java_package = "com.nuance.rpc.biosec.v1.deviceprint";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/deviceprint/deviceprints_processing_messages.proto";
+import "nuance/biosec/v1/deviceprint/deviceprints_common_types.proto";
+import "nuance/biosec/v1/common_types.proto";
+import "nuance/rpc/status.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+// Input message that defines parameters for [CreateDeviceprintProfile](#CreateDeviceprintProfile).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message CreateDeviceprintProfileRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Owner of the print and a mandatory print tag that is used to distinguish between different deviceprint profiles that belong to the same owner. Print owner can be a person or a fraudster.
+  OwnerAndTag owner = 2;
+  // Optional. Properties that are set when creating a deviceprint profile.
+  DeviceprintProfileDetailsForCreate details = 3;
+  // Optional. A field mask used to specify the [CreateDeviceprintProfileRequest](#nuance.biosec.v1.deviceprint.CreateDeviceprintProfileRequest) fields that the method sets.
+  google.protobuf.FieldMask field_mask = 4;
+}
+
+// Output message that defines parameters returned by [CreateDeviceprintProfile](#CreateDeviceprintProfile).
+message CreateDeviceprintProfileResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1;         
+  // Optional. Unique ID of the newly created deviceprint profile.
+  nuance.biosec.v1.UniqueId gk_deviceprint_profile_id = 2;
+}
+
+// Input message that defines parameters for [GetGkDeviceprintProfileId](#GetGkDeviceprintProfileId).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message GetGkDeviceprintProfileIdRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Owner of the print and a print tag that is used to distinguish between different deviceprint profiles that belong to the same owner. Print owner can be a person or a fraudster. If a tag is specified, the request returns only one ID. If the tag is null or empty, the request returns all IDs.
+  OwnerAndTag owner = 2;                     
+}
+
+// Output message that defines parameters returned by [GetGkDeviceprintProfileId](#GetGkDeviceprintProfileId).
+message GetGkDeviceprintProfileIdResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1;                           
+  // Unique ID of the deviceprint profile.
+  nuance.biosec.v1.UniqueId gk_deviceprint_profile_id = 2;
+}
+
+// Input message that defines parameters for [GetDeviceprintProfileDetails](#GetDeviceprintProfileDetails).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message GetDeviceprintProfileDetailsRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. The deviceprint profile that the request refers to, specified in two alternative ways.
+  oneof input {                                                
+    // Unique ID of the existing deviceprint profile.
+    nuance.biosec.v1.UniqueId gk_deviceprint_profile_id = 2;
+	  // Owner of the print and a mandatory print tag that is used to distinguish between different deviceprints profiles that belong to the same owner. Print owner can be a person or a fraudster.
+    OwnerAndTag owner_and_tag = 3;                             
+  }
+  // Optional. A field mask used to specify the [DeviceprintProfileDetailsForRead](#nuance.biosec.v1.deviceprint.DeviceprintProfileDetailsForRead) fields that the method reads.
+  google.protobuf.FieldMask field_mask = 4;
+}
+
+// Output message that defines parameters returned by [GetDeviceprintProfileDetails](#GetDeviceprintProfileDetails).
+message GetDeviceprintProfileDetailsResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1;                
+  // Optional. Deviceprint profile details. Includes both read-only and writable fields.
+  DeviceprintProfileDetailsForRead details = 2;
+}
+
+// Input message that defines parameters for [UpdateDeviceprintProfileDetails](#UpdateDeviceprintProfileDetails).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message UpdateDeviceprintProfileDetailsRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. The Deviceprint profile that the request refers to, specified in two alternative ways.
+  oneof input {                                               
+    // Unique ID of the deviceprint profile.
+    nuance.biosec.v1.UniqueId gk_deviceprint_profile_id = 2;
+	// Owner of the print and a mandatory print tag that is used to distinguish between different deviceprints profiles that belong to the same owner. Print owner can be a person or a fraudster.
+    OwnerAndTag owner_and_tag = 3;                            
+  }
+  // Mandatory. Deviceprint Profile details that are set. Includes only writable fields.
+  DeviceprintProfileDetailsForUpdate details = 4;
+  // Mandatory. A field mask used to specify the [DeviceprintProfileDetailsForUpdate](#nuance.biosec.v1.deviceprint.DeviceprintProfileDetailsForUpdate) fields that the method sets.
+  google.protobuf.FieldMask field_mask = 5;
+}
+
+// Output message that defines parameters returned by [UpdateDeviceprintProfileDetails](#UpdateDeviceprintProfileDetails).
+message UpdateDeviceprintProfileDetailsResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1;  
+}
+
+////////////////
+// Lock Print //
+////////////////
+
+// Input message that defines parameters for [LockDeviceprintProfile](#LockDeviceprintProfile).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message LockDeviceprintProfileRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Unique ID of the deviceprint profile that is locked.
+  nuance.biosec.v1.UniqueId gk_deviceprint_profile_id = 2;
+  // Optional. Specifies the locking reason.
+  string reason = 3;
+}
+
+// Output message that defines parameters returned by [LockDeviceprintProfile](#LockDeviceprintProfile).
+message LockDeviceprintProfileResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1; 
+}
+
+//////////////////
+// Unlock Print //
+//////////////////
+
+// Input message that defines parameters for [UnlockDeviceprintProfile](#UnlockDeviceprintProfile).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message UnlockDeviceprintProfileRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Unique ID of the deviceprint profile that is unlocked.
+  nuance.biosec.v1.UniqueId gk_deviceprint_profile_id = 2;
+}
+
+// Output message that defines parameters returned by [UnlockDeviceprintProfile](#UnlockDeviceprintProfile).
+message UnlockDeviceprintProfileResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1; 
+}
+
+//////////////////
+// Delete Print //
+//////////////////
+
+// Input message that defines parameters for [DeleteDeviceprintTemplate](#DeleteDeviceprintTemplate).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message DeleteDeviceprintTemplateRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Unique ID of the deviceprint profile.
+  nuance.biosec.v1.UniqueId gk_deviceprint_profile_id = 2;
+}
+
+// Output message that defines parameters returned by [DeleteDeviceprintTemplate](#DeleteDeviceprintTemplate).
+message DeleteDeviceprintTemplateResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1; 
+}
+
+///////////////////////////////
+// Delete Deviceprint Profile //
+///////////////////////////////
+
+// Input message that defines parameters for [DeleteDeviceprintProfile](#DeleteDeviceprintProfile).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message DeleteDeviceprintProfileRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Unique ID of the deviceprint profile.
+  nuance.biosec.v1.UniqueId gk_deviceprint_profile_id = 2;
+  // Optional. Specifies the deletion reason.
+  string reason = 3;
+}
+
+// Output message that defines parameters returned by [DeleteDeviceprintProfile](#DeleteDeviceprintProfile).
+message DeleteDeviceprintProfileResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+////////////////////////
+// Enrollment Segment //
+////////////////////////
+
+// Input message that defines parameters for [ListEnrollmentSegments](#ListEnrollmentSegments).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message ListEnrollmentSegmentsRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Unique ID of the deviceprint profile.
+  nuance.biosec.v1.UniqueId gk_deviceprint_profile_id = 2;
+}
+
+// Output message that defines parameters for [ListEnrollmentSegments](#ListEnrollmentSegments).
+message ListEnrollmentSegmentsResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1;
+  // Optional. Additional information about the enrollment segments in the collection.
+  repeated EnrollmentSegmentDetails enrollment_segments_details = 2;
+}
+
+// Input message that defines parameters for [RemoveEnrollmentSegment](#RemoveEnrollmentSegment).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message RemoveEnrollmentSegmentRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Unique ID of the deviceprint profile.
+  nuance.biosec.v1.UniqueId gk_deviceprint_profile_id = 2;
+  // Mandatory. Unique ID of the processed audio segment that the method removes from the enrollment segments collection.
+  nuance.biosec.v1.UniqueId gk_processed_audio_id = 3;
+}
+
+// Output message that defines parameters returned by [RemoveEnrollmentSegment](#RemoveEnrollmentSegment).
+message RemoveEnrollmentSegmentResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1; 
+}
+
+/////////////////////
+// Common Messages //
+/////////////////////
+
+// Contains the readable fields of the deviceprint profile. Included in [GetDeviceprintProfileDetailsResponse](#nuance.biosec.v1.deviceprint.GetDeviceprintProfileDetailsResponse).
+// Fields that are read can be defined by a fieldmask.
+message DeviceprintProfileDetailsForRead {
+  // Optional. Unique ID of the deviceprint profile.
+  nuance.biosec.v1.UniqueId gk_deviceprint_profile_id = 1;
+  // Optional. Unique ID of the deviceprint profile owner.
+  nuance.biosec.v1.UniqueId gk_owner_id = 2;
+  // Optional. Owner type. Can be a person or a fraudster.
+  nuance.biosec.v1.OwnerType owner_type = 3;
+  // Optional. Tag used to distinguish between different deviceprint profiles that belong to the same owner.
+  string tag = 4;                                           
+  // Optional. The current version of the deviceprint profile (incremented each time a print is retrained).
+  google.protobuf.Int32Value version = 5;                   
+  // Optional. Indicates whether the deviceprint profile is trained or not.
+  DeviceprintProfileStatus status = 6;
+  // Optional. Lock status.
+  DeviceprintProfileLockInfo lock_info = 7;
+  // Optional. Deviceprint template information.
+  DeviceprintProfileTemplateInfo template_info = 8;
+  // Optional. Time and date of the deviceprint profile creation.
+  google.protobuf.Timestamp creation_timestamp = 997;
+  // Optional. Time and date of the last update.
+  google.protobuf.Timestamp modification_timestamp = 998;
+  // Optional. Custom application data in a list of key-value pairs.
+  map<string,string> custom_data = 999;                     
+}
+
+// Contains fields that the system uses to create a deviceprint profile. Included in [CreateDeviceprintProfileRequest](#nuance.biosec.v1.deviceprint.CreateDeviceprintProfileRequest).
+// Fields that are set can be defined by a fieldmask.
+message DeviceprintProfileDetailsForCreate {
+  // Optional. Custom application data in a list of key-value pairs.
+  map<string,string> custom_data = 999;
+}
+
+// Contains the writable fields of the deviceprint profile. Included in [UpdateDeviceprintProfileDetailsRequest](#nuance.biosec.v1.deviceprint.UpdateDeviceprintProfileDetailsRequest).
+// Fields that are updated can be defined by a fieldmask.
+message DeviceprintProfileDetailsForUpdate {
+  // Optional. Custom application data in a list of key-value pairs.
+  map<string,string> custom_data = 999;                    
+}
+
+// Contains information about the deviceprint profile template.
+// Both fields are not set if the print is not trained.
+message DeviceprintProfileTemplateInfo {
+  // Optional. Unique ID of the calibration model that is used to train the deviceprint profile template.
+  nuance.biosec.v1.UniqueId gk_calibration_model_revision_id = 1;
+  // Optional. The most recent training time of the deviceprint profile.
+  google.protobuf.Timestamp latest_train_timestamp = 3;
+  // Optional. Pesq: a number in range 0-5. 0 means that the audio contains only noise. 5 means perfect quality of speech.
+  google.protobuf.FloatValue perceptual_speech_quality = 9;
+  // Optional. Packet loss rate expressed as percentage.
+  google.protobuf.FloatValue packet_loss_rate = 10;
+}
+
+// Contains information about the locking state of a deviceprint profile.
+message DeviceprintProfileLockInfo {
+  // Optional. Specifies whether the print is locked or not.
+  LockStatus status = 1;       
+  // Optional. The user ID of the analyst/agent that locked the print. Relevant only in case of manual lock.
+  string locked_by = 2;
+  // Optional. Specifies the locking reason if it is a standard one.
+  nuance.biosec.v1.LockReason lock_reason = 7;
+  // Optional. A text message that specifies the reason if it is not a standard one.
+  string reason = 3;
+  // Optional. The number of consecutive mismatches, used when a deviceprint profile is locked due to too many mismatches.
+  google.protobuf.Int32Value mismatch_counter = 4; 
+  // Optional. Specifies the deviceprint profile locking time.
+  google.protobuf.Timestamp lock_timestamp = 5;
+  // Optional. The time when the deviceprint profile (if locked) is automatically unlocked.
+  google.protobuf.Timestamp auto_unlock_timestamp = 6;
+}
+
+// Identifies a deviceprint profile by owner and tag.
+message OwnerAndTag {
+  // Mandatory. Print owner, can be a person or a fraudster.
+  oneof owner { 
+    // Unique person's ID.
+    nuance.biosec.v1.UniqueId gk_person_id = 1;
+	  // Unique fraudster's ID.
+    nuance.biosec.v1.UniqueId gk_fraudster_id = 2;
+	  // The person's ID. Must be unique at the scope level and used together with a scope ID. Normally specified in the context field.
+    string person_id = 3;                          
+	  // The fraudster's ID. Must be unique at the scope level and used together with a scope ID. Normally specified in the context field.
+    string fraudster_id = 4;
+  }
+  // Mandatory. Tag used to distinguish between different deviceprint profiles that belong to the same owner.
+  string tag = 5;                                    
+}

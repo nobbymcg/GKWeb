@@ -1,0 +1,75 @@
+/*-
+ * #%L
+ * media-manager-api-proto
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.mediamanager.connector.v1.recordingcontrol;
+
+import "nuance/rpc/status.proto";
+
+option java_multiple_files = true;
+option java_package = "com.nuance.rpc.mediamanager.connector.v1.recordingcontrol";
+
+// This service allows a Connector to send recording control events to media manager indicating that a call has started or ended
+// to set recording control information related to the call which will be used for capture recording.
+service RecordingControlService {
+  // Creates a RecordingControlEvent used by Recording Service.
+  rpc CreateRecordingControlEvent(CreateRecordingControlEventRequest) returns (CreateRecordingControlEventResponse);
+}
+
+// Input message that defines parameters for [CreateRecordingControlEvent](#CreateRecordingControlEventRequest).
+message CreateRecordingControlEventRequest {
+  // Mandatory. The call identifier used by the recorder to match a recorder command request with the actual call.
+  string call_id = 1; // Call identifier
+  // Mandatory. One of the RecordingControlEventType enum values must be provided by a Connector.
+  RecordingControlEventType recording_control_event_type = 2;
+  // Mandatory. RecordingControlInfo required by Media Manager to identify to a recorder of which datacenter a recording command shall be sent to
+  // as well as information needed for connectors to execute the recorder command.
+  RecordingControlInfo recording_control_info = 3;
+}
+
+// Output message that defines parameters returned by RecordingControlEvent. Included in [CreateRecordingControlEvent](#CreateRecordingControlEventResponse).
+message CreateRecordingControlEventResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Listing of the recording control operation types.
+enum RecordingControlEventType {
+  // Recording Control Event Type is not specified.
+  RECORDING_CONTROL_EVENT_UNSPECIFIED = 0;
+  // Recording control call is started.
+  RECORDING_CONTROL_CALL_STARTED = 1;
+  // Recording control call is ended.
+  RECORDING_CONTROL_CALL_ENDED = 2;
+}
+
+// Message containing detailed recording control information.
+message RecordingControlInfo {
+  // Mandatory. The tenant identifier.
+  string tenant_id = 1;
+  // Mandatory. Control parameters.
+  oneof control_details {
+    GenericRecordingAttributes generic_recording_attributes = 2;
+  }
+}
+
+// Message containing detailed generic recording control information.
+message GenericRecordingAttributes {
+  // Mandatory. Unique ID of the Datacenter.
+  string datacenter_id = 1;
+  // Represents recording control attributes that connectors need to set related to executing recording commands.
+  map<string, string> recording_control_attributes = 2;
+}
+

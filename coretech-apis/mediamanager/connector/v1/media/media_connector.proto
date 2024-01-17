@@ -1,0 +1,131 @@
+/*-
+ * #%L
+ * media-manager-api-proto
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.mediamanager.connector.v1.media;
+
+import "nuance/mediamanager/connector/v1/connector_resources.proto";
+
+option java_multiple_files = true;
+option java_package = "com.nuance.rpc.mediamanager.connector.v1.media";
+
+// Command to be executed by the Media Connector.
+message MediaConnectorCommand {
+  oneof connector_command {
+    // Mandatory. Instructs the Media Connector to start a recording.
+    StartRecordCommand start_record_command = 1;
+
+    // Mandatory. Instructs the Media Connector to stop a recording.
+    StopRecordCommand stop_record_command = 2;
+
+    // Mandatory. Instructs the Media Connector to pause a recording.
+    PauseRecordCommand pause_record_command = 3;
+
+    // Mandatory. Instructs the Media Connector to resume a paused recording.
+    ResumeRecordCommand resume_record_command = 4;
+  }
+}
+
+// Start record command message.
+message StartRecordCommand {
+  // Optional. The recording profile to be used for this recording. Must be defined in the Media Connector.
+  string recording_profile = 1;
+
+  // Mandatory. The call identifier to be used for the recording.
+  CallIdentifier call_identifier = 10;
+
+  // The side to be recorded
+  RecordingSide recording_side = 3;
+
+  // Optional. The agent information to be used for the recording.
+  AgentInfo agent_info = 11;
+
+  // Optional. Represents the Recorder Connector address that the Media Connector shall use to sends a recorder command.
+  // The address must be in the format of "dns://host:port" or "static://ipv4-address:port"
+  string rcc_address = 5;
+
+  // Optional. MediaCoordinationInfo used by Media Manager to identify which Media Connector to send the recording command when present.
+  MediaCoordinationInfo media_coordination_info = 6;
+
+  // Optional.
+  // e.g.: recording_control_attributes can be used by Media connector
+  // when it needs to instruct OVS RCC connector to filter the RTP traffic.
+  map<string, string> recording_control_attributes = 7;
+}
+
+// Listing of the possible recording sides.
+// The side 1 could be the caller, and side 2 could be the agent, or vice versa, which depends on the configuration in the recorder.
+enum RecordingSide {
+  RECORDING_SIDE_UNSPECIFIED = 0;
+  RECORDING_SIDE_1 = 1;
+  RECORDING_SIDE_2 = 2;
+  RECORDING_SIDE_ALL = 10;
+}
+
+// Stop record command message.
+message StopRecordCommand {
+  // Mandatory. The recording ID associated with the recording.
+  string recording_id = 1;
+}
+
+// Pause record command message.
+message PauseRecordCommand {
+  // Mandatory. The recording ID associated with the recording.
+  string recording_id = 1;
+}
+
+// Resume record command message.
+message ResumeRecordCommand {
+  // Mandatory. The recording ID associated with the recording.
+  string recording_id = 1;
+}
+
+// The command response executed by the Media Connector.
+message MediaConnectorCommandResponse {
+  oneof connector_command_response {
+    // Mandatory. The response for a StartRecordCommand.
+    StartRecordCommandResponse start_record_command_response = 1;
+
+    // Mandatory. The response for a StopRecordCommand.
+    StopRecordCommandResponse stop_record_command_response = 2;
+
+    // Mandatory. The response for a PauseRecordCommand.
+    PauseRecordCommandResponse pause_record_command_response = 3;
+
+    // Mandatory. The response for a ResumeRecordCommand.
+    ResumeRecordCommandResponse resume_record_command_response = 4;
+  }
+}
+
+// The response for a StartRecordCommand.
+message StartRecordCommandResponse {
+  // Mandatory. The unique ID associated with the recording.
+  string recording_id = 1;
+
+  // Mandatory. The Media URN for the recording that can be used to access the media.
+  string media_urn = 2;
+}
+
+// The response for a StopRecordCommand.
+message StopRecordCommandResponse {
+}
+
+// The response for a PauseRecordCommand.
+message PauseRecordCommandResponse {
+}
+
+// The response for a ResumeRecordCommand.
+message ResumeRecordCommandResponse {
+}

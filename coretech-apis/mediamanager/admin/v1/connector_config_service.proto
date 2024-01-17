@@ -1,0 +1,107 @@
+/*-
+ * #%L
+ * admin-proto
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.mediamanager.admin.v1;
+
+import "nuance/mediamanager/connector/v1/connector_resources.proto";
+import "nuance/rpc/status.proto";
+
+option java_multiple_files = true;
+option java_package = "com.nuance.rpc.mediamanager.admin.v1";
+
+// The Connector config service is responsible for creating and managing Connector configurations
+// for Tenants and Realms.
+service ConnectorConfigService {
+
+  // Create a new ConnectorConfig for specified Tenant and Realm.
+  // When a request to create a new ConnectorConfig is made the service will verify if ConnectorConfig
+  // already exists in storage. If the ConnectorConfig exists the service will return the status already exists.
+  // If the ConnectorConfig does not exist the service will create and return the new ConnectorConfig.
+  // If mandatory fields are missing or incorrectly formatted the response will return a listing of the violations.
+  rpc CreateConnectorConfig (CreateConnectorConfigRequest) returns (CreateConnectorConfigResponse);
+
+  // Get specified ConnectorConfig.
+  // When request to get a ConnectorConfig is made the service will search based on the provided ConnectorConfig ID.
+  // If found service will return the ConnectorConfig otherwise will return status not found.
+  // If mandatory fields are missing or incorrectly formatted the response will return a listing of the violations.
+  rpc GetConnectorConfig (GetConnectorConfigRequest) returns (GetConnectorConfigResponse);
+
+  // Delete specified ConnectorConfig.
+  // When request to delete a ConnectorConfig is made the service will search based on the provided ConnectorConfig ID.
+  // If found the ConnectorConfig is flagged as deleted, otherwise service returns the status not found.
+  // If mandatory fields are missing or incorrectly formatted the response will return a listing of the violations.
+  rpc DeleteConnectorConfig (DeleteConnectorConfigRequest) returns (DeleteConnectorConfigResponse);
+
+  // List Connector Configurations for specified tenant.
+  // When a request to list Connector Configs is made the service will search based on the provided Tenant ID.
+  // If found, the list of Connector Configs will be returned, otherwise service returns the status not found.
+  rpc ListConnectorConfigs (ListConnectorConfigsRequest) returns (ListConnectorConfigsResponse);
+}
+
+// Input message that defines parameters for [CreateConnectorConfig](#CreateConnectorConfig).
+message CreateConnectorConfigRequest {
+  // Mandatory. Specifies the details for ConnectorConfig.
+  nuance.mediamanager.connector.v1.ConnectorConfigInfo connector_config_info = 1;
+}
+
+// Output message that defines parameters returned by [CreateConnectorConfig](#CreateConnectorConfig).
+message CreateConnectorConfigResponse {
+  // Mandatory. General request context.
+  nuance.rpc.Status status = 1;
+  // Specifies the details for ConnectorConfig.
+  nuance.mediamanager.connector.v1.ConnectorConfig connector_config = 2;
+}
+
+// Input message that defines parameters for [GetConnectorConfig](#GetConnectorConfig).
+message GetConnectorConfigRequest {
+  // Mandatory. Unique ID for ConnectorConfig.
+  string connector_config_id = 1;
+}
+
+// Output message that defines parameters returned by [GetConnectorConfig](#GetConnectorConfig).
+message GetConnectorConfigResponse {
+  // Mandatory. General request context.
+  nuance.rpc.Status status = 1;
+  // Specifies the details for ConnectorConfig.
+  nuance.mediamanager.connector.v1.ConnectorConfig connector_config = 2;
+}
+
+// Input message that defines parameters for [DeleteConnectorConfig](#DeleteConnectorConfig).
+message DeleteConnectorConfigRequest {
+  // Mandatory. Unique ID for ConnectorConfig.
+  string connector_config_id = 1;
+}
+
+// Output message that defines parameters returned by [DeleteConnectorConfig](#DeleteConnectorConfig).
+message DeleteConnectorConfigResponse {
+  // Mandatory. General request context.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [ListConnectorConfig](#ListConnectorConfig).
+message ListConnectorConfigsRequest {
+  // Mandatory. Unique ID for Tenant.
+  string tenant_id = 1;
+}
+
+// Output message that defines parameters returned by [ListConnectorConfig](#ListConnectorConfig).
+message ListConnectorConfigsResponse {
+  // Mandatory. General request context.
+  nuance.rpc.Status status = 1;
+  // The list of ConnectorConfigs.
+  repeated nuance.mediamanager.connector.v1.ConnectorConfig connector_configs = 2;
+}
+

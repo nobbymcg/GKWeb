@@ -1,0 +1,80 @@
+/*-
+ * #%L
+ * media-manager-api-proto
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.mediamanager.connector.v1.media;
+
+import "nuance/rpc/status.proto";
+import "nuance/mediamanager/connector/v1/connector_resources.proto";
+
+option java_multiple_files = true;
+option java_package = "com.nuance.rpc.mediamanager.connector.v1.media";
+
+// This service allows a Recorder Connector to send call events to Recording Service indicating that a call has started or ended.
+service RecorderConnectorService {
+  // Creates a CallEvent used by Recording Service.
+  rpc CreateCallEvent(CreateCallEventRequest) returns (CreateCallEventResponse);
+}
+
+// Listing of the recorder operation types.
+enum CallEventType {
+  // Call Event Type was not specified.
+  CALL_EVENT_UNSPECIFIED = 0;
+  // Recorder call is established.
+  CALL_STARTED = 1;
+  // Recorder call has ended.
+  CALL_ENDED = 2;
+}
+
+// Message containing information about the Recording Controller Connector where the call event occurred.
+message RecorderControllerConnectorInfo {
+  // Mandatory. Represents the Recorder Connector session id obtained from Connector Manager.
+  string connector_session_id = 1;
+  // Mandatory. Represents the Recorder Connector address that the Media Connector shall use to sends a recorder command.
+  // The address must be in the format of "dns://host:port" or "static://ipv4-address:port"
+  string address = 2;
+  // Mandatory. The tenant identifier.
+  string tenant_id = 3;
+}
+
+// Input message that defines parameters for [CallEventNotification](#CallEventNotification).
+message CreateCallEventRequest {
+  // Mandatory. The call identifier used by the recorder to match a recorder command request with the actual call.
+  string call_id = 1; // Call identifier
+  // Mandatory. One of the CallEventType enum values must be provided by the Recorder Controller Connector.
+  CallEventType call_event_type = 2;
+  // Mandatory. RecorderControllerConnectorInfo info required by Media Manager to identify to which Recorder a recording command shall be sent to.
+  RecorderControllerConnectorInfo recorder_controller_connector_info = 3;
+  // Optional. MediaCoordinationInfo used by Media Manager to indentify to which Media Connector to send the recording command when present.
+  MediaCoordinationInfo media_coordination_info = 4;
+  // The recording_profile string has the following four parameters that are delimited by a forward slash ("/")
+  //
+  // * payload_number: The payload type
+  // * encoding_name: The encoding name
+  // * clock_rate: The clock rate
+  // * profile: Optional. Its default value is 'rtp'. You can set its value as 'rtp' or 'srtp'.
+  //
+  // and follows RFC3551: https://www.iana.org/assignments/rtp-parameters/rtp-parameters.xhtml
+  // Examples:
+  // * 0/PCMU/8000: payload type 0, name PCMU, clock rate 8000, profile rtp
+  // * 8/PCMA/8000/srtp: payload type 8, name PCMA, clock rate 8000, profile srtp
+  string recording_profile = 5;
+}
+
+// Output message that defines parameters returned by CallEvent. Included in [CallEventNotification](#CallEventNotification).
+message CreateCallEventResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1;
+}

@@ -1,0 +1,121 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.deviceprint;
+
+option java_package = "com.nuance.rpc.biosec.v1.deviceprint";
+
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/deviceprint/deviceprints_management_messages.proto";
+import "google/api/annotations.proto";
+
+////////////////////////////////
+// Deviceprint Manager Service //
+////////////////////////////////
+
+// This service allows managing deviceprint profiles.
+// Methods are typically used in self-service applications such as active authentication via the IVR.
+service DeviceprintsManager {
+
+  // Creates a new deviceprint profile.
+  // Accepts a message with the print owner and a tag used to distinguish between multiple prints that belong to the same owner.
+  // Returns a unique ID for the newly created deviceprint profile.
+  rpc CreateDeviceprintProfile (CreateDeviceprintProfileRequest) returns (CreateDeviceprintProfileResponse) {
+    option (google.api.http) = {
+      post: "/v1/deviceprints/profiles"
+      body: "*"
+    };
+  }
+
+  // Returns a deviceprint profile ID that belongs to the specified owner, identified by a tag.
+  // The deviceprint profile ID can be used for all other deviceprint operations.
+  rpc GetGkDeviceprintProfileId (GetGkDeviceprintProfileIdRequest) returns (GetGkDeviceprintProfileIdResponse) {
+    option (google.api.http) = {
+      get: "/v1/deviceprints/profiles/gkid"
+    };
+  }
+
+  // Returns details for a specific deviceprint profile that can be specified either using a deviceprint profile ID or using an owner and a tag.
+  // The results include both read-only and writable attributes. Use fieldmask to select only a subset of the results.
+  rpc GetDeviceprintProfileDetails (GetDeviceprintProfileDetailsRequest) returns (GetDeviceprintProfileDetailsResponse) {
+    option (google.api.http) = {
+      get: "/v1/deviceprints/profiles"
+    };
+  }
+
+  // Update any of the deviceprint profile's writable attributes.
+  // The input is a deviceprint profile (that can be specified either using a deviceprint profile ID
+  // or an owner and a tag) and the list of writable attributes that are set.
+  rpc UpdateDeviceprintProfileDetails (UpdateDeviceprintProfileDetailsRequest) returns (UpdateDeviceprintProfileDetailsResponse) {
+    option (google.api.http) = {
+      patch: "/v1/deviceprints/profiles"
+      body: "*"
+    };
+  }
+
+  // Locks a deviceprint profile, preventing it from being used for authentication.
+  // It can be used on an account that is under attack in order to prevent it from being used, or to limit the usage of a low-quality print.
+  // The main input is a deviceprint profile ID. Optionally, you can provide more context information about the locking reason.
+  rpc LockDeviceprintProfile (LockDeviceprintProfileRequest) returns (LockDeviceprintProfileResponse) {
+    option (google.api.http) = {
+      put: "/v1/deviceprints/profiles/{gk_deviceprint_profile_id.value}/attributes/lock"
+      body: "*"
+    };
+  }
+
+  // Unlocks a locked deviceprint profile, allowing access to the biometrics system so that it can be used again for authentication.
+  // The input is a deviceprint profile ID.
+  rpc UnlockDeviceprintProfile (UnlockDeviceprintProfileRequest) returns (UnlockDeviceprintProfileResponse) {
+    option (google.api.http) = {
+      delete: "/v1/deviceprints/profiles/{gk_deviceprint_profile_id.value}/attributes/lock"
+    };
+  }
+
+  // Deletes the deviceprint profile template created by [Train](#Train).
+  // It can be used to delete the template if it is created using a wrong calibration model.
+  rpc DeleteDeviceprintTemplate (DeleteDeviceprintTemplateRequest) returns (DeleteDeviceprintTemplateResponse) {
+    option (google.api.http) = {
+      delete: "/v1/deviceprints/templates/{gk_deviceprint_profile_id.value}"
+    };
+  }
+
+  // Deletes all data associated with the deviceprint profile.
+  rpc DeleteDeviceprintProfile (DeleteDeviceprintProfileRequest) returns (DeleteDeviceprintProfileResponse) {
+    option (google.api.http) = {
+      delete: "/v1/deviceprints/profiles/{gk_deviceprint_profile_id.value}"
+    };
+  }
+
+  // Enumerates all audio segments in the audio segments collection.
+  // List includes both segments, one that are used for a previous train and 
+  // other segments that are added later (signaled by a flag) and, if available, a biometric consistency indication.
+  // Input is a deviceprint profile ID.
+  rpc ListEnrollmentSegments (ListEnrollmentSegmentsRequest) returns (ListEnrollmentSegmentsResponse) {
+    option (google.api.http) = {
+      get: "/v1/deviceprints/profiles/{gk_deviceprint_profile_id.value}/enrollment-segments"
+    };
+  }
+
+  // Removes one or more enrollment segments from the enrollment segments collection of the specified deviceprint profile.
+  // Accepts a deviceprint profile ID and the list of segments to remove.
+  rpc RemoveEnrollmentSegment (RemoveEnrollmentSegmentRequest) returns (RemoveEnrollmentSegmentResponse) {
+    option (google.api.http) = {
+      delete: "/v1/deviceprints/profiles/{gk_deviceprint_profile_id.value}/enrollment-segments/{gk_processed_audio_id.value}"
+    };
+  }
+
+}

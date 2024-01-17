@@ -1,0 +1,252 @@
+/*-
+ * #%L
+ * media-manager-api-proto
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.mediamanager.media.v1;
+
+import "nuance/mediamanager/media/v1/media_resources.proto";
+import "nuance/rpc/status.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+option java_multiple_files = true;
+option java_package = "com.nuance.rpc.mediamanager.media.v1";
+
+// This service provides operations for creating, accessing and managing media stored by Media Manager.
+service MediaService {
+  // Creates a temporary, presigned URL that will be used for uploading media files.
+  // Once the URL is created, the media file should be uploaded using HTTP PUT.
+  // Since the URL is presigned, the client uploading the media does not need to be authenticated.
+  // The same URL can be used to upload multiple media files, however, the client should call
+  // GetMedia or GetMediaInfo after each upload, in order for the fragments to be concatenated.
+  // All media fragments should have the same media format.
+  rpc CreateMediaUpload (CreateMediaUploadRequest) returns (CreateMediaUploadResponse);
+
+  // Provides information for a live or stored media.
+  rpc GetMediaInfo (GetMediaInfoRequest) returns (GetMediaInfoResponse);
+
+  // Provides a media stream for a live or stored media.
+  rpc GetMedia (GetMediaRequest) returns (stream GetMediaResponse);
+
+  // Deletes the specified media.
+  rpc DeleteMedia (DeleteMediaRequest) returns (DeleteMediaResponse);
+
+  // Redacts a portion of media in order to permanently remove sensitive information.
+  // The method could be called multiple times.
+  rpc RedactMedia (RedactMediaRequest) returns (RedactMediaResponse);
+
+  // Labels a portion of media as containing sensitive information.
+  // Masking will not alter actual audio, but the audio will be redacted only when retrieved.
+  // The method could be called multiple times. The resulting mask intervals will be normalized.
+  rpc MaskMedia (MaskMediaRequest) returns (MaskMediaResponse);
+
+  // Provides same media as GetMedia without masking.
+  rpc GetUnmaskedMedia (GetUnmaskedMediaRequest) returns (stream GetUnmaskedMediaResponse);
+}
+
+// Input message that defines parameters for [CreateMediaUpload](#CreateMediaUpload).
+message CreateMediaUploadRequest {
+  // Mandatory. The realm ID to which the media belongs.
+  string realm_id = 1;
+  // Optional. Specifies the format of the uploaded media. If not provided, media header will be used.
+  MediaFormat media_format = 2;
+}
+
+// Output message that defines parameters returned by [CreateMediaUpload](#CreateMediaUpload).
+message CreateMediaUploadResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Media URN for the uploaded media file.
+  string media_urn = 2;
+  // Presigned URL to be used for uploading the media file.
+  string upload_url = 3; // Upload URL
+}
+
+// Input message that defines parameters for [GetMediaInfo](#GetMediaInfo).
+message GetMediaInfoRequest {
+  // Optional. The realm ID to which the media belongs. Ignored if media_urn is in version 2 format.
+  string realm_id = 1;
+  // Mandatory. Media URN.
+  string media_urn = 2;
+}
+
+// Output message that defines parameters returned by [GetMediaInfo](#GetMediaInfo).
+message GetMediaInfoResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Information about media, like container or format.
+  MediaInfo media_info = 2;
+  // Indicates if the media is streamed live.
+  bool is_live = 3;
+  // Duration of the media. Not available for live media
+  google.protobuf.Duration duration = 4;
+  // Total size of media file stored in the blob storage.
+  int64 media_size_bytes = 5;
+  // Timestamp when the media was created.
+  google.protobuf.Timestamp created_time = 6;
+  // List of redacted intervals for all channels.
+  repeated Interval redacted_intervals = 7;
+  // List of masked intervals for all channels.
+  repeated Interval masked_intervals = 8;
+}
+
+// Input message that defines parameters for [GetMedia](#GetMedia).
+message GetMediaRequest {
+  // Optional. The realm ID to which the media belongs. Ignored if media_urn is in version 2 format.
+  string realm_id = 1;
+  // Mandatory. Media URN.
+  string media_urn = 2;
+  // Optional. Specifies desired media format. If not provided the media in it's original format will be returned.
+  MediaFormat media_format = 3;
+  //Optional. One or multiple intervals of media to be provided. Intervals cannot overlap.
+  repeated Interval intervals = 4;
+  // Optional. If only one channel of a stereo media is needed, specify the channel here.
+  // For stereo, left is channel 1 and right is channel 2, and if not specified, all the channels will be returned.
+  MediaSelector media_selector = 5;
+}
+
+// Message defining an interval
+// Start and end durations are rounded to milliseconds.
+message Interval {
+  // Mandatory. Start of the media interval.
+  google.protobuf.Duration start = 1;
+  // Optional. End of the media interval. If not set, will indicate to the end of media.
+  // If the end is not provided, it must be the last interval in the list.
+  google.protobuf.Duration end = 2;
+  // Specifies the media channel of the interval.
+  // The channel is ignored when used in a request message.
+  uint32 channel = 3;
+}
+
+// Output message that defines parameters returned by [GetMedia](#GetMedia).
+message GetMediaResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  oneof response {
+    // Provides information of the media being streamed.
+    // Will be sent once at the start of the media stream.
+    MediaInfoResponse media_info_response = 2;
+    // Contains the data of a media chunk. Multiple media chunks are expected to be returned.
+    // For live a media stream, the media chunk will be returned as soon as it's received.
+    MediaChunkResponse media_chunk_response = 3;
+    // Indicates the end of media stream. Will be last message of the media stream.
+    EndOfStreamResponse end_of_stream_response = 4; // Media end response.
+    // Indicates that the source of the live media is paused.
+    // The message will be returned periodically indicating that the media is still paused.
+    MediaPausedResponse media_paused_response = 5;
+    // Indicates that the source of the live media is resumed.
+    MediaResumedResponse media_resumed_response = 6;
+  }
+}
+
+// Provides information of the media being streamed. Included in [GetMediaResponse](#GetMediaResponse)
+message MediaInfoResponse {
+  // Information about media, like container or format.
+  MediaInfo media_info = 1;
+  // Indicates if the media is streamed live.
+  bool is_live = 2;
+}
+
+// Message containing the data of a media chunk. Included in [GetMediaResponse](#GetMediaResponse).
+message MediaChunkResponse {
+  // The byte array of the media chunk.
+  bytes data = 1;
+  // Total number of bytes streamed to the client.
+  int64 total_bytes_sent = 2;
+  // The duration of the media chunk.
+  google.protobuf.Duration chunk_duration = 3;
+  // The timestamp of the media chunk from the start of the stream.
+  google.protobuf.Duration chunk_timestamp = 4;
+}
+
+// Message indicating the end of media stream. Included in [GetMediaResponse](#GetMediaResponse).
+message EndOfStreamResponse {
+}
+
+// Message indicating that the source of the live media is paused. Included in [GetMediaResponse](#GetMediaResponse).
+message MediaPausedResponse {
+}
+
+// Message indicating that the source of the live media is resumed. Included in [GetMediaResponse](#GetMediaResponse).
+message MediaResumedResponse {
+}
+
+// Input message that defines parameters for [DeleteMedia](#DeleteMedia).
+message DeleteMediaRequest {
+  // Optional. The realm ID to which the media belongs. Ignored if media_urn is in version 2 format.
+  string realm_id = 1;
+  // Mandatory. Media URN.
+  string media_urn = 2;
+}
+
+// Output message that defines parameters returned by [DeleteMedia](#DeleteMedia).
+message DeleteMediaResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [RedactMedia](#RedactMedia).
+message RedactMediaRequest {
+  // Optional. The realm ID to which the media belongs. Ignored if media_urn is in version 2 format.
+  string realm_id = 1;
+  // Mandatory. Media URN.
+  string media_urn = 2;
+  // Mandatory. One or multiple intervals of media to be redacted.
+  repeated Interval redact_intervals = 3;
+  // Optional. If only one channel of a stereo media needs to be redacted, specify the channel here.
+  // For stereo, left is channel 1 and right is channel 2, and if not specified, all the channels will be redacted.
+  MediaSelector media_selector = 4;
+}
+
+// Output message that defines parameters returned by [RedactMedia](#RedactMedia).
+message RedactMediaResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // List of applied redacted intervals for all channels.
+  repeated Interval redacted_intervals = 2;
+}
+
+// Input message that defines parameters for [MaskMedia](#MaskMedia).
+message MaskMediaRequest {
+  // Optional. The realm ID to which the media belongs. Ignored if media_urn is in version 2 format.
+  string realm_id = 1;
+  // Mandatory. Media URN.
+  string media_urn = 2;
+  // Mandatory. One or multiple intervals of media to be masked.
+  repeated Interval mask_intervals = 3;
+  // Optional. If only one channel of a stereo media needs to be redacted, specify the channel here.
+  // For stereo, left is channel 1 and right is channel 2, and if not specified, all the channels will be redacted.
+  MediaSelector media_selector = 4;
+}
+
+// Output message that defines parameters returned by [MaskMedia](#MaskMedia).
+message MaskMediaResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // List of applied masked intervals for all channels.
+  repeated Interval masked_intervals = 2;
+}
+
+// Input message that defines parameters for [GetUnmaskedMedia](#GetUnmaskedMedia).
+message GetUnmaskedMediaRequest {
+  // Get Media request
+  GetMediaRequest get_media_request = 1;
+}
+
+// Output message that defines parameters returned by [GetUnmaskedMedia](#GetUnmaskedMedia).
+message GetUnmaskedMediaResponse {
+  // Get Media Response
+  GetMediaResponse get_media_response = 1;
+}

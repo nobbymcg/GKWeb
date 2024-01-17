@@ -1,0 +1,65 @@
+/*-
+ * #%L
+ * media-manager-api-proto
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.mediamanager.correlation.v1;
+
+import "nuance/rpc/status.proto";
+
+option java_multiple_files = true;
+option java_package = "com.nuance.rpc.mediamanager.correlation.v1";
+
+// This service allows to set attributes to be consumed by subscribed consumers.
+// Attributes will need to have a correlation_id, and only when this correlation_id matches with recording_id in
+// CTI CALL_STARTED event, the attributes will be correlated and attached to the CTI event, eventually consumed by consumer.
+// Event consumers can be both internal and external Media Manager clients.
+service CorrelationService {
+  // Sets attributes and propagates them to the consumer(s).
+  rpc SetAttributes (SetAttributesRequest) returns (SetAttributesResponse);
+  // Clears the attributes completely from system based on correlation_id for the tenant.
+  // It is not mandatory to call this method to clear attributes, the system will clear them automatically then it determines they are no longer needed.
+  // Note: Clearing the attributes may affect the future media processing if done prematurely.
+  rpc ClearAttributes (ClearAttributesRequest) returns (ClearAttributesResponse);
+}
+
+// Input message that defines parameters for [CorrelationService](#CorrelationService).
+message SetAttributesRequest {
+  // Mandatory. Identifier used to correlate attributes with CTI event recording id
+  string correlation_id = 1;
+  // Mandatory. tenant_id of the attributes
+  string tenant_id = 2;
+  // Mandatory. Attributes in key value pair format
+  map<string, string> attributes = 3;
+}
+
+// Output message that defines parameters returned by [CorrelationService](#CorrelationService).
+message SetAttributesResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [CorrelationService](#CorrelationService).
+message ClearAttributesRequest {
+  // Mandatory. Identifier used to identify the attributes to clear.
+  string correlation_id = 1;
+  // Mandatory. tenant_id of the attributes to clear.
+  string tenant_id = 2;
+}
+
+// Output message that defines parameters returned by [CorrelationService](#CorrelationService).
+message ClearAttributesResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+}

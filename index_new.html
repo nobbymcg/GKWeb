@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="en-us" charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="styles/gkweb.css">
+    <link rel="icon" type="image/x-icon" href="images/gatekeeper.svg" alt="Gatekeeper Logo">
+    <head>
+        <meta charset="utf-8">
+        <title>GKWeb</title>
+    </head>
+    <body>        
+        <div class="header">
+            <h2>Gatekeeper Web Demo</h2>
+        </div>
+        <div id="mainrow" class="row">
+          <div id="sidenav" class="column sidenav">
+            <ul>
+                <li onclick="highlightNavItem('verify_icon')"><a title="Verify" href="#">
+                <!-- <img height=45 src="images/verify_white.svg" alt="Verify" title="Verify"/> -->
+                    <svg class="nav_icon" id= "verify_icon" width="60%" height="60%" viewBox="0 0 62 64" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/">
+                        <g transform="matrix(1,0,0,1,-1.70707,0)">
+                            <path d="M18.489,13.702L18.489,2.426L60.529,2.426L60.529,28.872L54.805,28.872L44.959,39.607L44.959,29.504L39.226,29.504"/>
+                        </g>
+                        <g transform="matrix(0.985009,0,0,0.985009,3.1624,0.487527)">
+                            <circle cx="19.058" cy="29.266" r="11.964"/>
+                        </g>
+                        <path d="M2.801,60.921C2.991,34.005 41.6,34.78 41.435,60.921"/>
+                    </svg></a>
+                </li>
+                <li onclick="highlightNavItem('enrol_icon')"><a title="Enrol" href="#">
+                    <!-- <img height=45 src="images/enrol_white.svg" alt="Enrol" title="Enrol"/></a> -->
+                    <svg class="nav_icon" id="enrol_icon" width="60%" height="60%" viewBox="0 0 62 64" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/">
+                        <g transform="matrix(1,0,0,1,18.0354,0)">
+                            <g transform="matrix(0.985009,0,0,0.985009,3.1624,0.487527)">
+                                <circle cx="19.058" cy="29.266" r="11.964" />
+                            </g>
+                            <path d="M2.801,60.921C2.991,34.005 41.6,34.78 41.435,60.921" />
+                        </g>
+                        <g transform="matrix(1,0,0,1,2.25954,-6.35811)">
+                            <g transform="matrix(1,0,0,1,-0.0488871,0)">
+                                <path d="M12.598,12.827L12.598,36.823" />
+                            </g>
+                            <g transform="matrix(6.12323e-17,-1,1,6.12323e-17,-12.2762,37.4229)">
+                                <path d="M12.598,12.827L12.598,36.823"/>
+                            </g>
+                        </g>
+                    </svg></a>
+                </li>
+                <li onclick="highlightNavItem('watchlist_icon')"><a title="Watchlist" href="#">
+                    <!-- <img height=45 src="images/watchlist_white.svg" alt="Watchlist" title="Watchlist"/> -->
+                    <svg class="nav_icon" id="watchlist_icon" width="60%" height="60%" viewBox="0 0 62 64" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="stroke:white;fill-rule:evenodd;clip-rule:evenodd;stroke-miterlimit:2;">
+                    <g transform="matrix(1.08765,0,0,1.08765,-3.67389,-3.08578)">
+                        <g transform="matrix(0.64,0,0,0.64,24.2605,13.9172)">
+                            <g transform="matrix(0.985009,0,0,0.985009,3.1624,0.487527)">
+                                <circle cx="19.058" cy="29.266" r="11.964" style="fill:none;stroke-width:3.38px;"/>
+                            </g>
+                            <path d="M2.801,60.921C2.991,34.005 41.6,34.78 41.435,60.921" style="fill:none;stroke-width:3.33px;"/>
+                        </g>
+                        <g transform="matrix(0.921389,0,0,1,0.71193,-0.0626904)">
+                            <rect x="21.88" y="18.051" width="38.082" height="42.066" style="fill:none;stroke-width:2.67px;"/>
+                        </g>
+                        <g transform="matrix(1,0,0,1,-4.00178,-0.737817)">
+                            <path d="M20.227,56.66L20.227,14.496L57.446,14.496" style="fill:none;stroke-width:2.67px;"/>
+                        </g>
+                        <g transform="matrix(1,0,0,1,-8.43547,-5.17151)">
+                            <path d="M20.227,56.66L20.227,14.496L57.446,14.496" style="fill:none;stroke-width:2.67px;"/>
+                        </g>
+                        <g transform="matrix(1,0,0,1,-12.8692,-9.6052)">
+                            <path d="M20.227,56.66L20.227,14.496L57.446,14.496" style="fill:none;stroke-width:2.67px;"/>
+                        </g>
+                    </g>
+                    </svg></a>
+                </li>
+            </ul>
+            </div>
+            <!-- Calling the showGKLogo onload allows displaying it in the canvas, at the desired size, when available -->
+            <object title ='Gatekeeper Logo' id='gklogo' class="gklogo" data="images/gatekeeper.svg" type="image/svg+xml" width='0' height='0' onload="showGKLogo()"></object>
+            <div id="mainwindow" class="column main window">
+                <div class="canvasContainer">
+                <canvas class="visualizer"></canvas>
+                </div>
+                <div id="buttons">
+                <button class="record">Record</button>
+                <!-- button class="stop">Stop</button -->
+                </div>
+                <div class="soundclips">
+
+                </div>
+            </div>
+
+            <div class="column right">
+                <label for="claimedID" class="label">Claimed ID:</label>
+                <input type="text" id="claimedID" name="claimedID" placeholder="IanMcG" value="IanMcG"><br>
+                <label for="vptag" class="label">Voiceprint Tag:</label>
+                <input type="text" id="vptag" name="vptag" placeholder="TI" value="TI"><br>
+            </div>
+        </div>
+
+        <div class="footer">        
+        </body>
+
+        <script src="scripts/gkapp.js"></script>
+
+</html>

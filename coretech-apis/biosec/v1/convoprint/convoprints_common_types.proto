@@ -1,0 +1,114 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.convoprint;
+
+option java_package = "com.nuance.rpc.biosec.v1.convoprint";
+option java_multiple_files = true;
+
+///////////
+// Enums //
+///////////
+
+//[Enroll](#Enroll) operation result.
+enum EnrollReason {
+  // Value is not set.
+  ENROLL_REASON_UNSPECIFIED = 0;
+  // An internal error that prevents the system from completing the operation.
+  ENROLL_REASON_INTERNAL_ERROR = 1;
+  // Enroll completed successfully.
+  ENROLL_REASON_ENROLL_OK = 2;
+  // Text does not contain the amount of speech required to complete the operation.
+  ENROLL_REASON_TOO_SHORT = 3;
+  // Text does not has a valid text model.
+  ENROLL_REASON_MISSING_MODEL = 4;
+  // Text is already added to the print.
+  ENROLL_REASON_ALREADY_ADDED = 5;
+}
+
+// Specifies the convoprint profile status.
+enum ConvoprintProfileStatus {
+  // Convoprint profile status is not set.
+  CONVOPRINT_PROFILE_STATUS_UNSPECIFIED = 0;
+  // Convoprint profile is not trained.
+  CONVOPRINT_PROFILE_STATUS_NOT_TRAINED = 1;
+  // Convoprint profile is trained but can be improved using additional enrollment text.
+  CONVOPRINT_PROFILE_STATUS_BASIC_TRAINED = 2;
+  // Convoprint profile is trained with an optimal amount of text.
+  CONVOPRINT_PROFILE_STATUS_OPTIMAL_TRAINED = 3;
+}
+
+// Specifies if the enrollment segments collection of a print allows the system to train the print successfully.
+enum EnrollStatus {
+  // Enroll status is not set.
+  ENROLL_STATUS_UNSPECIFIED = 0;
+  // Minimal requirements for training are not met.
+  ENROLL_STATUS_TRAIN_NOT_POSSIBLE = 1;
+  // Minimum requirements for training are met, but Nuance recommends adding more text.
+  ENROLL_STATUS_TRAIN_POSSIBLE = 2;
+  // Optimal training requirements are met.
+  ENROLL_STATUS_TRAIN_SUGGESTED = 3;
+  // Too many segments are added and it is not possible to add more.
+  ENROLL_STATUS_FULL = 4;
+}
+
+// Specifies the convoprint processing decision reason.
+enum DecisionReason {
+  // Decision reason is not specified.
+  DECISION_REASON_UNSPECIFIED = 0;
+  // Text is valid.
+  DECISION_REASON_TEXT_OK = 1;
+  // Text format is invalid or not supported.
+  DECISION_REASON_INVALID_TEXT = 2;
+  // A fraud attempt probably occurred.
+  DECISION_REASON_FRAUDSTER_INDICATION = 3;
+  // This is probably the authentic person.
+  DECISION_REASON_CONVOPRINT_MATCH = 4;
+  // This is probably not the authentic person.
+  DECISION_REASON_CONVOPRINT_NO_MATCH = 5;
+  // The system can not reach a reliable decision.
+  DECISION_REASON_LOW_RELIABILITY = 6;
+  // Risk is not detected.
+  DECISION_REASON_NO_RISK_DETECTED = 7;
+  // No available scores.
+  DECISION_REASON_NO_SCORES = 8;
+  // An error occurred while making the decision.
+  DECISION_REASON_INTERNAL_ERROR = 999;
+}
+
+// Text validity and the reason that the text segment is not valid (when relevant).
+enum TextValidity {
+  // Use to initialize the fields.
+  REASON_UNSPECIFIED = 0;
+  // Text is satisfactory for processing.
+  REASON_TEXT_OK = 1;
+  // Text format is invalid or not supported.
+  REASON_INVALID_TEXT = 2;
+  // An internal error that prevents the system from checking if the text is valid.
+  REASON_INTERNAL_ERROR = 999;
+}
+
+// [Train](#Train) operation result.
+enum TrainReason {
+  // Train status is not set.
+  TRAIN_REASON_UNSPECIFIED = 0;
+  // Train completed successfully.
+  TRAIN_REASON_TRAIN_OK = 1;
+  // Train failed because the segments do not contain enough usable text.
+  TRAIN_REASON_NOT_READY_TO_TRAIN = 3;
+  // An internal error that prevents the system from completing the operation.
+  TRAIN_REASON_INTERNAL_ERROR = 999;
+}

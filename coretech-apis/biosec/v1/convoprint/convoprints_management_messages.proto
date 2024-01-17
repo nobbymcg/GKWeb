@@ -1,0 +1,395 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.convoprint;
+
+option java_package = "com.nuance.rpc.biosec.v1.convoprint";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/convoprint/convoprints_common_types.proto";
+import "nuance/biosec/v1/text/text_management_messages.proto";
+import "nuance/biosec/v1/common_types.proto";
+import "nuance/rpc/status.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+// Input message that defines parameters for [CreateConvoprintProfile](#CreateConvoprintProfile).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message CreateConvoprintProfileRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Owner of the print and a mandatory print tag that is used to distinguish between different convoprint profiles that belong to the same owner. Print owner can be a person or fraudster.
+  OwnerAndTag owner = 2;
+  // Optional. Properties that are set when creating a convoprint profile.
+  ConvoprintProfileDetailsForCreate details = 3;
+  // Optional. A field mask used to specify the [ConvoprintProfileDetailsForCreate](#nuance.biosec.v1.convoprint.ConvoprintProfileDetailsForCreate) fields that the method sets.
+  google.protobuf.FieldMask field_mask = 4;
+}
+
+// Output message that defines parameters returned by [CreateConvoprintProfile](#CreateConvoprintProfile).
+message CreateConvoprintProfileResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1;
+  // Optional. Unique ID of the newly created convoprint profile.
+  nuance.biosec.v1.UniqueId gk_convoprint_profile_id = 2;
+}
+
+// Input message that defines parameters for [GetGkConvoprintProfileId](#GetGkConvoprintProfileId).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message GetGkConvoprintProfileIdRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Owner of the print and a print tag that is used to distinguish between different convoprint profiles that belong to the same owner. Print owner can be a person or fraudster. If a tag is specified, the request returns only one ID. If the tag is null or empty, the request returns all IDs.
+  OwnerAndTag owner = 2;
+}
+
+// Output message that defines parameters returned by [GetGkConvoprintProfileId](#GetGkConvoprintProfileId).
+message GetGkConvoprintProfileIdResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1;
+  // Optional. Unique ID of the convoprint profile.
+  nuance.biosec.v1.UniqueId gk_convoprint_profile_id = 2;
+}
+
+// Input message that defines parameters for [GetConvoprintProfileDetails](#GetConvoprintProfileDetails).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message GetConvoprintProfileDetailsRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. The convoprint profile that the request refers to, specified in two alternative ways.
+  oneof input {
+    // Unique ID of the existing convoprint profile.
+    nuance.biosec.v1.UniqueId gk_convoprint_profile_id = 2;
+	  // Owner of the print and a mandatory print tag that is used to distinguish between different convoprints profiles that belong to the same owner. Print owner can be a person or fraudster.
+    OwnerAndTag owner_and_tag = 3;
+  }
+  // Optional. A field mask used to specify the [ConvoprintProfileDetailsForRead](#nuance.biosec.v1.convoprint.ConvoprintProfileDetailsForRead) fields that are read.
+  google.protobuf.FieldMask field_mask = 4;
+}
+
+// Output message that defines parameters returned by [GetConvoprintProfileDetails](#GetConvoprintProfileDetails).
+message GetConvoprintProfileDetailsResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1;
+  // Optional. Convoprint profile details. Includes both read-only and writable fields.
+  ConvoprintProfileDetailsForRead details = 2;
+}
+
+// Input message that defines parameters for [UpdateConvoprintProfileDetails](#UpdateConvoprintProfileDetails).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message UpdateConvoprintProfileDetailsRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. The convoprint profile that the request refers to, specified in two alternative ways.
+  oneof input {
+    // Unique ID of the convoprint profile.
+    nuance.biosec.v1.UniqueId gk_convoprint_profile_id = 2;
+	// Owner of the print and a mandatory print tag that is used to distinguish between different convoprints profiles that belong to the same owner. Print owner can be a person or a fraudster.
+    OwnerAndTag owner_and_tag = 3;
+  }
+  // Mandatory. Convoprint profile details that are set. Includes only writable fields.
+  ConvoprintProfileDetailsForUpdate details = 4;
+  // Mandatory. A field mask used to specify the [ConvoprintProfileDetailsForUpdate](#nuance.biosec.v1.convoprint.ConvoprintProfileDetailsForUpdate) fields that the method sets.
+  google.protobuf.FieldMask field_mask = 5;
+}
+
+// Output message that defines parameters returned by [UpdateConvoprintProfileDetails](#UpdateConvoprintProfileDetails).
+message UpdateConvoprintProfileDetailsResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+////////////////
+// Lock Print //
+////////////////
+
+// Input message that defines parameters for [LockConvoprintProfile](#LockConvoprintProfile).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message LockConvoprintProfileRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Unique ID of the convoprint profile that is locked.
+  nuance.biosec.v1.UniqueId gk_convoprint_profile_id = 2;
+  // Optional. Specifies the locking reason.
+  string reason = 3;
+}
+
+// Output message that defines parameters returned by [LockConvoprintProfile](#LockConvoprintProfile).
+message LockConvoprintProfileResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1; 
+}
+
+//////////////////
+// Unlock Print //
+//////////////////
+
+// Input message that defines parameters for [UnlockConvoprintProfile](#UnlockConvoprintProfile).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message UnlockConvoprintProfileRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Unique ID of the convoprint profile that is unlocked.
+  nuance.biosec.v1.UniqueId gk_convoprint_profile_id = 2;
+}
+
+// Output message that defines parameters returned by [UnlockConvoprintProfile](#UnlockConvoprintProfile).
+message UnlockConvoprintProfileResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1; 
+}
+
+//////////////////
+// Delete Print //
+//////////////////
+
+// Input message that defines parameters for [DeleteConvoprintTemplate](#DeleteConvoprintTemplate).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message DeleteConvoprintTemplateRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Unique ID of the convoprint profile.
+  nuance.biosec.v1.UniqueId gk_convoprint_profile_id = 2;
+}
+
+// Output message that defines parameters returned by [DeleteConvoprintTemplate](#DeleteConvoprintTemplate).
+message DeleteConvoprintTemplateResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1; 
+}
+
+///////////////////////////////
+// Delete Convoprint Profile //
+///////////////////////////////
+
+// Input message that defines parameters for [DeleteConvoprintProfile](#DeleteConvoprintProfile).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message DeleteConvoprintProfileRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Unique ID of the convoprint profile.
+  nuance.biosec.v1.UniqueId gk_convoprint_profile_id = 2;
+  // Optional. Specifies the deletion reason.
+  string reason = 3;
+}
+
+// Output message that defines parameters returned by [DeleteConvoprintProfile](#DeleteConvoprintProfile).
+message DeleteConvoprintProfileResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+////////////////////////
+// Enrollment Segment //
+////////////////////////
+
+// Input message that defines parameters for [ListEnrollmentSegments](#ListEnrollmentSegments).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message ListEnrollmentSegmentsRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Unique ID of the convoprint profile.
+  nuance.biosec.v1.UniqueId gk_convoprint_profile_id = 2;
+}
+
+// Output message that defines parameters for [ListEnrollmentSegments](#ListEnrollmentSegments).
+message ListEnrollmentSegmentsResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1;
+  // Optional. Additional information about the enrollment segments in the collection.
+  repeated ConvoprintEnrollmentSegmentDetails enrollment_segments_details = 2;
+}
+
+// Contains detailed information about a single enrollment segment.
+message ConvoprintEnrollmentSegmentDetails {
+  // Optional. Indicates if the segment is used for training for reasons, such as missing model and missing text.
+  google.protobuf.BoolValue used_for_train = 1;
+  // Optional. Text details.
+  nuance.biosec.v1.text.TextDetailsForRead text_details = 2;
+}
+
+// Input message that defines parameters for [RemoveEnrollmentSegment](#RemoveEnrollmentSegment).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message RemoveEnrollmentSegmentRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Unique ID of the convoprint profile.
+  nuance.biosec.v1.UniqueId gk_convoprint_profile_id = 2;
+  // Mandatory. Unique ID of the processed text segment that the method removes from the enrollment segments collection.
+  nuance.biosec.v1.UniqueId gk_text_id = 3;
+}
+
+// Output message that defines parameters returned by [RemoveEnrollmentSegment](#RemoveEnrollmentSegment).
+message RemoveEnrollmentSegmentResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1; 
+}
+
+/////////////////////
+// Common Messages //
+/////////////////////
+
+// Contains the readable fields of the convoprint profile. Included in [GetConvoprintProfileDetailsResponse](#nuance.biosec.v1.convoprint.GetConvoprintProfileDetailsResponse).
+// Fields that are read can be defined by a fieldmask.
+message ConvoprintProfileDetailsForRead {
+  // Optional. Unique ID of the convoprint profile.
+  nuance.biosec.v1.UniqueId gk_convoprint_profile_id = 1;
+  // Optional. Unique ID of the convoprint profile owner.
+  nuance.biosec.v1.UniqueId gk_owner_id = 2;
+  // Optional. Owner type. Can be a person or fraudster.
+  nuance.biosec.v1.OwnerType owner_type = 3;
+  // Optional. Tag used to distinguish between different convoprint profiles that belong to the same owner.
+  string tag = 4;
+  // Optional. The current version of the convoprint profile (incremented each time a print is retrained).
+  google.protobuf.Int32Value version = 5;
+  // Optional. Indicates whether the convoprint profile is trained or not.
+  ConvoprintProfileStatus status = 6;
+  // Optional. Lock status.
+  ConvoprintProfileLockInfo lock_info = 7;
+  // Optional. Convoprint template information.
+  ConvoprintProfileTemplateInfo template_info = 8;
+  // Optional. Time and date of the convoprint profile creation.
+  google.protobuf.Timestamp creation_timestamp = 997;
+  // Optional. Time and date of the convoprint profile's last update.
+  google.protobuf.Timestamp modification_timestamp = 998;
+  // Optional. Custom application data in a list of key-value pairs.
+  map<string,string> custom_data = 999;
+}
+
+// Contains fields that the system uses to create a convoprint profile. Included in [CreateConvoprintProfileRequest](#nuance.biosec.v1.convoprint.CreateConvoprintProfileRequest).
+// Fields that are set can be defined by a fieldmask.
+message ConvoprintProfileDetailsForCreate {
+  // Optional. Custom application data in a list of key-value pairs.
+  map<string,string> custom_data = 1;
+}
+
+// Contains the writable fields of the convoprint profile. Included in [UpdateConvoprintProfileDetailsRequest](#nuance.biosec.v1.convoprint.UpdateConvoprintProfileDetailsRequest).
+// Fields that are updated can be defined by a fieldmask.
+message ConvoprintProfileDetailsForUpdate {
+  // Optional. Custom application data in a list of key-value pairs.
+  map<string,string> custom_data = 1;
+}
+
+// Contains information about the convoprint profile template.
+// Both fields are not set if the print is not trained.
+message ConvoprintProfileTemplateInfo {
+  // Optional. Unique ID of the calibration model that is used to train the convoprint profile template.
+  nuance.biosec.v1.UniqueId gk_calibration_model_revision_id = 1;
+  // Optional. A score between 0 and 1 that represents the quality of the convoprint profile template.
+  google.protobuf.FloatValue quality_check = 2;
+  // Optional. A uncapped score that represents the quality of the convoprint profile template.
+  google.protobuf.FloatValue raw_quality = 3;
+  // Optional. Spoken language. List of available languages can be found here: https://docs.nuance.com/mix/overview/mix-geographies/.
+  string language = 4;
+  // Optional. The most recent training time of the convoprint profile.
+  google.protobuf.Timestamp latest_train_timestamp = 5;
+}
+
+// Contains information about the locking state of a convoprint profile.
+message ConvoprintProfileLockInfo {
+  // Optional. Specifies if the print is locked or not.
+  LockStatus status = 1;
+  // Optional. The user ID of the analyst/agent that locked the print. Relevant only in case of manual lock.
+  string locked_by = 2;
+  // Optional. Specifies the locking reason if it is a standard one.
+  nuance.biosec.v1.LockReason lock_reason = 3;
+  // Optional. A text message that specifies the reason if it is not a standard one.
+  string reason = 4;
+  // Optional. The number of consecutive mismatches, used when a convoprint profile is locked due to too many mismatches.
+  google.protobuf.Int32Value mismatch_counter = 5;
+  // Optional. Specifies the convoprint profile locking time.
+  google.protobuf.Timestamp lock_timestamp = 6;
+  // Optional. The time when the convoprint profile, if locked, is automatically unlocked.
+  google.protobuf.Timestamp auto_unlock_timestamp = 7;
+}
+
+// Identifies a convoprint profile by owner and tag.
+message OwnerAndTag {
+  // Mandatory. Print owner, can be a person or fraudster.
+  oneof owner {
+    // Unique person ID.
+    nuance.biosec.v1.UniqueId gk_person_id = 1;
+	  // Unique fraudster ID.
+    nuance.biosec.v1.UniqueId gk_fraudster_id = 2;
+	  // The person's ID. Must be unique at the scope level and used together with a scope ID. Normally specified in the context field.
+    string person_id = 3;
+	  // The fraudster's ID. Must be unique at scope level and used together with a scope ID. Normally specified in the context field.
+    string fraudster_id = 4;
+  }
+  // Mandatory. Tag used to distinguish between different convoprint profiles that belong to the same owner.
+  string tag = 5;
+}

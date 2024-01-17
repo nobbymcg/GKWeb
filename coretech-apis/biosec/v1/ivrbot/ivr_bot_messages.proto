@@ -1,0 +1,100 @@
+/*-
+ * #%L
+ * call-session-manager-public-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.ivrbot;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "nuance/biosec/v1/common_types.proto";
+import "nuance/biosec/v1/ivrbot/ivr_bot_enums.proto";
+import "google/protobuf/duration.proto";
+
+option java_multiple_files = true;
+option java_package = "com.nuance.rpc.biosec.v1.ivrbot";
+
+// Person's voiceprint lock information.
+message VoicePrintLockInfo {
+    // Mandatory. Person's voiceprint lock status.
+    bool locked = 1;
+
+    // Optional. User that locked this person's voiceprint.
+    string locked_by = 2;
+
+    // Optional. Voiceprint lock reason text.
+    string reason = 3;
+
+    // Optional. Mismatch counter that triggers locking the voiceprint.
+    google.protobuf.Int32Value mismatch_counter = 4;
+
+    // Optional. Voiceprint lock timestamp.
+    google.protobuf.Timestamp timestamp = 5;
+
+    // Optional. Specifies the standard locking reason.
+    nuance.biosec.v1.ivrbot.LockReason lock_reason = 6;
+}
+
+// Opt-in information.
+message OptInInfo {
+    // Mandatory. When the person opted-in.
+    google.protobuf.Timestamp timestamp = 1;
+}
+
+// Opt-out information.
+message OptOutInfo {
+    // Mandatory. When the person opted-out.
+    google.protobuf.Timestamp timestamp = 1;
+
+    // Optional. The provided opt-out reason.
+    string reason = 2;
+
+    // Mandatory. When opt-in can be enabled.
+    google.protobuf.Timestamp offer_opt_in_time = 5;
+
+    // Mandatory. True when opt-out duration has passed.
+    bool offer_opt_in = 4;
+}
+
+// Session biometric decision
+message SessionDecision {
+    // Mandatory. The session final decision.
+    nuance.biosec.v1.Decision decision = 1;
+    // Optional. The reason for decision failure.
+    DecisionReason decision_reason = 2;
+}
+
+// Progress information message
+message ProgressInformation {
+    // Mandatory. Biometric operation progress status.
+    ProgressStatus progress_status = 1;
+	
+	// Optional. Progress information for specific operation.
+    oneof progress_information_details {
+        // Optional. Process audio for enroll progress information.
+        ProcessAudioForEnrollProgressInformation process_audio_for_enroll_progress_information = 3;
+    }
+}
+
+// Process audio for enroll progress information message
+message ProcessAudioForEnrollProgressInformation {
+    // Optional. Current net audio.
+    google.protobuf.Duration current_net_audio = 1;
+    // Optional. Minimum net audio required for enrollment. The value for this field is expected to be lower or equal to min_net_audio_required_for_train field.
+    google.protobuf.Duration min_net_audio_required_for_enroll = 2;
+    // Optional. Minimum net audio required for training. The value for this field is expected to be higher or equal to min_net_audio_required_for_enroll field.
+    google.protobuf.Duration min_net_audio_required_for_train = 3;
+    // Optional. Maximum net audio required for enrollment.
+    google.protobuf.Duration max_net_audio_required_for_enroll = 4;
+}

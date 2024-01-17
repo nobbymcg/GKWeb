@@ -1,0 +1,51 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.history;
+
+option java_package = "com.nuance.rpc.biosec.v1.reports";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/reports/audit_data_exporter_messages.proto";
+
+///////////////////////
+// gRPC APIs Service //
+///////////////////////
+
+// This service allows exporting audit data from the blob storage.
+// You can export data based on record type, time and iterator. 
+// The service stores the audit records based on record type, such as persons entity, voiceprints profile entity, and so on.
+// The streaming of export records flow:
+// 1) Client requests Start Export.
+// 2) Server returns the first batch of records, iterator, and the end of records flag.
+// 3) Client continues to request more records until the end of records is true:
+//    1) Client requests next batch by iterator.
+//    2) The server returns batch of records, iterator, and the end of record flag.
+service AuditDataExporter {
+
+  // Export records for a record type based on time range or iterator (returned in previous response).
+  // Each exported record data is returned as a JSON object string.
+  // All returned personal fields are masked.
+  rpc ExportRecords (stream ExportRecordsRequest) returns (stream ExportRecordsResponse) {
+  }
+
+  // Export records for a record type based on time range or iterator (returned in previous response).
+  // Each exported record data is returned as JSON object string.
+  // The client can select whether to decrypt the records or to get them in the encrypted format.
+  rpc ExportRecordsWithPersonalData (stream ExportRecordsWithPersonalDataRequest) returns (stream ExportRecordsWithPersonalDataResponse) {
+  }
+  
+}

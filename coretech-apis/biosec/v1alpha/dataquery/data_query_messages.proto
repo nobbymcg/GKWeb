@@ -1,0 +1,288 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1alpha.dataquery;
+
+option java_package = "com.nuance.rpc.biosec.v1alpha.dataquery";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/common_types.proto";
+import "nuance/rpc/status.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/field_mask.proto";
+import "nuance/biosec/v1alpha/dataquery/data_query_enums.proto";
+
+// Input message that defines parameters for [ExecuteDataQuery](#ExecuteDataQuery).
+message ExecuteDataQueryRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Data query details and properties that the method sets upon creating the data query.
+  DataQueryDetailsToExecute details = 2;
+  // Mandatory. This field specifies when the query is executed.
+  DataQuerySchedulingForWrite scheduling = 3;
+}
+
+// Output message that defines parameters returned by [ExecuteDataQuery](#ExecuteDataQuery).
+message ExecuteDataQueryResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Unique ID of the newly created data query.
+  nuance.biosec.v1.UniqueId gk_data_query_id = 2;
+}
+
+// Input message that defines the parameters for [GetDataQueryDetails](#GetDataQueryDetails)
+message GetDataQueryDetailsRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Unique ID of the newly created query.
+  nuance.biosec.v1.UniqueId gk_data_query_id = 2;
+  // Optional. A field mask used to specify the [DataQueryDetailsForRead](#nuance.biosec.v1alpha.dataquery.DataQueryDetailsForRead) fields that the method reads.
+  google.protobuf.FieldMask field_mask = 3;
+}
+
+// Output message that defines the parameters returned by [GetDataQueryDetails](#GetDataQueryDetails).
+message GetDataQueryDetailsResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Data query details.
+  DataQueryDetailsForRead details = 2;
+}
+
+// Input message that defines the parameters for [ListDataQueries](#ListDataQueries)
+message ListDataQueriesRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Optional. Filter that limits the list to specific query states.
+  DataQueryFilter filter = 2;
+  // Optional. A field mask used to specify the [DataQueryDetailsForRead](#nuance.biosec.v1alpha.dataquery.DataQueryDetailsForRead) fields that the method reads.
+  google.protobuf.FieldMask field_mask = 99;
+}
+
+// Output message that defines the parameters returned by [ListDataQueries](#ListDataQueries).
+message ListDataQueriesResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Data query details.
+  repeated DataQueryDetailsForRead details = 2;
+}
+
+// Input message that defines the parameters for [DeleteDataQuery](#DeleteDataQuery)
+message DeleteDataQueryRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Unique ID of the data query
+  nuance.biosec.v1.UniqueId gk_data_query_id = 2;
+}
+
+// Output message that defines parameters returned by [DeleteDataQuery](#DeleteDataQuery).
+message DeleteDataQueryResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Specifies properties of the query that is executed.
+message DataQueryDetailsToExecute {
+  // Mandatory. Name of the data query.
+  string name = 1;
+  // Optional. Description of the data query.
+  string description = 2;
+  // Mandatory. Data query to be executed.
+  DataQuery data_query = 3;
+}
+
+// This message is used to configure query scheduling.
+message DataQuerySchedulingForWrite {
+  // Optional. Date and time of the first query execution.
+  google.protobuf.Timestamp first_execution_time = 1;
+  // Optional. The interval between two executions. if not set, the execution is performed once.
+  google.protobuf.Duration recurrence_interval = 2;
+}
+
+// This message is used to return the properties of an existing data query.
+message DataQueryDetailsForRead {
+  // Unique ID of the data query.
+  nuance.biosec.v1.UniqueId gk_data_query_id = 1;
+  // Name of the data query.
+  string name = 2;
+  // Description of the data query.
+  string description = 3;
+  // Data query.
+  DataQuery data_query = 4;
+  // Location of the output resource file.
+  // The URL is set only if the data query state is COMPLETED.
+  string resource_file_url = 5;
+  // Date and time when the output resource file expires.
+  google.protobuf.Timestamp expiry_date = 6;
+  // Custom data in a list of key-value pairs.
+  map<string,string> custom_data = 7;
+  // Optional. This field specifies when the query is to be executed.
+  DataQuerySchedulingForRead scheduling = 8;
+  // Specifies the current state of the job.
+  DataQueryState data_query_state = 997;
+  // Date and time when the data query is created.
+  google.protobuf.Timestamp creation_timestamp = 998;
+  // Date and time when the data query is last updated.
+  google.protobuf.Timestamp modification_timestamp = 999;
+}
+
+// Provides query scheduling information.
+message DataQuerySchedulingForRead {
+  // Date and time of the first query execution.
+  google.protobuf.Timestamp first_execution_time = 1;
+  // The interval between two executions. if not set, the execution is performed once.
+  google.protobuf.Duration recurrence_interval = 2;
+  // Date and time of the last execution.
+  google.protobuf.Timestamp last_execution_time = 3;
+  // Date and time of the next execution.
+  google.protobuf.Timestamp next_execution_time = 4;
+  // Date and time of the last successful execution.
+  google.protobuf.Timestamp last_successful_execution_time = 5;
+}
+
+// Defines the data query details.
+message DataQuery {
+  // Mandatory. The data query, containing filters that define the data that should be extracted.
+  oneof query {
+    // Defines a way to build the tuning data query.
+    TuningDataQuery tuning_data_query = 1;
+  }
+}
+
+// Data query filter. Allows filtering by state.
+message DataQueryFilter {
+  // Filter by [DataQueryState](#nuance.biosec.v1alpha.dataquery.DataQueryState).
+  // If not set, the search return queries in any state.
+  repeated DataQueryState data_query_state = 1;
+}
+
+// Defines the query, containing filters used to extract the tuning data.
+// The query is applied over all the engagements and its sessions with the specified filters.
+message TuningDataQuery {
+  // Mandatory. A filter that limits the list of data items that should be extracted.
+  TuningDataFilter tuning_data_filter = 1;
+  // Optional. Limits the number of engagement items that are fetched.
+  // If not set, all engagements are fetched.
+  int32 limit = 2;
+}
+
+// The tuning filter used to extract data.
+// All tuning data filters are combined using the AND operator.
+// For Example:<br>
+// (start_time >= 'start_time' AND end_time <= 'end_time')
+// AND (factor_type = 'FACTOR_TYPE_ENROLL_VOICEPRINT' or factor_type = 'FACTOR_TYPE_VERIFY')
+// AND (count(min_person_occurrence_rule) >= 10)
+message TuningDataFilter {
+  // Mandatory. Defines the time interval in which the engagements are created.
+  TimeFilter time_filter = 1;
+  // Optional. Defines the filters based on the engagement data such as configsets, profile tag, factor type, and so on.
+  // The data filter can be defined as a combination of AND and OR.
+  DataFilter data_filter = 2;
+  // Optional. Defines the filter on the overall aggregation of engagements.
+  AggregationFilter aggregation_filter = 3;
+}
+
+// Defines engagement data filters based on rule type.
+// Rule type is used to determine how to group data rule items.
+// For example, if rule_type is equal to RULE_TYPE_OR_OF_ANDS, data rule items are combined using the AND operator
+// within data item groups and the groups themselves are combined using the OR operator.
+// Following are some of the examples:
+// 1. [(factor_type = 'FACTOR_TYPE_ENROLL_VOICEPRINT' )]
+// 2. [(factor_type = 'FACTOR_TYPE_ENROLL_VOICEPRINT' AND  factor_type = 'FACTOR_TYPE_VERIFY_VOICEPRINT')]
+// 3. [(tag = 'TI' OR tag = 'TD')] AND [(factor_type = 'FACTOR_TYPE_ENROLL_VOICEPRINT')]
+message DataFilter {
+  // Mandatory. Rule type defining CNF or DNF.
+  RuleType rule_type = 1;
+  // Mandatory. List of data item groups that define this rule.
+  // Data item groups are grouped together based on the rule_type field.
+  repeated DataItemGroupRule data_item_group_rule = 2;
+}
+
+// A group of data items.
+message DataItemGroupRule {
+  // Mandatory. Data items that are grouped together based on the rule_type field.
+  repeated DataItemRule data_item_rule = 1;
+}
+
+// An atomic data item rule.
+message DataItemRule {
+  // Mandatory
+  oneof rule {
+    // An atomic rule item that defines the filter used on the factor_type field.
+    StringFilterRule factor_type_rule = 1;
+    // An atomic rule item that defines the filter used on the tag field.
+    StringFilterRule tag_rule = 2;
+    // An atomic rule item that defines the filter used on the configset field.
+    StringFilterRule configset_rule = 3;
+  }
+}
+
+// Defines the simple string filter rules.
+message StringFilterRule {
+  // Mandatory. The string operator that is used to compare the predefined field with the specific value.
+  StringFilterOperator operator = 1;
+  // Mandatory. The value that is used to compare the predefined field.
+  string value = 2;
+}
+
+// An absolute time range filter that uses UTC timestamps.
+// The time interval is inclusive of both start time and end time.
+message TimeFilter {
+  // Mandatory. Start time. Extract data starting from this date and time.
+  google.protobuf.Timestamp start_time = 1 [deprecated=true];
+  // Mandatory. End time. Extract data ending at this date and time.
+  google.protobuf.Timestamp end_time = 2 [deprecated=true];
+  // Mandatory. Define an absolute time range or a relative time range.
+  oneof time_filter
+  {
+    // Optional. An absolute time range defined using UTC timestamps start time and end time.
+    AbsoluteTimeRange absolute_filter = 3;
+    // Optional. Specifies the relative time elapsed since the moment of the filter execution, such as before X days ago.
+    RelativeTimeRange relative_filter = 4;
+  }
+}
+
+// An absolute time range defined using UTC timestamps start time and end time. Both start and end times are inclusive.
+message AbsoluteTimeRange
+{
+  // Mandatory. Interval start time.
+  google.protobuf.Timestamp start_time = 1;
+  // Mandatory. Interval end time.
+  google.protobuf.Timestamp end_time = 2;
+}
+
+// A relative time range, used mainly to obtain a sliding window.
+// If none are specified, an empty interval is selected.
+message RelativeTimeRange
+{
+  // Optional. Duration of time that rolls backward with respect to current time.
+  // For example, records from last 7 days.
+  google.protobuf.Duration rolling_duration = 1;
+
+}
+
+// Defines the aggregation filter.
+message AggregationFilter {
+  // Mandatory
+  oneof aggregation {
+    // Defines the minimum number of occurrences of a person in the entire set of engagements.
+    // Use this aggregation when the data filter contains the enroll or verify factor type.
+    int32 min_person_occurrences = 1;
+    // Defines the minimum number of occurrences of a fraudster in the entire set of engagements.
+    // This aggregation should be used when the data filter contains the detect known fraudster factor type.
+    int32 min_fraudster_occurrences = 2;
+  }
+}

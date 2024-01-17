@@ -1,0 +1,126 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.history;
+
+option java_package = "com.nuance.rpc.biosec.v1.reports";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/common_types.proto";
+import "nuance/rpc/status.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "nuance/biosec/v1/reports/audit_data_exporter_enums.proto";
+
+// Request message that defines the parameters for the next batch of exported records.
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Optional
+// * gk_session_id: Optional
+// * gk_scope_id: Mandatory
+// * configset_id: Optional
+message ExportRecordsRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // One of the following requests.
+  oneof request {
+    // Start a new export.
+    StartExport start_export = 2;
+    // Get the next batch of records.
+    ExportIteratorRequest export_iterator_request = 3;
+  }
+}
+
+// Response message that contains a batch of requested records.
+message ExportRecordsResponse {
+  // Export response including data and iterator information.
+  ExportResponse export_response = 1;
+}
+
+// Input message that defines request parameters for the next batch of exported records.
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Optional
+// * gk_session_id: Optional
+// * gk_scope_id: Mandatory
+// * configset_id: Optional
+message ExportRecordsWithPersonalDataRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // One of the following requests.
+  oneof request {
+    // Starts a new export.
+    StartExport start_export = 2;
+    // Gets the next batch of records.
+    ExportIteratorRequest export_iterator_request = 3;
+  }
+  // If true, the personal data is decrypted in the response.
+  // Otherwise, fields remain encrypted in the response.
+  bool decrypt_personal_data = 4;
+}
+
+// Output message that contains a batch of requested records.
+message ExportRecordsWithPersonalDataResponse {
+  // Export response including data and iterator information.
+  ExportResponse export_response = 1;
+}
+
+// Start new export request.
+message StartExport {
+  // Mandatory. The requested record type.
+  RecordType record_type = 1;
+  // Optional. Start time for the export records, if not provided the export starts from the first record in the storage.
+  google.protobuf.Timestamp start_time = 2;
+  // Optional. End time for the export records, if not provided the export ends at the last record in the storage.
+  google.protobuf.Timestamp end_time = 3;
+}
+
+// Iterator for getting the next batch of records.
+message ExportIteratorRequest {
+  // Required. Encoded iterator information, copied from previous response.
+  // Iterator from previous processing could be passed as the first request for a new export.
+  string iterator = 1;
+  // Optional. The requested duration for the next batch of records.
+  // If not provided, all available records are exported.
+  google.protobuf.Duration requested_duration = 2;
+}
+
+// Exported record information.
+message ExportRecord {
+  // When the record was created.
+  google.protobuf.Timestamp create_time = 1;
+  // The request context related to the exported record.
+  nuance.biosec.v1.Context context = 2;
+  // The member that initiated the request.
+  nuance.biosec.v1.Member member = 3;
+  // The record as a JSON string.
+  string record_as_json = 4;
+}
+
+// Output message that contains the a batch of requested records
+message ExportResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Exported records, zero or more records (zero indicates end of records).
+  repeated ExportRecord export_record = 2;
+  // The returned iterator that can be used to fetch the next batch of records.
+  string iterator = 3;
+  // True if all available records are exported. When true, the iterator can be used in the future
+  // to continue the export from the next set of records that are available.
+  bool end_of_records = 4;
+}

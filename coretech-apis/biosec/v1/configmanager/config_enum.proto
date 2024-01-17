@@ -1,0 +1,70 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+package nuance.biosec.v1.configmanager;
+option java_package = "com.nuance.rpc.biosec.v1.configmanager";
+option java_multiple_files = true;
+
+// TODO: Misaligned enum names
+
+// The configset state. Only active configsets affect the system behavior.
+// Other states allow managing configsets before they are ready to be activated or after they are no longer in use.
+enum State {
+  // Configset state is not set.
+  STATE_UNSPECIFIED = 0;
+  // Configset is created.
+  STATE_SAVED = 1;
+  // Configset is validated successfully.
+  STATE_VALIDATED = 2;
+  // Configset is activated. Only configsets in this state affect system behavior.
+  STATE_ACTIVE = 3;
+  // Configset is explicitly deactivated or another revision of the configset is activated.
+  STATE_INACTIVE = 4;
+  // Configset is invalid due to incorrect parameters.
+  STATE_INVALID = 5;
+}
+
+// The configset class. Indicates if this is a standard configset or a template.
+// Templates expedite the configset creation process for common scenarios ensuring all necessary parameters are optimally set.
+enum ConfigClass {
+  // The config class is not specified. Do not use this value.
+  CONFIG_CLASS_UNSPECIFIED = 0;
+  // Standard configset.
+  CONFIG_CLASS_CONFIGSET = 1;
+  // Indicates that the configuration is a template.
+  CONFIG_CLASS_TEMPLATE = 2;
+}
+
+// The configset type.
+enum ConfigsetType {
+  // The configset type is not specified. Do not use this value.
+  CONFIGSET_TYPE_UNSPECIFIED = 0;
+  // Configset contains all system-level parameters.
+  CONFIGSET_TYPE_SYSTEM = 1;
+  // Configset contains all scope-level parameters.
+  CONFIGSET_TYPE_SCOPE = 2;
+  // Configset contains all operational parameters.
+  CONFIGSET_TYPE_OPERATIONAL = 3;
+}
+
+// The format of the configset content.
+enum ConfigsetFormat {
+  // The configset format is not specified. Do not use this value.
+  CONFIGSET_FORMAT_UNSPECIFIED = 0;
+  // The configset data format is an opaque array of bytes.
+  CONFIGSET_FORMAT_ALL_BYTES = 1;
+  // The configset data format is an array of binary serialized parameters grouped by their owner service.
+  CONFIGSET_FORMAT_BY_SERVICE = 2;
+}

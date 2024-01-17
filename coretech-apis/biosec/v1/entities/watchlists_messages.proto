@@ -1,0 +1,290 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.entities;
+
+option java_package = "com.nuance.rpc.biosec.v1.entities";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/common_types.proto";
+import "nuance/rpc/status.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+// Input message that defines parameters for [CreateWatchlist](#CreateWatchlist).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message CreateWatchlistRequest {
+  // Mandatory. General request context. Defines the scope in which the watchlist is created.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Identifies the watchlist. Must be unique at least at the scope level.
+  string watchlist_id = 2;
+  // Optional. Provides additional information about the watchlist.
+  WatchlistDetailsForCreate details = 3;
+  // Optional. A field mask used to specify the [WatchlistDetailsForCreate](#nuance.biosec.v1.entities.WatchlistDetailsForCreate) fields that the method sets.
+  google.protobuf.FieldMask field_mask = 4;
+}
+
+// Output message that defines parameters returned by [CreateWatchlist](#CreateWatchlist).
+message CreateWatchlistResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Unique ID of the newly created watchlist.
+  nuance.biosec.v1.UniqueId gk_watchlist_id = 2;
+}
+
+// Input message that defines parameters for [RenameWatchlist](#RenameWatchlist).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message RenameWatchlistRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Watchlist's unique ID.
+  nuance.biosec.v1.UniqueId gk_watchlist_id = 2;
+  // Mandatory. Watchlist's new id to identify the watchlist. Must be unique at least at the scope level.
+  string new_watchlist_id = 3;
+}
+
+// Output message that defines parameters returned by [RenameWatchlist](#RenameWatchlist).
+message RenameWatchlistResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [GetWatchlistDetails](#GetWatchlistDetails).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message GetWatchlistDetailsRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Watchlist's unique ID.
+  nuance.biosec.v1.UniqueId gk_watchlist_id = 2;
+  // Optional. A field mask used to specify the [WatchlistDetailsForRead](#nuance.biosec.v1.entities.WatchlistDetailsForRead) fields that the method reads.
+  google.protobuf.FieldMask field_mask = 3;
+}
+
+// Output message that defines parameters returned by [GetWatchlistDetails](#GetWatchlistDetails).
+message GetWatchlistDetailsResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Watchlist's details.
+  WatchlistDetailsForRead details = 2;
+}
+
+// Input message that defines parameters for [GetGkWatchlistId](#GetGkWatchlistId).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message GetGkWatchlistIdRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Watchlist's identifier.
+  string watchlist_id = 2;
+}
+
+// Output message that defines parameters returned by [GetGkWatchlistId](#GetGkWatchlistId).
+message GetGkWatchlistIdResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Watchlist's unique ID.
+  nuance.biosec.v1.UniqueId gk_watchlist_id = 2;
+}
+
+// Input message that defines parameters for [UpdateWatchlist](#UpdateWatchlist).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message UpdateWatchlistRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Watchlist's unique ID.
+  nuance.biosec.v1.UniqueId gk_watchlist_id = 2;
+  // Mandatory. Details that the method updates.
+  WatchlistDetailsForUpdate details = 4;
+  // Mandatory. A field mask used to specify the [WatchlistDetailsForUpdate](#nuance.biosec.v1.entities.WatchlistDetailsForUpdate) fields is set.
+  google.protobuf.FieldMask field_mask = 5;
+}
+
+// Output message that defines parameters returned by [UpdateWatchlist](#UpdateWatchlist).
+message UpdateWatchlistResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [DeleteWatchlist](#DeleteWatchlist).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message DeleteWatchlistRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Watchlist's unique ID.
+  nuance.biosec.v1.UniqueId gk_watchlist_id = 2;
+}
+
+// Output message that defines parameters returned by [DeleteWatchlist](#DeleteWatchlist).
+message DeleteWatchlistResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+
+// Input message that defines parameters for [AddFraudsterToWatchlist](#AddFraudsterToWatchlist).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message AddFraudsterToWatchlistRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Watchlist's unique ID.
+  nuance.biosec.v1.UniqueId gk_watchlist_id = 2;
+  // Mandatory. Unique ID of the fraudster that the method adds.
+  nuance.biosec.v1.UniqueId gk_fraudster_id = 3;
+}
+
+// Output message that defines parameters returned by [AddFraudsterToWatchlist](#AddFraudsterToWatchlist).
+message AddFraudsterToWatchlistResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [RemoveFraudstersFromWatchlist](#RemoveFraudstersFromWatchlist).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message RemoveFraudstersFromWatchlistRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Watchlist's unique ID.
+  nuance.biosec.v1.UniqueId gk_watchlist_id = 2;
+  // Mandatory. Unique ID of the fraudster that the method removes.
+  repeated nuance.biosec.v1.UniqueId gk_fraudster_ids = 3;
+}
+
+// Output message that defines parameters returned by [RemoveFraudstersFromWatchlist](#RemoveFraudstersFromWatchlist).
+message RemoveFraudstersFromWatchlistResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [IsFraudsterInWatchlist](#IsFraudsterInWatchlist).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message IsFraudsterInWatchlistRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Watchlist's unique ID.
+  nuance.biosec.v1.UniqueId gk_watchlist_id = 2;
+  // Mandatory. Fraudster's unique ID.
+  nuance.biosec.v1.UniqueId gk_fraudster_id = 3;
+}
+
+// Output message that defines parameters returned by [IsFraudsterInWatchlist](#IsFraudsterInWatchlist).
+message IsFraudsterInWatchlistResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Indicates whether the fraudster is a member of the watchlist or not.
+  bool is_in_watchlist = 2;
+}
+
+// Input message that defines parameters for [ListWatchlistFraudsters](#ListWatchlistFraudsters).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message ListWatchlistFraudstersRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Watchlist's unique ID.
+  nuance.biosec.v1.UniqueId gk_watchlist_id = 2;
+}
+
+// Output message that defines parameters returned by [ListWatchlistFraudsters](#ListWatchlistFraudsters).
+message ListWatchlistFraudstersResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // List of fraudster IDs.
+  repeated nuance.biosec.v1.UniqueId gk_fraudster_id = 2;
+}
+
+// Contains the readable fields of the Watchlist. Included in [GetWatchlistDetailsResponse](#nuance.biosec.v1.entities.GetWatchlistDetailsResponse).
+message WatchlistDetailsForRead {
+  // Watchlist's unique ID.
+  nuance.biosec.v1.UniqueId gk_watchlist_id = 1;
+  // Watchlist's identifier. Must be unique at least at the scope level.
+  string watchlist_id = 2;
+  // Date and time of the watchlist's creation.
+  google.protobuf.Timestamp creation_timestamp = 997;
+  // Date and time of the watchlist's last update.
+  google.protobuf.Timestamp modification_timestamp = 998;
+  // List of custom application data in key-value pairs.
+  map<string,string> custom_data = 999;
+}
+
+// Contains fields that the system uses to create a watchlist entity. Included in [CreateWatchlistRequest](#nuance.biosec.v1.entities.CreateWatchlistRequest).
+message WatchlistDetailsForCreate {
+  // List of custom application data in key-value pairs.
+  map<string,string> custom_data = 999;
+}
+
+// Contains the writable fields of the watchlist. Included in [UpdateWatchlistRequest](#nuance.biosec.v1.entities.UpdateWatchlistRequest).
+message WatchlistDetailsForUpdate {
+  // List of custom application data in key-value pairs.
+  map<string,string> custom_data = 999;
+}

@@ -1,0 +1,267 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.entities;
+
+option java_package = "com.nuance.rpc.biosec.v1.entities";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/common_types.proto";
+import "nuance/rpc/status.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+////////////////////////////////
+// Create or update Fraudster //
+////////////////////////////////
+
+// Input message that defines parameters for [CreateFraudster](#CreateFraudster).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message CreateFraudsterRequest {
+    // Mandatory. General request context. Defines the scope in which the fraudster should be created.
+    nuance.biosec.v1.Context context = 1;
+    // Mandatory. Identifies the fraudster. Must be unique at least at the scope level.
+    string fraudster_id = 2;
+    // Optional. Provides additional information about the fraudster.
+    FraudsterDetailsForCreate details = 3;
+    // Optional. A field mask used to specify the [FraudsterDetailsForCreate](#nuance.biosec.v1.entities.FraudsterDetailsForCreate) fields that the method sets.
+    google.protobuf.FieldMask field_mask = 4;
+}
+
+// Output message that defines parameters returned by [CreateFraudster](#CreateFraudster).
+message CreateFraudsterResponse {
+    // General operation status.
+    nuance.rpc.Status status = 1;
+    // The unique ID of the newly created fraudster.
+    nuance.biosec.v1.UniqueId gk_fraudster_id = 2;
+}
+
+// Input message that defines parameters for [RenameFraudster](#RenameFraudster).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message RenameFraudsterRequest {
+    // Mandatory. General request context.
+    nuance.biosec.v1.Context context = 1;
+    // Mandatory. Fraudster's unique ID.
+    nuance.biosec.v1.UniqueId gk_fraudster_id = 2;
+    // Mandatory. Fraudster's new id to identify the fraudster. Must be unique at least at the scope level.
+    string new_fraudster_id = 3;
+}
+
+// Output message that defines parameters returned by [RenameFraudster](#RenameFraudster).
+message RenameFraudsterResponse {
+    // Mandatory. General operation status.
+    nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [GetFraudsterDetails](#GetFraudsterDetails).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message GetFraudsterDetailsRequest {
+    // Mandatory. General request context.
+    nuance.biosec.v1.Context context = 1;
+    // Mandatory. The unique ID of the Fraudster.
+    nuance.biosec.v1.UniqueId gk_fraudster_id = 2;
+    // Optional. A field mask used to specify the [FraudsterDetailsForRead](#nuance.biosec.v1.entities.FraudsterDetailsForRead) fields that the method reads.
+    google.protobuf.FieldMask field_mask = 3;
+}
+
+// Output message that defines parameters returned by [GetFraudsterDetails](#GetFraudsterDetails).
+message GetFraudsterDetailsResponse {
+    // General operation status.
+    nuance.rpc.Status status = 1;
+    // Fraudster's details.
+    FraudsterDetailsForRead details = 2;
+}
+
+// Input message that defines parameters for [GetGkFraudsterId](#GetGkFraudsterId).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message GetGkFraudsterIdRequest {
+    // Mandatory. General request context.
+    nuance.biosec.v1.Context context = 1;
+    // Mandatory. Identifies the fraudster.
+    string fraudster_id = 2;
+}
+
+// Output message that defines parameters returned by [GetGkFraudsterId](#GetGkFraudsterId).
+message GetGkFraudsterIdResponse {
+    // General operation status.
+    nuance.rpc.Status status = 1;
+    // Fraudster's unique ID.
+    nuance.biosec.v1.UniqueId gk_fraudster_id = 2;
+}
+
+// Input message that defines parameters for [UpdateFraudster](#UpdateFraudster).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message UpdateFraudsterRequest {
+    // Mandatory. General request context.
+    nuance.biosec.v1.Context context = 1;
+    // Mandatory. Fraudster's unique ID.
+    nuance.biosec.v1.UniqueId gk_fraudster_id = 2;
+    // Mandatory. Details that the method updates.
+    FraudsterDetailsForUpdate details = 4;
+    // Mandatory. A field mask used to specify the [FraudsterDetailsForUpdate](#nuance.biosec.v1.entities.FraudsterDetailsForUpdate) fields that the method sets.
+    google.protobuf.FieldMask field_mask = 5;
+}
+
+// Output message that defines parameters returned by [UpdateFraudster](#UpdateFraudster).
+message UpdateFraudsterResponse {
+    // General operation status.
+    nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [DeleteFraudster](#DeleteFraudster).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message DeleteFraudsterRequest {
+    // Mandatory. General request context.
+    nuance.biosec.v1.Context context = 1;
+    // Mandatory. Fraudster's unique ID.
+    nuance.biosec.v1.UniqueId gk_fraudster_id = 2;
+}
+
+// Output message that defines parameters returned by [DeleteFraudster](#DeleteFraudster).
+message DeleteFraudsterResponse {
+    // General operation status.
+    nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [ListFraudsterProfiles](#ListFraudsterProfiles).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message ListFraudsterProfilesRequest {
+    // Mandatory. General request context.
+    nuance.biosec.v1.Context context = 1;
+    // Mandatory. Fraudster's unique ID.
+    nuance.biosec.v1.UniqueId gk_fraudster_id = 2;
+    // Optional. Contains the types of prints that the method should filer by.
+    ListFraudsterProfilesFilter filter = 3;
+}
+
+// Contains an array of the types of prints that the method should filer by.
+message ListFraudsterProfilesFilter {
+    // Optional. An array of the types of prints that the method should filer by.
+    repeated nuance.biosec.v1.PrintType print_type = 1;
+}
+
+// Output message that defines parameters returned by [ListFraudsterProfiles](#ListFraudsterProfiles).
+message ListFraudsterProfilesResponse {
+    // Mandatory. General operation status.
+    nuance.rpc.Status status = 1;
+    // Optional. The voiceprint profile unique identifier.
+    repeated nuance.biosec.v1.UniqueId gk_voiceprint_profile_ids = 2;
+    // Optional. The convoprint profile unique identifier.
+    repeated nuance.biosec.v1.UniqueId gk_convoprint_profile_ids = 3;
+    // Optional. The deviceprint profile unique identifier.
+    repeated nuance.biosec.v1.UniqueId gk_deviceprint_profile_ids = 4;
+}
+
+// Contains the readable fields of the fraudster. Included in [GetFraudsterDetailsResponse](#nuance.biosec.v1.entities.GetFraudsterDetailsResponse).
+message FraudsterDetailsForRead {
+    // Fraudster's unique ID.
+    nuance.biosec.v1.UniqueId gk_fraudster_id = 1;
+    // Fraudster identifier. Must be unique at least at the scope level.
+    string fraudster_id = 2;
+    // Fraudster's first name.
+    string first_name = 3;
+    // Fraudster's last name.
+    string last_name = 4;
+    // Fraudster's gender.
+    Gender gender_identity = 5;
+    // Average voice class scores of the fraudster's voiceprints. It selectively find fraudsters with specific voice characteristics.
+    google.protobuf.FloatValue voice_class_score_avg = 6;
+    // Fraudster's preferred language.
+    string preferred_language = 7;
+    // Repeated. Set of phone numbers associated with this fraudster.
+    repeated string phone_numbers = 8;
+    // Date and time when the fraudster is created.
+    google.protobuf.Timestamp creation_timestamp = 997;
+    // Date and time that the fraudster is last updated.
+    google.protobuf.Timestamp modification_timestamp = 998;
+    // List of custom application data in key-value pairs.
+    map<string, string> custom_data = 999;
+}
+
+// Contains fields that the system uses to create a fraudster entity. Included in [CreateFraudsterRequest](#nuance.biosec.v1.entities.CreateFraudsterRequest).
+message FraudsterDetailsForCreate {
+    // Fraudster's first name.
+    string first_name = 1;
+    // Fraudster's last name.
+    string last_name = 2;
+    // Fraudster's gender.
+    Gender gender_identity = 3;
+    // Fraudster's preferred language.
+    string preferred_language = 4;
+    // Repeated. Set of phone numbers associated with this fraudster.
+    repeated string phone_numbers = 5;
+    // List of custom application data in key-value pairs.
+    map<string,string> custom_data = 999;
+}
+
+// Contains the writable fields of the fraudster. Included in [UpdateFraudsterRequest](#nuance.biosec.v1.entities.UpdateFraudsterRequest).
+message FraudsterDetailsForUpdate {
+    // Fraudster's first name.
+    string first_name = 1;
+    // Fraudster's last name.
+    string last_name = 2;
+    // Fraudster's gender.
+    Gender gender_identity = 3;
+    // Fraudster's preferred language.
+    string preferred_language = 4;
+    // Repeated. Set of phone numbers associated with this fraudster.
+    repeated string phone_numbers = 5;
+    // List of custom application data in key-value pairs.
+    map<string,string> custom_data = 999;
+}

@@ -1,0 +1,475 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+package nuance.biosec.v1.configmanager;
+option java_package = "com.nuance.rpc.biosec.v1.configmanager";
+import "nuance/rpc/status.proto";
+import "nuance/biosec/v1/common_types.proto";
+import "nuance/biosec/v1/configmanager/config_enum.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/field_mask.proto";
+option java_multiple_files = true;
+
+// Input message that defines parameters for [CreateConfigset](#CreateConfigset).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message CreateConfigsetRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. The configset's ID.
+  string configset_id = 2;
+  // Mandatory. The configset's type.
+  ConfigsetType type = 3;
+  // Optional. The configset's additional details.
+  ConfigsetDetailsForCreate details = 4;
+  // Optional. Determines if the request validates the configset. By default, the method does not validate the configset.
+  bool perform_validation = 5;
+  // Mandatory. Content of the configset.
+  oneof configset_content {
+    // The configset's data in an opaque byte array format.
+    bytes raw_content = 6;
+    // The data grouped by service.
+    ConfigsetGroupedByService configset_object = 7;
+    // The (external) ID of a template that is used as the configset's baseline.
+    string source_template_id = 8;
+    // The (external) ID of an existing configset that is used as the configset's baseline.
+    string source_configset_id = 9;
+  }
+  // Optional. A field mask used to specify the [ConfigsetDetailsForCreate](#nuance.biosec.v1.configmanager.ConfigsetDetailsForCreate) fields that the method sets.
+  google.protobuf.FieldMask field_mask = 99;
+}
+
+// Output message that defines parameters returned by [CreateConfigset](#CreateConfigset).
+message CreateConfigsetResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // The unique ID of the configset revision.
+  nuance.biosec.v1.UniqueId gk_configset_revision_id = 2;
+}
+
+// Input message that defines parameters for [ValidateConfigsetRevision](#ValidateConfigsetRevision).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message ValidateConfigsetRevisionRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. The unique ID of the configset revision.
+  nuance.biosec.v1.UniqueId gk_configset_revision_id = 2;
+}
+
+// Output message that defines parameters returned by [ValidateConfigsetRevision](#ValidateConfigsetRevision).
+// In case one or more parameters are invalid, the list of validation errors are returned in the the FieldViolation field in the [Status](#nuance.rpc.Status).
+message ValidateConfigsetRevisionResponse {
+  // General operation status. Contains the list of validation errors.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [ActivateConfigsetRevision](#ActivateConfigsetRevision).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message ActivateConfigsetRevisionRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. The unique ID of the configset revision.
+  nuance.biosec.v1.UniqueId gk_configset_revision_id = 2;
+}
+
+// Output message that defines parameters returned by [ActivateConfigsetRevision](#ActivateConfigsetRevision).
+message ActivateConfigsetRevisionResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [ListConfigsetRevisions](#ListConfigsetRevisions).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message ListConfigsetRevisionsRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Optional. A filter that limits the list to a specific configset ID or state.
+  ConfigsetFilter filter = 2;
+  // Optional. A field mask used to specify the [ConfigsetDetailsForRead](#nuance.biosec.v1.configmanager.ConfigsetDetailsForRead) fields that the method reads.
+  google.protobuf.FieldMask field_mask = 99;
+}
+
+// Output message that defines parameters returned by [ListConfigsetRevisions](#ListConfigsetRevisions).
+// The list is ordered by the creation timestamp in descending order.
+message ListConfigsetRevisionsResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // List of configsets and their attributes.
+  repeated ConfigsetDetailsForRead details = 2;
+}
+
+// Input message that defines parameters for [UpdateConfigsetDetails](#UpdateConfigsetDetails).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message UpdateConfigsetDetailsRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. The configset's ID.
+  string configset_id = 2;
+  // Mandatory. Configset details to be updated.
+  ConfigsetDetailsForUpdate details = 3;
+  // Mandatory. A field mask used to specify the [ConfigsetDetailsForUpdate](#nuance.biosec.v1.configmanager.ConfigsetDetailsForUpdate) fields that the method sets.
+  google.protobuf.FieldMask field_mask = 99;
+}
+
+// Output message that defines parameters returned by [UpdateConfigsetDetails](#UpdateConfigsetDetails).
+message UpdateConfigsetDetailsResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [GetConfigset](#GetConfigset).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message GetConfigsetRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. The configset's ID.
+  string configset_id = 2;
+  // Mandatory. The expected data format.
+  ConfigsetFormat expected_format = 3;
+  // Optional. A field mask used to specify the [ConfigsetDetailsForRead](#nuance.biosec.v1.configmanager.ConfigsetDetailsForRead) fields that the method reads.
+  google.protobuf.FieldMask field_mask = 99;
+}
+
+// Output message that defines parameters returned by [GetConfigset](#GetConfigset).
+message GetConfigsetResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // The configset's details.
+  ConfigsetDetailsForRead details = 2;
+  // The configset's content.
+  oneof configset_content {
+    // The configset's data in an opaque byte array format.
+    bytes raw_content = 3;
+    // The data grouped by service.
+    ConfigsetGroupedByService configset_object = 4;
+  }
+}
+
+// Input message that defines parameters for [GetConfigsetRevision](#GetConfigsetRevision).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message GetConfigsetRevisionRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. The unique ID of the configset revision.
+  nuance.biosec.v1.UniqueId gk_configset_revision_id = 2;
+  // Mandatory. The expected data format.
+  ConfigsetFormat expected_format = 3;
+  // Optional. A field mask used to specify the [ConfigsetDetailsForRead](#nuance.biosec.v1.configmanager.ConfigsetDetailsForRead) fields that the method reads.
+  google.protobuf.FieldMask field_mask = 99;
+}
+
+// Output message that defines parameters returned by [GetConfigsetRevision](#GetConfigsetRevision).
+message GetConfigsetRevisionResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // The configset's details.
+  ConfigsetDetailsForRead details = 2;
+  // The configset's content.
+  oneof configset_content {
+    // The configset's data in an opaque byte array format.
+    bytes raw_content = 3;
+    // The data grouped by service.
+    ConfigsetGroupedByService configset_object = 4;
+  }
+}
+
+// Input message that defines parameters for [DeleteConfigset](#DeleteConfigset).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message DeleteConfigsetRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  //Mandatory. The configset's ID.
+  string configset_id = 2;
+}
+
+// Output message that defines parameters returned by [DeleteConfigset](#DeleteConfigset).
+message DeleteConfigsetResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [DeleteConfigsetRevision](#DeleteConfigsetRevision).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message DeleteConfigsetRevisionRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. The unique ID of the configset revision.
+  nuance.biosec.v1.UniqueId gk_configset_revision_id = 2;
+}
+
+// Output message that defines parameters returned by [DeleteConfigsetRevision](#DeleteConfigsetRevision).
+message DeleteConfigsetRevisionResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [CreateTemplate](#CreateTemplate).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message CreateTemplateRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. The template's ID.
+  string template_id = 2;
+  // Mandatory. The template's type.
+  ConfigsetType type = 3;
+  // Optional. The configset's additional details.
+  ConfigsetDetailsForCreate details = 4;
+  // Mandatory. The template's content.
+  oneof template_content {
+    // The template's data in an opaque byte array format.
+    bytes raw_content = 5;
+    // The data grouped by service.
+    ConfigsetGroupedByService configset_object = 6;
+  }
+  // Optional. A field mask used to specify the [ConfigsetDetailsForCreate](#nuance.biosec.v1.configmanager.ConfigsetDetailsForCreate) fields that the method sets.
+  google.protobuf.FieldMask field_mask = 99;
+}
+
+// Output message that defines parameters returned by [CreateTemplate](#CreateTemplate).
+message CreateTemplateResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // The unique ID of the template.
+  nuance.biosec.v1.UniqueId gk_template_id = 2;
+}
+
+// Input message that defines parameters for [ListTemplates](#ListTemplates).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message ListTemplatesRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Optional. A filter that limits the list to a specific template ID or state.
+  ConfigsetFilter filter = 2;
+  // Optional. A field mask used to specify the [ConfigsetDetailsForRead](#nuance.biosec.v1.configmanager.ConfigsetDetailsForRead) fields that the method reads.
+  google.protobuf.FieldMask field_mask = 99;
+}
+
+// Output message that defines parameters returned by [ListTemplates](#ListTemplates).
+message ListTemplatesResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // List of templates and their attributes.
+  repeated ConfigsetDetailsForRead details = 2;
+}
+
+// Input message that defines parameters for [GetTemplate](#GetTemplate).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message GetTemplateRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. The template's ID.
+  string template_id = 2;
+  // Mandatory. The expected data format.
+  ConfigsetFormat expected_format = 3;
+}
+
+// Output message that defines parameters returned by [GetTemplate](#GetTemplate).
+message GetTemplateResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // The template's content.
+  oneof template_content {
+    // The template's data in an opaque byte array format.
+    bytes raw_content = 5;
+    // The data grouped by service.
+    ConfigsetGroupedByService configset_object = 6;
+  }
+}
+
+// Input message that defines parameters for [DeleteTemplate](#DeleteTemplate).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message DeleteTemplateRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. The template's ID.
+  string template_id = 2;
+}
+
+// Output message that defines parameters returned by [DeleteTemplate](#DeleteTemplate).
+message DeleteTemplateResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [GenerateTemplate](#GenerateTemplate).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message GenerateTemplateRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. The template's ID.
+  // List of available template IDs for CONFIGSET_TYPE_OPERATIONAL:
+  // 1. ContactCenterDefault
+  // 2. ContactCenterEnroll
+  // 3. CallCenterRealtimeFraudDetection
+  // 4. IVRTextDependent
+  // 5. PostCallFraudDetection
+  string template_id = 2;
+  // Mandatory. The template's type.
+  ConfigsetType type = 3;
+}
+
+// Output message that defines parameters returned by [GenerateTemplate](#GenerateTemplate).
+message GenerateTemplateResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // The unique ID of the template.
+  nuance.biosec.v1.UniqueId gk_template_id = 2;
+}
+
+// Contains the readable fields of the configset. Included in [GetConfigsetResponse](#nuance.biosec.v1.configmanager.GetConfigsetResponse) and [ListConfigsetRevisionsResponse](#nuance.biosec.v1.configmanager.ListConfigsetRevisionsResponse).
+message ConfigsetDetailsForRead {
+  // The unique ID of the configset revision.
+  nuance.biosec.v1.UniqueId gk_configset_revision_id = 1;
+  // The configset's ID.
+  string configset_id = 2;
+  // The configset's type.
+  ConfigsetType type = 3;
+  // Date and time of creation.
+  google.protobuf.Timestamp creation_timestamp = 4;
+  // Date and time of last update.
+  google.protobuf.Timestamp modification_timestamp = 5;
+  // The configset's description (context).
+  string description = 6;
+  // The name of the user that created the configset.
+  string created_by = 7;
+  // The name of the user that performed the most recent update to the configset.
+  string updated_by = 8;
+  // The state of the configset.
+  State state = 9;
+  // The configset's class.
+  ConfigClass config_class = 99;
+}
+
+// Contains fields that the system uses to create a configset. Included in [CreateConfigsetRequest](#nuance.biosec.v1.configmanager.CreateConfigsetRequest) and [CreateTemplateRequest](#nuance.biosec.v1.configmanager.CreateTemplateRequest).
+message ConfigsetDetailsForCreate {
+  // The configset's description (context).
+  string description = 1;
+}
+
+// Contains the writable fields of the configset. Included in [UpdateConfigsetDetailsRequest](#nuance.biosec.v1.configmanager.UpdateConfigsetDetailsRequest).
+message ConfigsetDetailsForUpdate {
+  // The configset's description (context).
+  string description = 1;
+}
+
+// Contains the structured configset data of a single service.
+message ServiceConfig {
+  // The name of the service.
+  string service_name = 1;
+  // The service configuration data.
+  bytes data = 2;
+  // Schema definition of the configuration data.
+  // Trivial while creating a configset and getting its revision.
+  bytes schema = 3;
+}
+
+// Contains a collection of the structured configset data, grouped by service.
+message ConfigsetGroupedByService {
+  // Lists service configuration parameters.
+  repeated ServiceConfig service_config = 1;
+}
+
+// The configset filter. Allows filtering by ID or state.
+message ConfigsetFilter {
+  // Filter by the Configset's ID. No wildcards allowed.
+  // If not set, the search returns all configsets.
+  string configset_id = 1;
+  // Filter by [state](#nuance.biosec.v1.configmanager.State).
+  // If not set, the search returns configsets in any state.
+  repeated State state = 2;
+}

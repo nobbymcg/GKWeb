@@ -1,0 +1,320 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.azman;
+
+option java_package = "com.nuance.rpc.biosec.v1.azman";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/azman/azman_messages.proto";
+import "google/api/annotations.proto";
+
+//////////////////////////////
+// AuthorizationManager API //
+//////////////////////////////
+
+// This service allows managing authorization permissions for the product's users.
+// Permissions are granted according to roles' memberships and the operations assigned to the roles.
+// Administrators can create, modify, or delete roles, add or remove operations from a role, and add or remove members from a role.
+// Roles can be defined at the scope level or system level.
+// * Scope level roles authorize their members to perform actions only on entities that belong to the Scope.
+// * System level roles authorize their members to perform actions on system level entities.
+service AuthorizationManager {
+
+  ///////////
+  // Roles //
+  ///////////
+
+  // Creates a new role in the specified Scope.
+  rpc CreateRole (CreateRoleRequest) returns (CreateRoleResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      post: "/nuance/biosec/v1/azman/roles"
+      body: "*"
+      additional_bindings {
+        post: "/v1/azman-roles"
+        body: "*"
+      }
+    };
+  }
+
+  // Returns the name of the role that is associated with the specified role ID.
+  rpc GetRoleId (GetRoleIdRequest) returns (GetRoleIdResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/azman/roles/{gk_role_id.value}/id"
+      additional_bindings {
+        get: "/v1/azman-roles/{gk_role_id.value}/id"
+      }
+    };
+  }
+
+  // Returns the ID of the role that is associated with the specified role name.
+  rpc GetGkRoleId (GetGkRoleIdRequest) returns (GetGkRoleIdResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/azman/roles/{role_id}/gkid"
+      additional_bindings {
+        get: "/v1/azman-roles/{role_id}/gkid"
+      }
+    };
+  }
+
+  // Deletes the specified role.
+  rpc DeleteRole (DeleteRoleRequest) returns (DeleteRoleResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      delete: "/nuance/biosec/v1/azman/roles/{gk_role_id.value}"
+      additional_bindings {
+        delete: "/v1/azman-roles/{gk_role_id.value}"
+      }
+    };
+  }
+
+  // Returns a list of roles that belong to a given Scope.
+  rpc ListRoles (ListRolesRequest) returns (ListRolesResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/azman/roles"
+      additional_bindings {
+        get: "/v1/azman-roles"
+      }
+    };
+  }
+
+  // Creates a new role in the selected Scope by cloning the specified source role.
+  rpc CloneRole (CloneRoleRequest) returns (CloneRoleResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      post: "/nuance/biosec/v1/azman/clone-roles"
+      body: "*"
+      additional_bindings {
+        post: "/v1/azman-roles/copy"
+        body: "*"
+      }
+    };
+  }
+
+  // Creates a new role in the selected Scope by cloning the specified source role.
+  rpc ResetFactoryRole (ResetFactoryRoleRequest) returns (ResetFactoryRoleResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      post: "/nuance/biosec/v1/azman/reset-factory-role"
+      body: "*"
+      additional_bindings {
+        post: "/v1/azman-roles/reset"
+        body: "*"
+      }
+    };
+  }
+
+  // Lists all details including operations and rules for the specified role.
+  rpc GetRoleDetails (GetRoleDetailsRequest) returns (GetRoleDetailsResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/azman/roles/{gk_role_id.value}/rules"
+      additional_bindings {
+        get: "/v1/azman-roles/{gk_role_id.value}"
+      }
+    };
+  }
+
+  // Sets the role’s description.
+  rpc SetRoleDescription (SetRoleDescriptionRequest) returns (SetRoleDescriptionResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      patch: "/nuance/biosec/v1/azman/roles/{gk_role_id.value}/role-description"
+      body: "*"
+      additional_bindings {
+        patch: "/v1/azman-roles/{gk_role_id.value}/description"
+        body: "*"
+      }
+    };
+  }
+
+  ///////////
+  // Rules //
+  ///////////
+
+  // Adds rules to a role.
+  rpc AddRulesToRole (AddRulesToRoleRequest) returns (AddRulesToRoleResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      post: "/nuance/biosec/v1/azman/roles/{gk_role_id.value}/rules"
+      body: "*"
+      additional_bindings {
+        post: "/v1/azman-roles/{gk_role_id.value}/rules"
+        body: "*"
+      }
+    };
+  }
+  // Removes rules from a role.
+  rpc RemoveRulesFromRole (RemoveRulesFromRoleRequest) returns (RemoveRulesFromRoleResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      post: "/nuance/biosec/v1/azman/roles/{gk_role_id.value}/remove-rules"
+      body: "*"
+      additional_bindings {
+        post: "/v1/azman-roles/{gk_role_id.value}/rules:batchDelete"
+        body: "*"
+      }
+    };
+  }
+
+  /////////////
+  // Members //
+  /////////////
+
+  // Assigns a member to a role.
+  rpc AddMemberToRole (AddMemberToRoleRequest) returns (AddMemberToRoleResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      post: "/nuance/biosec/v1/azman/roles/{gk_role_id.value}/members"
+      body: "*"
+      additional_bindings {
+        post: "/v1/azman-roles/{gk_role_id.value}/members"
+        body: "*"
+      }
+    };
+  }
+
+  // Removes a member from a role.
+  rpc RemoveMemberFromRole (RemoveMemberFromRoleRequest) returns (RemoveMemberFromRoleResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      post: "/nuance/biosec/v1/azman/roles/{gk_role_id.value}/remove-member"
+      body: "*"
+      additional_bindings {
+        delete: "/v1/azman-roles/{gk_role_id.value}/members"
+      }
+    };
+  }
+
+  // Sets label for specified member
+  rpc SetMemberLabel (SetMemberLabelRequest) returns (SetMemberLabelResponse) {
+    option (google.api.http) = {
+      post: "/nuance/biosec/v1/azman/scope/member/set-label"
+      body: "*"
+    };
+  }
+
+  // Lists all members associated with the specified Scope.
+  rpc ListAssignedRoles (ListAssignedRolesRequest) returns (ListAssignedRolesResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/azman/members/roles"
+      additional_bindings {
+        get: "/v1/azman-members/roles"
+      }
+    };
+  }
+
+  // Lists all members associated with the specified Scope.
+  rpc ListScopeMembers (ListScopeMembersRequest) returns (ListScopeMembersResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/azman/scope/members"
+      additional_bindings {
+        get: "/v1/azman-scopes/members"
+      }
+    };
+  }
+
+  // Clears cache of specified member.
+  rpc ClearScopeMemberCache (ClearScopeMemberCacheRequest) returns (ClearScopeMemberCacheResponse) {
+    option (google.api.http) = {
+      post: "/nuance/biosec/v1/azman/scope/member/clear-cache"
+      body: "*"
+    };
+  }
+
+  ///////////////////
+  // Authorization //
+  ///////////////////
+
+  // Lists the operations that the specified member is authorized to perform.
+  rpc GetAuthorizationDetails (GetAuthorizationDetailsRequest) returns (GetAuthorizationDetailsResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/azman/members/authorization-details"
+      additional_bindings {
+        get: "/v1/azman/members/authorization-details"
+      }
+    };
+  }
+
+  // Lists all members assigned to the specified role.
+  rpc ListRoleMembers (ListRoleMembersRequest) returns (ListRoleMembersResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/azman/roles/{gk_role_id.value}/members"
+      additional_bindings {
+        get: "/v1/azman-roles/{gk_role_id.value}/members"
+      }
+    };
+  }
+
+  // Checks if the current user is authorized to perform the specified operation.
+  rpc IsAuthorized (IsAuthorizedRequest) returns (IsAuthorizedResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/azman/members/authorized"
+      additional_bindings {
+        get: "/v1/azman-members/authorized"
+      }
+    };
+  }
+
+  // Checks if the current user is authorized to perform specified operations.
+  rpc IsAuthorizedMany (IsAuthorizedManyRequest) returns (IsAuthorizedManyResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/azman/members/authorized-many"
+      additional_bindings {
+        get: "/v1/azman-members/authorized-many"
+      }
+    };
+  }
+
+  // Lists Scopes that the member is authorized to operate in. A member is authorized to operate in a Scope if there is at least one operation that he is authorized to perform in that Scope.
+  rpc ListAuthorizedScopes (ListAuthorizedScopesRequest) returns (ListAuthorizedScopesResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/azman/members/authorized-scopes"
+      additional_bindings {
+        get: "/v1/azman-members/authorized-scopes"
+      }
+    };
+  }
+
+  // Retrieves information about the specified user.
+  rpc GetUserInfo (GetUserInfoRequest) returns (GetUserInfoResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/azman/members/info"
+      additional_bindings {
+        get: "/v1/azman-members"
+      }
+    };
+  }
+
+  // Retrieves information about the specified user when was last authorized.
+  rpc GetLastAuthorized(GetLastAuthorizedRequest) returns (GetLastAuthorizedResponse) {
+    option (google.api.http) = {
+      get: "/nuance/biosec/v1/azman/members/last-authorized"
+    };
+  }
+}

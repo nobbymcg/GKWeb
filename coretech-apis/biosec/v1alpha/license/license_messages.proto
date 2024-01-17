@@ -1,0 +1,56 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1alpha.license;
+
+option java_package = "com.nuance.rpc.biosec.v1alpha.license";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/common_types.proto";
+import "nuance/rpc/status.proto";
+import "google/protobuf/wrappers.proto";
+
+// Input message that defines parameters for [UploadLicense](#UploadLicense).
+message UploadLicenseRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. The License data, opaque, provided by Nuance.
+  bytes buffer = 2;
+  // Optional. Specify the license version. If missing, default version is used.
+  google.protobuf.Int32Value version = 3;
+}
+
+// Output message that defines parameters returned by [UploadLicense](#UploadLicense).
+message UploadLicenseResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [DownloadLicense](#DownloadLicense).
+message DownloadLicenseRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Optional. Specify the license version. If missing, default version is used.
+  google.protobuf.Int32Value version = 2;
+}
+
+// Output message that defines parameters returned by [DownloadLicense](#DownloadLicense).
+message DownloadLicenseResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // License data, opaque, previously uploaded via [UploadLicense](#UploadLicense).
+  bytes buffer = 2;
+}

@@ -1,0 +1,243 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.tuning;
+
+option java_package = "com.nuance.rpc.biosec.v1.tuning";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/tuning/tuning_manager_enums.proto";
+import "nuance/biosec/v1/common_types.proto";
+import "nuance/rpc/status.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+// Input message that defines parameters for [CreateCalibrationModel](#CreateCalibrationModel).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message CreateCalibrationModelRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Calibration model ID.
+  string calibration_model_id = 2;
+  // Mandatory. Calibration model type.
+  CalibrationModelType type = 3;
+  // Optional. Additional information about the calibration model.
+  CalibrationModelDetailsForCreate details = 4;
+  // Optional. A field mask to specify the fields that the method sets.
+  google.protobuf.FieldMask field_mask = 5;
+}
+
+// Output message that defines parameters returned by [CreateCalibrationModel](#CreateCalibrationModel).
+message CreateCalibrationModelResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // URL for uploading the calibration model.
+  string calibration_model_upload_url = 2;
+  // Unique ID of the calibration model revision.
+  nuance.biosec.v1.UniqueId gk_calibration_model_revision_id = 3;
+}
+
+// Input message that defines parameters for [UpdateCalibrationModel](#UpdateCalibrationModel).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message UpdateCalibrationModelRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Calibration model ID.
+  string calibration_model_id = 2;
+  // Mandatory. Details that the method updates.
+  CalibrationModelDetailsForUpdate details = 3;
+  // Mandatory. A field mask to specify the fields that the method sets.
+  google.protobuf.FieldMask field_mask = 4;
+}
+
+// Output message that defines parameters returned by [UpdateCalibrationModel](#UpdateCalibrationModel).
+message UpdateCalibrationModelResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [ValidateCalibrationModelRevision](#ValidateCalibrationModelRevision).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Mandatory
+message ValidateCalibrationModelRevisionRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Unique ID of the calibration model revision.
+  nuance.biosec.v1.UniqueId gk_calibration_model_revision_id = 2;
+}
+
+// Output message that defines parameters returned by [ValidateCalibrationModelRevision](#ValidateCalibrationModelRevision).
+message ValidateCalibrationModelRevisionResponse {
+  // General operation status. Contains the list of validation errors.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [ActivateCalibrationModelRevision](#ActivateCalibrationModelRevision).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message ActivateCalibrationModelRevisionRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Unique ID of the calibration model revision.
+  nuance.biosec.v1.UniqueId gk_calibration_model_revision_id = 2;
+}
+
+// Output message that defines parameters returned by [ActivateCalibrationModelRevision](#ActivateCalibrationModelRevision).
+message ActivateCalibrationModelRevisionResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [ListCalibrationModelRevisions](#ListCalibrationModelRevisions).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message ListCalibrationModelRevisionsRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Optional. Filter that limits the list to a specific (external) ID, state or calibration model type.
+  CalibrationModelFilter filter = 2;
+  // Optional. A field mask used to specify the [CalibrationModelDetailsForRead](#nuance.biosec.v1.tuning.CalibrationModelDetailsForRead) fields that the method reads.
+  google.protobuf.FieldMask field_mask = 3;
+}
+
+// Output message that defines parameters returned by [ListCalibrationModelRevisions](#ListCalibrationModelRevisions).
+// The list is ordered by the creation timestamp in the descending order.
+message ListCalibrationModelRevisionsResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // List of calibration model and its metadata attributes.
+  repeated CalibrationModelDetailsForRead details = 2;
+}
+
+// Input message that defines parameters for [DeactivateCalibrationModelRevision](#DeactivateCalibrationModelRevision).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message DeactivateCalibrationModelRevisionRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Unique ID of the calibration model revision.
+  nuance.biosec.v1.UniqueId gk_calibration_model_revision_id = 2;
+}
+
+// Output message that defines parameters returned by [DeactivateCalibrationModelRevision](#DeactivateCalibrationModelRevision).
+message DeactivateCalibrationModelRevisionResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [DownloadCalibrationModelRevision](#DownloadCalibrationModelRevision).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message DownloadCalibrationModelRevisionRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Unique ID of the calibration model revision to be downloaded.
+  nuance.biosec.v1.UniqueId gk_calibration_model_revision_id = 2;
+}
+
+// Output message that defines parameters returned by [DownloadCalibrationModelRevision](#DownloadCalibrationModelRevision).
+message DownloadCalibrationModelRevisionResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // A URL from which the calibration model can be downloaded.
+  string calibration_model_download_url = 2;
+}
+
+// Contains the readable fields of the calibration model. Included in [ListCalibrationModelRevisionsResponse](#nuance.biosec.v1.tuning.ListCalibrationModelRevisionsResponse).
+message CalibrationModelDetailsForRead {
+  // Unique ID of the calibration model revision.
+  nuance.biosec.v1.UniqueId gk_calibration_model_revision_id = 1;
+  // Calibration model ID.
+  string calibration_model_id = 2;
+  // Calibration model type.
+  CalibrationModelType type = 3;
+  // Calibration model mode.
+  CalibrationModelMode mode = 4;
+  //The name of the engine's framework that creates the calibration model.
+  string engine_framework = 5;
+  // The state of the calibration model.
+  CalibrationModelState state = 6;
+  // The scope to which the calibration model belongs.
+  nuance.biosec.v1.UniqueId gk_scope_id = 7;
+  // Calibration model description.
+  string description = 8;
+  // Date and time of the calibration model's creation.
+  google.protobuf.Timestamp creation_timestamp = 997;
+  // Date and time of the calibration model's last update.
+  google.protobuf.Timestamp modification_timestamp = 998;
+}  
+
+// Contains fields that the system uses to create a calibration model entity. Included in [CreateCalibrationModelRequest](#nuance.biosec.v1.tuning.CreateCalibrationModelRequest).
+message CalibrationModelDetailsForCreate {
+  // Calibration model description.
+  string description = 1;
+}
+
+// Contains the writable fields of the calibration model entity. Included in [UpdateCalibrationModelRequest](#nuance.biosec.v1.tuning.UpdateCalibrationModelRequest).
+message CalibrationModelDetailsForUpdate {
+  // Calibration model description.
+  string description = 1;
+}
+
+// Calibration model filter. Allows filtering by external ID, state,or type.
+message CalibrationModelFilter {
+  // Filter by the calibration model's ID. No wildcards allowed.
+  // If not set, the search returns all calibration models.
+  string calibration_model_id = 1;
+  // Filter by [CalibrationModelState](#nuance.biosec.v1.tuning.CalibrationModelState).
+  // If not set, the search returns calibration models in any state.
+  repeated CalibrationModelState state = 2;
+  // Filter by the calibration model's type.
+  // If not set, the search returns calibration models of any type.
+  repeated CalibrationModelType type = 3;
+}

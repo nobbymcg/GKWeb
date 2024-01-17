@@ -1,0 +1,217 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.sessions;
+
+option java_package = "com.nuance.rpc.biosec.v1.sessions";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/sessions/sessions_messages.proto";
+import "nuance/biosec/v1/sessions/engagements_messages.proto";
+import "google/api/annotations.proto";
+
+///////////////////////
+// gRPC APIs Service //
+///////////////////////
+
+// This service allows managing session and engagement entities.
+// A session represents a single interaction of a person or a user with the system.
+// There are several different session types, which can be classified into two main classes: online and offline.
+//
+// An online session represents an interactive interaction of a person with the system (for example, a phone call) and can include multiple
+// calls to different API methods. For example, multiple authentication attempts.
+// An offline session represents a set of actions invoked by an application or an administrative user. In an offline session, there is no active 
+// engagement between a person and the system.
+//
+// An engagement aggregates all sessions related to a customer transaction. For example, a call that started in the IVR, but later transferred to an agent.
+service SessionsManager {
+
+  //////////////
+  // Session  //
+  //////////////
+
+  // Starts a new session.
+  // This session can be part of an existing engagement or it can invoke the creation of a new engagement.
+  // To implicitly create a new engagement, leave the `engagement_id` of the context empty.
+  // The method returns the newly created session ID.
+  rpc StartSession (StartSessionRequest) returns (StartSessionResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      put: "/nuance/biosec/v1/sessions/start"
+      body: "*"
+      additional_bindings {
+        put: "/v1/sessions/start"
+        body: "*"
+      }
+    };
+  }
+
+  // Stops the session.
+  // Nuance recommends ending a session as soon as it is over.
+  // The session automatically terminates after a pre-configured timeout that may vary according to the session type.<br/><br/>
+  // If configset_id is not provided to the Stop Session API request, configset_id is fetched in one of the following ways
+  // depending on the precedence (Lower the index number, higher the precedence):<ol>
+  // <li> The configset_id value is fetched from GetSessionDecision API request.</li>
+  // <li> Otherwise, the configset_id value is fetched from StartSession API request. </li>
+  // <li> Otherwise, the configset_id value is fetched from any factor with configset_id.</li>
+  // <li> Otherwise, the system uses the default configset values.</li></ol>
+  rpc StopSession (StopSessionRequest) returns (StopSessionResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      put: "/nuance/biosec/v1/sessions/stop"
+      body: "*"
+      additional_bindings {
+        put: "/v1/sessions/stop"
+        body: "*"
+      }
+    };
+  }
+
+  // Retrieves the session's details.
+  rpc GetSessionDetails (GetSessionDetailsRequest) returns (GetSessionDetailsResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/sessions/details"
+      additional_bindings {
+        get: "/v1/sessions/details"
+      }
+    };
+  }
+
+  // Updates the session's details.
+  rpc UpdateSession (UpdateSessionRequest) returns (UpdateSessionResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      patch: "/nuance/biosec/v1/sessions/details"
+      body: "*"
+      additional_bindings {
+        patch: "/v1/sessions/details"
+        body: "*"
+      }
+    };
+  }
+
+  // Retrieves the session decision.
+  // A session decision is reached based on all authentication and fraud detection factors used in the session.
+  // The system also takes into account factors used in previous sessions that belong to the same engagement.
+  rpc GetSessionDecision (GetSessionDecisionRequest) returns (GetSessionDecisionResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/sessions/decision"
+      additional_bindings {
+        get: "/v1/sessions/decision"
+      }
+    };
+  }
+
+  /////////////////
+  // Engagement  //
+  /////////////////
+
+  // Starts a new engagement.
+  // Engagements can be created implicitly when creating the first session.
+  // The method returns the newly created engagement ID.
+  rpc StartEngagement (StartEngagementRequest) returns (StartEngagementResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      put: "/nuance/biosec/v1/engagements/start"
+      body: "*"
+      additional_bindings {
+        put: "/v1/engagements/start"
+        body: "*"
+      }
+    };
+  }
+
+  // Stops the engagement.
+  // Nuance recommends stopping an engagement as soon as the last online session of the engagement stops.
+  // After an engagement stops, other offline sessions can still be added to the engagement, but factors
+  // that belong to previous sessions are not taken into account when calculating the session decision.
+  // The session is automatically stopped after a pre-configured timeout.
+  rpc StopEngagement (StopEngagementRequest) returns (StopEngagementResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      put: "/nuance/biosec/v1/engagements/stop"
+      body: "*"
+      additional_bindings {
+        put: "/v1/engagements/stop"
+        body: "*"
+      }
+    };
+  }
+
+  // Updates engagement details.
+  rpc UpdateEngagement (UpdateEngagementRequest) returns (UpdateEngagementResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      patch: "/nuance/biosec/v1/engagements/details"
+      body: "*"
+      additional_bindings {
+        patch: "/v1/engagements/details"
+        body: "*"
+      }
+    };
+  }
+
+  // Retrieves engagement details.
+  rpc GetEngagementDetails (GetEngagementDetailsRequest) returns (GetEngagementDetailsResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/engagements/details"
+      additional_bindings {
+        get: "/v1/engagements/details"
+      }
+    };
+  }
+
+  // Sets the engagement verdict.
+  // The verdict should be set by a fraud analyst after reviewing engagement data (such as audio, scores, decisions, and so on).
+  rpc SetEngagementVerdict (SetEngagementVerdictRequest) returns (SetEngagementVerdictResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      put: "/nuance/biosec/v1/engagements/verdict"
+      body: "*"
+      additional_bindings {
+        put: "/v1/engagements/verdict"
+        body: "*"
+      }
+    };
+  }
+
+  // Retrieves the unique ID of the specified engagement.
+  rpc GetGkEngagementId (GetGkEngagementIdRequest) returns (GetGkEngagementIdResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/engagements/{engagement_id}/gkid"
+      additional_bindings {
+        get: "/v1/engagements/{engagement_id}/gkid"
+      }
+    };
+  }
+
+  // Retrieves the engagement details of the specified correlation ID.
+  // The method returns the five most recent results, ordered by the engagement's creation timestamp, in a descending order.
+  rpc ListCorrelatedEngagements (ListCorrelatedEngagementsRequest) returns (ListCorrelatedEngagementsResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/engagements/correlations/{correlation_id}"
+      additional_bindings {
+        get: "/v1/engagements/correlations/{correlation_id}"
+      }
+    };
+  }
+
+}

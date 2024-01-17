@@ -1,0 +1,42 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.calleridvalidation;
+
+option java_package = "com.nuance.rpc.biosec.v1.calleridvalidation";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/calleridvalidation/caller_id_risk_assessment_messages.proto";
+import "google/api/annotations.proto";
+
+
+service CallerIdRiskAssessment {
+
+  // Assess the caller ID's risk-level against all known caller ID rules within a watchlist.<ul>
+  // <li>If no match is found for the given caller ID, then [RISK_LEVEL](#nuance.biosec.v1.CallerIdRiskLevel) is CALLER_ID_RISK_LEVEL_NO_RISK.</li>
+  // <li>If the caller ID matches with multiple caller ID rules that contains the caller ID regex,
+  // the preference is given to caller ID rule with [RISK_LEVEL](#nuance.biosec.v1.CallerIdRiskLevel) CALLER_ID_RISK_LEVEL_NO_RISK 
+  // otherwise the rule with higher [RISK_LEVEL](#nuance.biosec.v1.CallerIdRiskLevel) is preferred.</li>
+  // <li>If the caller ID matches with the caller ID rules with exact phone number and multiple rules that contains caller ID regex
+  // preference is given to [RISK_LEVEL](#nuance.biosec.v1.CallerIdRiskLevel) of caller ID rule with phone number.</li></ul>
+  // Rules for caller ID risk assessments are cached and refreshed every 5 minutes.
+  rpc AssessCallerIdRisk  (AssessCallerIdRiskRequest) returns (AssessCallerIdRiskResponse) {
+    option (google.api.http) = {
+      put: "/v1/calleridwatchlists/{gk_callerid_watchlist_id.value}:assessrisk"
+      body: "*"
+    };
+  }
+}

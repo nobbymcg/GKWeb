@@ -1,0 +1,53 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.resources;
+
+option java_package = "com.nuance.rpc.biosec.v1.resources";
+option java_multiple_files = true;
+
+///////////
+// Enums //
+///////////
+
+enum ResourceType {
+  // Resource type is not set.
+  RESOURCE_TYPE_UNSPECIFIED = 0;
+  // Resource type Cassandra database.
+  RESOURCE_TYPE_CASSANDRA_DB = 1;
+  // Resource type object store.
+  RESOURCE_TYPE_OBJECT_STORE = 2;
+  // Resource type Kibana.
+  RESOURCE_TYPE_KIBANA = 3;
+  // Resource type encryption key manager system.
+  RESOURCE_TYPE_ENCRYPTION_KMS = 4;
+  // Resource type Media Manager APIs.
+  RESOURCE_TYPE_MEDIA_MANAGER_API = 5;
+  // Resource type ASRaaS APIs.
+  RESOURCE_TYPE_ASRAAS_API = 6;
+  // Resource type ne caller ID validation.
+  RESOURCE_TYPE_NE_CALLER_ID_VALIDATION = 7;
+  // Resource type Kafka.
+  RESOURCE_TYPE_KAFKA = 8;
+  // Resource type Redis.
+  RESOURCE_TYPE_REDIS = 9;
+  // Resource type SQL database.
+  RESOURCE_TYPE_SQL_DB = 10;
+  // Resource type issuer
+  RESOURCE_TYPE_USER_ISSUER = 11;
+  // Resource type elastic search.
+  RESOURCE_TYPE_ELASTICSEARCH = 12;
+}

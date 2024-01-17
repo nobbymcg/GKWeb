@@ -1,0 +1,214 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.configmanager;
+import "nuance/biosec/v1/configmanager/config_message.proto";
+import "google/api/annotations.proto";
+option java_package = "com.nuance.rpc.biosec.v1.configmanager";
+option java_multiple_files = true;
+
+// The system is configured using different parameters, gathered into configsets.
+// A configset is a collection of configuration parameters identified by an ID that is unique within the scope (insensitive casing).
+// The main purpose of a configset is to gather parameters into a set that is tuned for a specific use case.
+// There can be multiple configsets with the same ID and different states (such as SAVED, VALIDATED, INACTIVE, and so on), but only one ACTIVE configset per name.
+// Configset revisions are immutable, so every change effectively creates a new revision.
+// Revision are identified by a unique revision ID.
+// A template is a special type of configset that provides default values tuned to support a specific use case.
+// The purpose of templates is to expedite creation of configsets for common scenarios, ensuring all necessary parameters are set optimally.
+// You can add metadata to a configset including date and time of creation, a description, name of the user that created the configset, and more.
+// The system has two out-of-the-box configsets: a system configset identified as **SYSTEM**, and a scope configset identified as **SCOPE**.
+
+// This service allows managing configsets and templates.
+service ConfigurationManager {
+
+  // Creates a new configset or a new revision of an existing configset.
+  // If the validation flag is set to true, the configset is validated.
+  // The newly created configset's [state](#nuance.biosec.v1.configmanager.State)] is SAVED or VALIDATED (not ACTIVE).
+  rpc CreateConfigset (CreateConfigsetRequest) returns (CreateConfigsetResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      post: "/nuance/biosec/v1/configsets"
+      body: "*"
+      additional_bindings {
+        post: "/v1/configsets"
+        body: "*"
+      }
+    };
+  }
+
+  // Validates the values of the configset's parameters.
+  // If validated successfully, the configset's [state](#nuance.biosec.v1.configmanager.State)] is set to VALIDATED.
+  rpc ValidateConfigsetRevision (ValidateConfigsetRevisionRequest) returns (ValidateConfigsetRevisionResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      put: "/nuance/biosec/v1/configsets/revisions/{gk_configset_revision_id.value}/validate"
+      body: "*"
+      additional_bindings {
+        put: "/v1/configsets/revisions/{gk_configset_revision_id.value}:validate"
+        body: "*"
+      }
+    };
+  }
+
+  // Activates the specified revision of a configset, setting the [state](#nuance.biosec.v1.configmanager.State)] to ACTIVE. Make sure to validate the configset before activation.
+  // If a Configset with the same ID already exists, its [state](#nuance.biosec.v1.configmanager.State)] is set to INACTIVE.
+  rpc ActivateConfigsetRevision (ActivateConfigsetRevisionRequest) returns (ActivateConfigsetRevisionResponse){
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      put: "/nuance/biosec/v1/configsets/revisions/{gk_configset_revision_id.value}/activate"
+      body: "*"
+      additional_bindings {
+        put: "/v1/configsets/revisions/{gk_configset_revision_id.value}:activate"
+        body: "*"
+      }
+    };
+  }
+
+  // Lists configsets and their revisions. You can filter configsets by ID and state.
+  rpc ListConfigsetRevisions (ListConfigsetRevisionsRequest) returns (ListConfigsetRevisionsResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/configsets/revisions"
+      additional_bindings {
+        get: "/v1/configsets/revisions"
+      }
+    };
+  }
+
+  // Gets the active revision of a configset.
+  rpc GetConfigset (GetConfigsetRequest) returns (GetConfigsetResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/configsets/{configset_id}"
+      additional_bindings {
+        get: "/v1/configsets/{configset_id}"
+      }
+    };
+  }
+
+  // Gets a configset revision content.
+  rpc GetConfigsetRevision (GetConfigsetRevisionRequest) returns (GetConfigsetRevisionResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/configsets/revisions/{gk_configset_revision_id.value}"
+      additional_bindings {
+        get: "/v1/configsets/revisions/{gk_configset_revision_id.value}"
+      }
+    };
+  }
+
+  // Updates configset details.
+  rpc UpdateConfigsetDetails (UpdateConfigsetDetailsRequest) returns (UpdateConfigsetDetailsResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      patch: "/nuance/biosec/v1/configsets/{configset_id}"
+      body: "*"
+      additional_bindings {
+        patch: "/v1/configsets/{configset_id}"
+        body: "*"
+      }
+    };
+  }
+
+  // Deletes all revisions of the specified configset, including the active one.
+  rpc DeleteConfigset (DeleteConfigsetRequest) returns (DeleteConfigsetResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      delete: "/nuance/biosec/v1/configsets/{configset_id}"
+      additional_bindings {
+        delete: "/v1/configsets/{configset_id}"
+      }
+    };
+  }
+
+  // Deletes a specific configset revision unless that revision is active.
+  // To delete an active revision, use the [DeleteConfigset](#DeleteConfigset) method.
+  rpc DeleteConfigsetRevision (DeleteConfigsetRevisionRequest) returns (DeleteConfigsetRevisionResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      delete: "/nuance/biosec/v1/configsets/revisions/{gk_configset_revision_id.value}"
+      additional_bindings {
+        delete: "/v1/configsets/revisions/{gk_configset_revision_id.value}"
+      }
+    };
+  }
+
+
+
+  //////////////////////////
+  // Templates Management //
+  /////////////////////////
+
+  // Creates a new template, validates, and activates it.
+  rpc CreateTemplate (CreateTemplateRequest) returns (CreateTemplateResponse){
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      post: "/nuance/biosec/v1/templates"
+      body: "*"
+      additional_bindings {
+        post: "/v1/templates"
+        body: "*"
+      }
+    };
+  }
+
+  // Lists configset templates.
+  // The context.gk_scope_id passed in the request must be authorized to list the templates.
+  rpc ListTemplates (ListTemplatesRequest) returns (ListTemplatesResponse){
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/templates"
+      additional_bindings {
+        get: "/v1/templates"
+      }
+    };
+  }
+
+  // Gets the content of the specified configset.
+  rpc GetTemplate (GetTemplateRequest) returns (GetTemplateResponse){
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/templates/{template_id}"
+      additional_bindings {
+        get: "/v1/templates/{template_id}"
+      }
+    };
+  }
+
+  // Deletes a configset template.
+  rpc DeleteTemplate (DeleteTemplateRequest) returns (DeleteTemplateResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      delete: "/nuance/biosec/v1/templates/{template_id}"
+      additional_bindings {
+        delete: "/v1/templates/{template_id}"
+      }
+    };
+  }
+
+  // Generates a template from factory settings.
+  rpc GenerateTemplate (GenerateTemplateRequest) returns (GenerateTemplateResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      post: "/nuance/biosec/v1/templates/generate"
+      body: "*"
+      additional_bindings {
+        post: "/v1/factory-templates:generate"
+        body: "*"
+      }
+    };
+  }
+}

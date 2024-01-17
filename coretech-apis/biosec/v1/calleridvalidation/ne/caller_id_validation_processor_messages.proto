@@ -1,0 +1,162 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.calleridvalidationprocessor.ne;
+
+option java_package = "com.nuance.rpc.biosec.v1.calleridvalidationprocessor.ne";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/calleridvalidation/ne/caller_id_validation_processor_enums.proto";
+import "nuance/biosec/v1/common_types.proto";
+import "nuance/rpc/status.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+
+/////////////////////////////
+// ValidateCallerIdRequest //
+/////////////////////////////
+
+// Input message that defines parameters for [ValidateCallerId](#ValidateCallerId).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Optional
+message ValidateCallerIdRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Specifies caller ID data.
+  oneof Data {
+    // The reference ID of a previously set caller ID validation result.
+    string reference_id = 2;
+    // The caller ID details.
+    CallerIdData caller_id_data = 3;
+  }
+}
+
+// Output message that defines parameters returned by [ValidateCallerId](#ValidateCallerId).
+message ValidateCallerIdResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1;
+  // Mandatory. The reference ID of the caller ID validation result.
+  string reference_id = 2;
+  // Mandatory. The caller ID validation result.
+  ValidateCallerIdResult result = 3;
+}
+
+// Contains the caller ID validation result. Included in [ValidateCallerIdResponse](#nuance.biosec.v1.calleridvalidationprocessor.ValidateCallerIdResponse).
+message ValidateCallerIdResult {
+  // Mandatory. The caller ID processing result.
+  ProcessCallerIdResult processing_result = 1;
+  // Mandatory. The level of risk and its reliability, computed by the risk engine.
+  nuance.biosec.v1.RiskEngineResult risk_engine_result = 2;
+  // Mandatory. The caller ID validation decision.
+  nuance.biosec.v1.Decision decision = 3;
+  // Mandatory. The reason for the decision.
+  DecisionReason decision_reason = 4;
+}
+
+// Contains caller ID processing results. Included in [ValidateCallerIdResult](#nuance.biosec.v1.calleridvalidationprocessor.ValidateCallerIdResult).
+message ProcessCallerIdResult {
+  // Mandatory. The ID of the vendor.
+  string vendor_id = 1;
+  // Mandatory. The raw trust indicator score.
+  google.protobuf.FloatValue trust_indicator = 2;
+  // Mandatory. Additional processing result data.
+  map<string,string> additional_data = 3;
+}
+
+//////////////////////
+// Common messages  //
+//////////////////////
+
+// Input caller ID data. Included in [ValidateCallerIdRequest](#nuance.biosec.v1.calleridvalidationprocessor.ValidateCallerIdRequest).
+message CallerIdData {
+  // Optional. The reference ID of the caller ID processing result.
+  string reference_id = 1;
+  // Mandatory. Date and time when the call started.
+  google.protobuf.Timestamp call_start_timestamp = 2;
+  // Mandatory. The calling phone number.
+  // May contain numbers, spaces, dashes, the plus sign, or parenthesis.
+  // Included in the user of the 'FROM' header URI.
+  string calling_number = 3;
+  // Mandatory. The called phone number.
+  // May contain numbers, spaces, dashes, the plus sign, or parenthesis.
+  // Included in the user of the 'TO' header URI.
+  string called_number = 4;
+  // Mandatory. The telecom network ID.
+  string telecom_network_id = 5;
+  // Mandatory. The call signaling info.
+  oneof call_signaling_info {
+    // The SIP message in the RFC-3261 format. It must contain the raw SIP-INVITE message including headers and body.
+    string sip_message = 6;
+  }
+  // Optional. The owner of the caller ID data.
+  // When set, the system refers to the caller ID data as personal information.
+  nuance.biosec.v1.UniqueId gk_person_id = 7;
+}
+
+////////////////////////////////
+// ValidateCallerIdExtRequest //
+////////////////////////////////
+
+// Input message that defines parameters for [ValidateCallerIdExt](#ValidateCallerIdExt).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Optional
+message ValidateCallerIdExtRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. The vendor API version used by the original query. The API returns the NOT_IMPLEMENTED status if version mismatch occurs.
+  string version = 2;
+  // Mandatory. The raw result by the vendor.
+  string raw_data = 3;
+  // Optional. The person with whom the caller ID result is associated with.
+  // When set, the system refers to the caller ID result as personal information.
+  nuance.biosec.v1.UniqueId gk_person_id = 4;
+}
+
+// Output message that defines parameters returned by [ValidateCallerIdExt](#ValidateCallerIdExt).
+message ValidateCallerIdExtResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1;
+  // Mandatory. The caller ID validation result.
+  ValidateCallerIdExtResult result = 2;
+}
+
+// Contains the caller ID validation result. Included in [ValidateCallerIdExtResponse](#nuance.biosec.v1.calleridvalidationprocessor.ValidateCallerIdExtResponse).
+message ValidateCallerIdExtResult {
+  //Mandatory. The vendor specific data.
+  VendorData vendor_data = 1;
+  // Mandatory. The level of risk and its reliability, computed by the risk engine.
+  nuance.biosec.v1.RiskEngineResult risk_engine_result = 2;
+  // Mandatory. The caller ID validation decision.
+  nuance.biosec.v1.Decision decision = 3;
+  // Mandatory. The reason for the decision.
+  DecisionReason decision_reason = 4;
+}
+
+//Contains the vendor specific data.
+message VendorData {
+  // Mandatory. The raw trust indicator score.
+  google.protobuf.FloatValue trust_indicator = 1;
+}

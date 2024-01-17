@@ -1,0 +1,215 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+
+syntax = "proto3";
+
+package nuance.biosec.v1.deviceprint;
+
+option java_package = "com.nuance.rpc.biosec.v1.deviceprint";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/common_types.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/duration.proto";
+
+///////////
+// Enums //
+///////////
+
+//[Enroll](#Enroll) operation result.
+enum EnrollReason {
+  // Value is not set.
+  ENROLL_REASON_UNSPECIFIED = 0;
+  // An internal error prevented the system from completing the operation.
+  ENROLL_REASON_INTERNAL_ERROR = 1;
+  // Enroll completed successfully.
+  ENROLL_REASON_ENROLL_OK = 2;
+  // Audio does not contain the amount of speech required to complete the process.
+  ENROLL_REASON_TOO_SHORT = 3;
+  // Audio has not a valid audio model.
+  ENROLL_REASON_MISSING_MODEL = 4;
+  // Audio is already added to the print
+  ENROLL_REASON_ALREADY_ADDED = 5;
+  // Audio was processed for a different type of print
+  ENROLL_REASON_WRONG_PRINT_TYPE = 6;
+}
+
+// Deviceprint profile status.
+enum DeviceprintProfileStatus {
+  // Deviceprint profile status is not set.
+  DEVICEPRINT_PROFILE_STATUS_UNSPECIFIED = 0;
+  // Deviceprint is not trained.  
+  DEVICEPRINT_PROFILE_STATUS_NOT_TRAINED = 1;
+  // Deviceprint is trained but can be improved using additional enrollment audio.  
+  DEVICEPRINT_PROFILE_STATUS_BASIC_TRAINED = 2;
+  // Deviceprint is trained with an optimal amount of audio.
+  DEVICEPRINT_PROFILE_STATUS_OPTIMAL_TRAINED = 3;
+}
+
+// Specifies if an enrollment segment used for training is consistent with the other segments in the collection.
+enum ConsistencyDecision {
+  // Audio consistency is not set.
+  CONSISTENCY_DECISION_UNSPECIFIED = 0;  
+  // The segment is consistent with other segments in the enrollment segments collection and probably belongs to the same person.
+  CONSISTENCY_DECISION_CONSISTENT = 1;   
+  // The segment is inconsistent with other segments in the enrollment segments collection and probably belongs to a different person.
+  CONSISTENCY_DECISION_INCONSISTENT = 2; 
+}
+
+// Specifies if the enrollment segments collection of a print allows the system to train the print successfully.
+enum EnrollStatus {
+  // Enroll status is not set.
+  ENROLL_STATUS_UNSPECIFIED = 0;   
+  // Minimal requirements for training are not met.  
+  ENROLL_STATUS_TRAIN_NOT_POSSIBLE = 1;  
+  // Minimum requirements for training are met, but Nuance recommends adding more audio.
+  ENROLL_STATUS_TRAIN_POSSIBLE = 2;      
+  // Optimal training requirements are met.
+  ENROLL_STATUS_TRAIN_SUGGESTED = 3;     
+  // Too many segments are added and it is not possible to add more.
+  ENROLL_STATUS_FULL = 4;                
+}
+
+// Deviceprint processing decision reason.
+enum DecisionReason {
+  // Decision reason is not specified.
+  DECISION_REASON_UNSPECIFIED = 0;
+  // Audio is valid.
+  DECISION_REASON_AUDIO_OK = 1;
+  // Processing requires more audio segments than provided.
+  DECISION_REASON_NOT_ENOUGH_SEGMENTS = 2;
+  // Audio format is invalid or not supported.
+  DECISION_REASON_INVALID_AUDIO = 3;
+  // Audio does not contain the amount of speech required to complete the process.
+  DECISION_REASON_AUDIO_TOO_SHORT = 4;
+  // Audio speech level is lower than the level required to complete the process.
+  DECISION_REASON_AUDIO_TOO_SOFT = 5;
+  // Audio is too loud and causes saturation.
+  DECISION_REASON_AUDIO_TOO_LOUD = 6;
+  // Audio SNR (Signal to Noise Ratio) is too low.
+  DECISION_REASON_AUDIO_TOO_NOISY = 7;
+  // A fraud attempt probably occurred.
+  DECISION_REASON_FRAUDSTER_INDICATION = 8;
+  // This is probably the authentic person.
+  DECISION_REASON_DEVICEPRINT_MATCH = 9;
+  // This is probably not the authentic person.
+  DECISION_REASON_DEVICEPRINT_NO_MATCH = 10;
+  // The system could not reach a reliable decision.
+  DECISION_REASON_LOW_RELIABILITY = 11;
+  // Risk was not detected.
+  DECISION_REASON_NO_RISK_DETECTED = 12;
+  // No available scores.
+  DECISION_REASON_NO_SCORES = 13;
+  // An error occurred while making the decision.
+  DECISION_REASON_INTERNAL_ERROR = 999;
+}
+
+// Audio validity and the reason that the segment is not valid (when relevant).
+enum AudioValidity {
+  // Use to initialize the fields.
+  REASON_UNSPECIFIED = 0;
+  // Audio is satisfactory for processing.
+  REASON_AUDIO_OK = 1;
+  // The number of audio segments provided is not enough for processing.
+  REASON_NOT_ENOUGH_SEGMENTS = 2;
+  // Audio format is invalid or not supported.
+  REASON_INVALID_AUDIO = 3;
+  // Audio does not contain the amount of speech required to complete the process.
+  REASON_AUDIO_TOO_SHORT = 4;
+  // Audio speech level is lower than the level required to complete the process.
+  REASON_AUDIO_TOO_SOFT = 5;
+  // Audio is too loud and causes saturation.
+  REASON_AUDIO_TOO_LOUD = 6;
+  // Audio SNR is too low.
+  REASON_AUDIO_TOO_NOISY = 7;
+  // An internal error prevented the system from checking if the audio is valid or not.
+  REASON_INTERNAL_ERROR = 999;
+}
+
+// [Train](#Train) operation result.
+enum TrainReason {
+  // Train status is not set.
+  TRAIN_REASON_UNSPECIFIED = 0;
+  // Train completed successfully.
+  TRAIN_REASON_TRAIN_OK = 1;
+  // Train failed due to inconsistent audio segments (Segments seem to belong to different devices).
+  TRAIN_REASON_INCONSISTENCY = 2;
+  // Train failed because the number of segments in the enrollment segments collection is too small, or because the segments do not contain enough usable audio.
+  TRAIN_REASON_NOT_READY_TO_TRAIN = 3;
+  // An internal error prevented the system from completing the operation.
+  TRAIN_REASON_INTERNAL_ERROR = 999;
+}
+
+
+// Information about the audio.
+message AudioDetails {
+  // Mandatory. Unique ID of the Media Segment.
+  nuance.biosec.v1.UniqueId gk_media_segment_id = 1;
+  // Mandatory. Unique ID of the audio returned by a processing method.
+  nuance.biosec.v1.UniqueId gk_processed_audio_id = 2;
+  // Optional. Amount of gross audio including speech, noise, and silence.
+  google.protobuf.Duration gross_audio = 3;
+  // Optional. Amount of speech.
+  google.protobuf.Duration net_audio = 4;
+  // Optional. Amount of audio containing anything but speech, such as noise and silence.
+  google.protobuf.Duration not_speech = 5;
+  // Optional. Signal noise ratio, expressed in decibels.
+  google.protobuf.FloatValue snr_db = 6;
+  // Optional. Audio energy level.
+  google.protobuf.FloatValue speech_level = 7;
+  // Optional. Audio saturation level represented as the number of saturated samples in one minute.
+  google.protobuf.FloatValue saturation_level = 8;
+
+  // Optional. PESQ score: a number in range 0-5. 0 means that the audio contains only noise. 5 means perfect quality of speech.
+  google.protobuf.FloatValue perceptual_speech_quality = 9;
+  // Optional. Packet loss rate expressed as percentage.
+  google.protobuf.FloatValue packet_loss_rate = 10;
+
+  // Optional. The telephony channel identification score.
+  repeated TelephonyChannelScore channel_scores = 11;
+
+  // Optional. Number of audio input channels. Values are 1 for mono and 2 for stereo.
+  google.protobuf.Int32Value media_number_of_channels = 21;
+  // Optional. Sampling rate of the input audio in Hertz. Can be different from the one used for processing.
+  google.protobuf.Int32Value media_sampling_rate_hz = 22;
+  // Optional. Specifies the processed channel when processing media with multiple channels. This parameter is not set if the media has a single channel.
+  nuance.biosec.v1.AudioChannelSelector selected_channel = 23;
+  // Optional. Number of audio channels in the processed audio. Values are 1 for mono and 2 for stereo.
+  google.protobuf.Int32Value processed_audio_number_of_channels = 24;
+  // Optional. Sampling rate used for processing the audio. Value is in Hertz and can differ from the value of the input audio.
+  google.protobuf.Int32Value processed_audio_sampling_rate_hz = 25;
+}
+
+// The score of a specific telephony channel.
+message TelephonyChannelScore
+{
+  // Mandatory. Specifies the channel type to which the score refers to.
+  TelephonyChannelType channel_type = 1;
+  // Mandatory. The numeric score that is related to the specific channel type.
+  float channel_score = 2;
+}
+
+// The telephony channels that are currently supported.
+enum TelephonyChannelType
+{
+  // Telephony channel is not specified.
+  TELEPHONY_CHANNEL_TYPE_UNSPECIFIED = 0;
+  // Landline call.
+  TELEPHONY_CHANNEL_TYPE_LANDLINE =1;
+  // Mobile call.
+  TELEPHONY_CHANNEL_TYPE_MOBILE = 2;
+  // VOIP call.
+  TELEPHONY_CHANNEL_TYPE_VOIP = 3;
+}

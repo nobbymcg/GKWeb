@@ -1,0 +1,51 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.calleridvalidationprocessor.ne;
+
+option java_package = "com.nuance.rpc.biosec.v1.calleridvalidationprocessor.ne";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/calleridvalidation/ne/caller_id_validation_processor_messages.proto";
+import "google/api/annotations.proto";
+
+//////////////////////////////////////////
+// CallerIdValidationProcessor Service  //
+//////////////////////////////////////////
+
+// This service allows validating caller IDs.
+service CallerIdValidationProcessor {
+  // Validates the caller ID.
+  rpc ValidateCallerId (ValidateCallerIdRequest) returns (ValidateCallerIdResponse){
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      post: "/nuance/biosec/v1/calleridvalidation/ne/validate-caller-id"
+      body: "*"
+      additional_bindings {
+        post: "/v1/calleridvalidation/ne/validation"
+        body: "*"
+      }
+    };
+  }
+  // Validates the externally processed caller id.
+  rpc ValidateCallerIdExt (ValidateCallerIdExtRequest) returns (ValidateCallerIdExtResponse) {
+    option (google.api.http) = {
+      post: "/v1/calleridvalidation/ne/validation-ext"
+      body: "*"
+    };
+  }
+
+}

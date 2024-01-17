@@ -1,0 +1,162 @@
+/*-
+ * #%L
+ * admin-proto
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.mediamanager.admin.v1;
+
+import "nuance/mediamanager/connector/v1/connector_resources.proto";
+import "nuance/rpc/status.proto";
+
+option java_multiple_files = true;
+option java_package = "com.nuance.rpc.mediamanager.admin.v1";
+
+
+// The Connector admin service is responsible for creating and managing a tenant’s
+// connector information.
+service ConnectorAdminService {
+
+  // Create a new Connector for specified ConnectorConfig.
+  // When a request to create a new Connector is made the service will verify that the ConnectorConfig
+  // already exists in storage. If the ConnectorConfig does not exist the service will return ConnectorConfig not found.
+  // If ConnectorConfig exists the service will verify if the Connector already exists in storage.
+  // If the Connector exists the service will update the Connector and return the status already exists.
+  // If the Connector does not exist the service will create and return the new Connector.
+  // If mandatory fields are missing or incorrectly formatted the response will return a listing of the violations.
+  rpc CreateConnector (CreateConnectorRequest) returns (CreateConnectorResponse);
+
+  // Get specified Connector.
+  // When request to get a Connector is made the service will search based on the provided Connector ID.
+  // If found service will return the Connector otherwise will return status not found.
+  // If mandatory fields are missing or incorrectly formatted the response will return a listing of the violations.
+  rpc GetConnector (GetConnectorRequest) returns (GetConnectorResponse);
+
+  // Update an existing Connector.
+  // When a request to update a Connector is made the service will verify if it exist in storage.
+  // If the Connector exists the service will apply an update to the Connector and return the updated
+  // Connector in the response. If the Connector does not exist the service will return a response with a status not found.
+  // If mandatory fields are missing or incorrectly formatted the response will return a listing of the violations.
+  rpc UpdateConnector (UpdateConnectorRequest) returns (UpdateConnectorResponse);
+
+  // Delete specified Connector.
+  // When request to delete a Connector is made the service will search based on the provided Connector ID.
+  // If found the Connector is flagged as deleted, otherwise service returns the status not found.
+  // If mandatory fields are missing or incorrectly formatted the response will return a listing of the violations.
+  rpc DeleteConnector (DeleteConnectorRequest) returns (DeleteConnectorResponse);
+
+  // List Connectors for specified tenant.
+  // When a request to list Connectors is made the service will search based on the provided Tenant ID.
+  // If found, the list of Connectors will be returned, otherwise service returns the status not found.
+  rpc ListConnectors (ListConnectorsRequest) returns (ListConnectorsResponse);
+}
+
+// Input message that defines parameters for [CreateConnector](#CreateConnector).
+message CreateConnectorRequest {
+  // Mandatory. Specifies the details for Connector.
+  ConnectorInfo connector_info = 1;
+}
+
+// Output message that defines parameters returned by [CreateConnector](#CreateConnector).
+message CreateConnectorResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Specifies the details for Connector.
+  Connector connector = 2;
+}
+
+// Input message that defines parameters for [GetConnector](#GetConnector).
+message GetConnectorRequest {
+  // Mandatory. Unique ID for Connector.
+  string connector_id = 1;
+}
+
+// Output message that defines parameters returned by [GetConnector](#GetConnector).
+message GetConnectorResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Specifies the details for Connector.
+  Connector connector = 2;
+}
+
+// Input message that defines parameters for [UpdateConnector](#UpdateConnector).
+message UpdateConnectorRequest {
+  // Mandatory. Unique ID for Connector.
+  string connector_id = 1;
+  // Mandatory. Specifies the details for Connector to be updated.
+  ConnectorInfo connector_info = 2;
+}
+
+// Output message that defines parameters returned by [UpdateConnector](#UpdateConnector).
+message UpdateConnectorResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Connector details.
+  Connector connector = 2;
+}
+
+// Input message that defines parameters for [DeleteConnector](#DeleteConnector).
+message DeleteConnectorRequest {
+  // Mandatory. Unique ID for Connector.
+  string connector_id = 1;
+}
+
+// Output message that defines parameters returned by [DeleteConnector](#DeleteConnector).
+message DeleteConnectorResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [ListConnectors](#ListConnectors).
+message ListConnectorsRequest {
+  // Mandatory. Unique ID for Tenant.
+  string tenant_id = 1;
+}
+
+// Output message that defines parameters returned by [ListConnectors](#ListConnectors).
+message ListConnectorsResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // The list of Connectors.
+  repeated Connector connector = 2;
+}
+
+// Connector message.
+message Connector {
+  // Unique ID for Connector.
+  string connector_id = 1;
+  // Connector details.
+  ConnectorInfo connector_info = 2;
+}
+
+// Contains details for ConnectorInfo used by [CreateConnector](#CreateConnector).
+message ConnectorInfo {
+  // Mandatory. Connector Type.
+  nuance.mediamanager.connector.v1.ConnectorType connector_type = 1;
+  // Mandatory. Connector name (minimum length 2 maximum length 50).
+  string name = 2;
+  // Optional. Connector description (maximum length 250).
+  string description = 3;
+  // Mandatory. Unique ID for Tenant.
+  string tenant_id = 4;
+  // Mandatory. Unique ID for Datacenter.
+  string datacenter_id = 5;
+  // Mandatory. Unique ID for Environment.
+  string environment_id = 6;
+  // Optional. Oauth2 client ID.
+  string oauth2_client_id = 7;
+  // Mandatory. Unique ID for Connector Config.
+  string connector_config_id = 8;
+  // Mandatory. Unique ID for Realm.
+  string realm_id = 9;
+}

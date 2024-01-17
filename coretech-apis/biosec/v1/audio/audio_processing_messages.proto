@@ -1,0 +1,453 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.audio;
+
+option java_package = "com.nuance.rpc.biosec.v1.audio";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/audio/audio_processing_common_types.proto";
+import "nuance/biosec/v1/common_types.proto";
+import "nuance/rpc/status.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/duration.proto";
+
+/////////////////////////
+// DetectAudioSpoofing //
+/////////////////////////
+
+// Input message that defines parameters for [DetectAudioSpoofing](#DetectAudioSpoofing).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Mandatory
+message DetectAudioSpoofingRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Specified the audio for processing.
+  oneof input {
+    // Unique ID of the new media segment.
+    nuance.biosec.v1.UniqueId gk_media_segment_id = 2;
+    // Unique ID of the processed audio.
+    nuance.biosec.v1.UniqueId gk_processed_audio_id = 3;
+  }
+  // Optional, owner of the audio.
+  // When set, the system handles the audio as personal information.
+  nuance.biosec.v1.UniqueId gk_person_id = 4;
+  // Optional. Setting this value enables Synthetic Speech Detection.
+  SyntheticSpeechDetectionParameters syntheticSpeechDetectionParameters = 5;
+  // Optional. Setting this value enables Channel Playback Detection.
+  ChannelPlaybackDetectionParameters channelPlaybackDetectionParameters = 6;
+  // Optional. Setting this value enables Footprint Playback Detection.
+  FootprintPlaybackDetectionParameters footprintPlaybackDetectionParameters = 7;
+  // Optional. Specifies the processed channel when processing media with multiple channels. This parameter is ignored if the media has a single channel or if the input is gk_processed_audio_id.
+  nuance.biosec.v1.AudioChannelSelector channel_selector = 10;
+}
+
+// Enables Synthetic Speech Detection. Included in [DetectAudioSpoofingRequest](#nuance.biosec.v1.audio.DetectAudioSpoofingRequest).
+message SyntheticSpeechDetectionParameters {
+}
+
+// Enables Channel Playback Detection. Included in [DetectAudioSpoofingRequest](#nuance.biosec.v1.audio.DetectAudioSpoofingRequest).
+message ChannelPlaybackDetectionParameters {
+}
+
+// Enables Footprint Playback Detection. Included in [DetectAudioSpoofingRequest](#nuance.biosec.v1.audio.DetectAudioSpoofingRequest).
+message FootprintPlaybackDetectionParameters {
+  // Mandatory. Unique ID of the voiceprint that the method uses to retrieve previous footprints.
+  nuance.biosec.v1.UniqueId gk_voiceprint_profile_id = 1;
+}
+
+// Output message that defines parameters returned by [DetectAudioSpoofing](#DetectAudioSpoofing).
+message DetectAudioSpoofingResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // General audio metrics, such as gross audio, net audio, SNR, and so on.
+  nuance.biosec.v1.AudioDetails audio_details = 2;
+  // Audio validity status. For invalid audio, indicates the invalidity reason.
+  nuance.biosec.v1.AudioValidity validity = 3;
+  // Result of Synthetic Speech Detection.
+  SyntheticSpeechDetectionResult synthetic_speech_detection_result = 4;
+  // Result of Channel Playback Detection.
+  ChannelPlaybackDetectionResult channel_playback_detection_result = 5;
+  // Result of Footprint Playback Detection.
+  FootprintPlaybackDetectionResult footprint_playback_detection_result = 6;
+}
+
+// Contains the Synthetic Speech Detection scores and decision. Included in [DetectAudioSpoofingResponse](#nuance.biosec.v1.audio.DetectAudioSpoofingResponse).
+message SyntheticSpeechDetectionResult {
+  // Unique ID of the media segment used for detection (if only a subset of audio was used, the value may be different from the input).
+  nuance.biosec.v1.UniqueId gk_media_segment_id = 1;
+  // Unique ID of the processed audio.
+  nuance.biosec.v1.UniqueId gk_processed_audio_id = 2;
+  // Indicates whether audio was classified as synthetic.
+  nuance.biosec.v1.Decision decision = 3;
+  // The reason of the decision.
+  DecisionReason reason = 4;
+  // Level of risk and reliability, computed by the risk engine.
+  nuance.biosec.v1.RiskEngineResult result = 5;
+  // Raw Synthetic Speech Detection score.
+  google.protobuf.FloatValue score = 6;
+}
+
+// Contains the Channel Playback Detection scores and decision. Included in [DetectAudioSpoofing](#DetectAudioSpoofing).
+message ChannelPlaybackDetectionResult {
+  // Unique ID of the media segment used for detection (if only a subset of audio was used, the value may be different from the input).
+  nuance.biosec.v1.UniqueId gk_media_segment_id = 1;
+  // Unique ID of the processed audio.
+  nuance.biosec.v1.UniqueId gk_processed_audio_id = 2;
+  // Indicates whether the given audio was identified as playback.
+  nuance.biosec.v1.Decision decision = 3;
+  // The reason of the decision.
+  DecisionReason reason = 4;
+  // Level of risk and its reliability, computed by the risk engine.
+  nuance.biosec.v1.RiskEngineResult result = 5;
+  // Raw Channel Playback Detection score.
+  google.protobuf.FloatValue score = 6;
+  // Playback algorithm version that the system used to compute the score.
+  google.protobuf.Int32Value playback_version = 7;
+  // Unique ID of the calibration model that the system used to compute the score.
+  nuance.biosec.v1.UniqueId gk_playback_calibration_model_revision_id = 8;
+
+}
+
+// Contains the Footprint Playback Detection scores and decision. Included in [DetectAudioSpoofing](#DetectAudioSpoofing).
+message FootprintPlaybackDetectionResult {
+  // Unique ID of the media segment used for detection (if only a subset of audio was used, the value may be different from the input).
+  nuance.biosec.v1.UniqueId gk_media_segment_id = 1;
+  // Unique ID of the processed audio.
+  nuance.biosec.v1.UniqueId gk_processed_audio_id = 2;
+  // Indicates whether the given audio was detected as playback.
+  nuance.biosec.v1.Decision decision = 3;
+  // The reason of the decision.
+  DecisionReason reason = 4;
+  // Level of risk and its reliability, computed by the risk engine.
+  nuance.biosec.v1.RiskEngineResult result = 5;
+  // Raw Footprint Playback Detection score.
+  google.protobuf.FloatValue score = 6;
+}
+
+///////////////////
+// Validate Text //
+///////////////////
+
+// Input message that defines parameters for [ValidateText](#ValidateText).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Mandatory
+message ValidateTextRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Audio for processing.
+  oneof audio {
+    // Unique ID of the new media segment.
+    nuance.biosec.v1.UniqueId gk_media_segment_id = 2;
+	  // Unique ID of the processed audio.
+    nuance.biosec.v1.UniqueId gk_processed_audio_id = 3;
+  }
+  // Mandatory, the expected text.
+  string expected_text = 4;
+
+  // Optional, owner of the audio.
+  // When set, the system handles the audio as personal information.
+  nuance.biosec.v1.UniqueId gk_person_id = 5;
+
+  // Optional. Specifies the processed channel when processing media with multiple channels. This parameter is ignored, if the media has a single channel or if the input is gk_processed_audio_id.
+  nuance.biosec.v1.AudioChannelSelector channel_selector = 10;
+}
+
+// Output message that defines parameters returned by [ValidateText](#ValidateText).
+message ValidateTextResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Text validation result.
+  ValidateTextResult result = 2;
+}
+
+// Contains the text validation score and decision. Included in [ValidateTextResponse](#nuance.biosec.v1.audio.ValidateTextResponse).
+message ValidateTextResult {
+  // Level of risk and its reliability, computed by the risk engine.
+  nuance.biosec.v1.RiskEngineResult result = 1;
+  // Raw text validation score.
+  google.protobuf.FloatValue score = 2;
+  // Indicates if the speaker said the required text.
+  nuance.biosec.v1.Decision decision = 3;
+  // Reason of the decision.
+  DecisionReason reason = 4;
+  // Spoken text.
+  string detected_text = 5;
+  // Unique ID of the processed audio.
+  nuance.biosec.v1.UniqueId gk_processed_audio_id = 6;
+}
+
+////////////////////
+// DetectLiveness //
+////////////////////
+
+// Input message that defines parameters for [DetectLiveness](#DetectLiveness).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Mandatory
+message DetectLivenessRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Audio that the system uses as reference when comparing it with the random audio.
+  oneof audio {
+    // Unique ID of the new media segment.
+    nuance.biosec.v1.UniqueId gk_media_segment_id = 2;
+	  // Unique ID of the processed audio.
+    nuance.biosec.v1.UniqueId gk_processed_audio_id = 3;
+  }
+  // Mandatory. One or more audio samples of the person responding to a liveness prompt.
+  repeated RandomAudio random_audio_set = 4;
+  // Optional, owner of the audio.
+  // When set, the system handles the audio as personal information.
+  nuance.biosec.v1.UniqueId gk_person_id = 5;
+  // Optional. Specifies the processed channel when processing media with multiple channels. This parameter is ignored, if the media has a single channel or if the input is gk_processed_audio_id.
+  nuance.biosec.v1.AudioChannelSelector channel_selector = 10;
+}
+
+// Contains text and an audio recording of a random phrase. Included in [DetectLivenessRequest](#nuance.biosec.v1.audio.DetectLivenessRequest).
+message RandomAudio
+{
+  // Mandatory. Audio for processing.
+  oneof audio {
+    // Unique ID of the new media segment.
+    nuance.biosec.v1.UniqueId gk_media_segment_id = 1;
+    // Unique ID of the processed audio.
+    nuance.biosec.v1.UniqueId gk_processed_audio_id = 2;
+  }
+  // Mandatory. Expected text.
+  string expected_text = 3;
+  // Optional. Specifies the processed channel when processing media with multiple channels. This parameter is ignored if the media has a single channel or if the input is gk_processed_audio_id.
+  nuance.biosec.v1.AudioChannelSelector channel_selector = 10;
+}
+
+// Output message that defines parameters returned by [DetectLiveness](#DetectLiveness).
+message DetectLivenessResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Liveness Detection result.
+  DetectLivenessResult result = 2;
+}
+
+// Contains the liveness Detection scores and decision. Included in [DetectLivenessResponse](#nuance.biosec.v1.audio.DetectLivenessResponse).
+message DetectLivenessResult {
+  // Level of risk and its reliability, computed by the risk engine.
+  nuance.biosec.v1.RiskEngineResult risk_engine_result = 1;
+  // Raw liveness detection score.
+  google.protobuf.FloatValue liveness_detection_score = 2;
+  // Indicates if the media segment is a recording.
+  nuance.biosec.v1.Decision decision = 3;
+  // The reason of the decision.
+  DecisionReason reason = 4;
+  // Detailed information for each random phrase recording.
+  repeated RandomAudioDetails details = 5;
+  // Unique ID of the processed audio that the system uses as reference when comparing it with the random audio.
+  nuance.biosec.v1.UniqueId gk_reference_processed_audio_id = 6;
+}
+
+// Contains detailed scores and decision for each random phrase recording. Included in [DetectLivenessResult](#nuance.biosec.v1.audio.DetectLivenessResult).
+message RandomAudioDetails {
+  // Unique ID of the media segment used (if only a subset of audio was used, the value may be different from the input).
+  nuance.biosec.v1.UniqueId gk_media_segment_id = 1;
+  // Unique ID of the processed audio.
+  nuance.biosec.v1.UniqueId gk_processed_audio_id = 2;
+  // Audio validity status. In case audio is not valid, the field contains the invalidity reason.
+  nuance.biosec.v1.AudioValidity validity = 3;
+  // Raw score from comparing this audio with the fixed text phrase used in [Verify](#Verify).
+  google.protobuf.FloatValue biometric_score = 4;   
+  // Raw text validation score for this media segment.
+  google.protobuf.FloatValue text_validation_score = 5;     
+}
+
+// Input message that defines parameters for [GetLivenessPrompt](#GetLivenessPrompt).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Mandatory
+message GetLivenessPromptRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+}
+
+// Output message that defines parameters returned by [GetLivenessPrompt](#GetLivenessPrompt).
+message GetLivenessPromptResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1; 
+  // The expected text.  
+  string expected_text = 2;
+  // Additional information meant to assist with prompting the caller to say the expected phrase.
+  string ivr_info = 3;
+}
+
+////////////////
+// Transcribe //
+////////////////
+
+// Input message that defines parameters for [Transcribe](#Transcribe).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Mandatory
+message TranscribeRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Audio for processing.
+  oneof audio {
+    // Unique ID of the new media segment.
+    nuance.biosec.v1.UniqueId gk_media_segment_id = 2;
+    // Unique ID of the processed audio.
+    nuance.biosec.v1.UniqueId gk_processed_audio_id = 3;
+  }
+  // Optional. The language spoken in the audio. If not specified, the method uses the actual_language processed audio attribute or the configuration parameter. At least one of them must be valid.
+  // List of available languages can be found here: https://docs.nuance.com/mix/overview/mix-geographies/
+  // Contact Nuance account manager to get the list of available languages in your region.
+  string language = 4;
+
+  // Optional, owner of the audio.
+  // When set, the system handles the audio as personal information.
+  nuance.biosec.v1.UniqueId gk_person_id = 5;
+
+  // Optional. Specifies the processed channel when processing media with multiple channels. This parameter is ignored if the media has a single channel or if the input is gk_processed_audio_id.
+  nuance.biosec.v1.AudioChannelSelector channel_selector = 6;
+}
+
+// Output message that defines parameters returned by [Transcribe](#Transcribe).
+message TranscribeResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1;
+  // Optional. Text validation result.
+  TranscribeResult result = 2;
+}
+
+// Contains the text validation score and decision. Included in [TranscribeResponse](#nuance.biosec.v1.audio.TranscribeResponse).
+message TranscribeResult {
+  // Optional. Spoken language. List of available languages can be found here: https://docs.nuance.com/mix/overview/mix-geographies/.
+  string language = 1;
+  // Optional. Spoken text.
+  string text = 2;
+  // Indicates if a transcription has been triggered.
+  bool transcribed = 3;
+  // Optional. Unique ID of the processed audio.
+  nuance.biosec.v1.UniqueId gk_processed_audio_id = 4;
+  // Optional. Unique ID of the transcribed text.
+  nuance.biosec.v1.UniqueId gk_text_id = 5;
+  // Optional. Transcription audio metrics, such as gross audio, net audio, SNR, and so on.
+  TranscribeAudioDetails transcribe_audio_details = 6;
+  // Optional. Text details, such as Confidence, formatted text, word details, and so on.
+  TextDetails text_details = 7;
+}
+
+// Information about the audio.
+message TranscribeAudioDetails {
+  // Optional. Unique ID of the media segment.
+  nuance.biosec.v1.UniqueId gk_media_segment_id = 1;
+  // Optional. Unique ID of the audio returned by a processing method.
+  nuance.biosec.v1.UniqueId gk_processed_audio_id = 2;
+  // Optional. Amount of gross audio including speech, noise, and silence. Range and semantic is the same values as returned by [Nuance Recognizer API](https://docs.mix.nuance.com/asr-grpc/v1/#recognizer-api).
+  google.protobuf.Duration gross_audio = 3;
+  // Optional. Amount of speech is equal to the utterance duration. Range and semantic is the same values as returned by [Nuance Recognizer API](https://docs.mix.nuance.com/asr-grpc/v1/#recognizer-api).
+  google.protobuf.Duration net_audio = 4;
+  // Optional. Audio stream start time. Range and semantic is the same values as returned by [Nuance Recognizer API](https://docs.mix.nuance.com/asr-grpc/v1/#recognizer-api).
+  google.protobuf.UInt32Value abs_start_ms = 5;
+  // Optional. Audio stream end time. Range and semantic is the same values as returned by [Nuance Recognizer API](https://docs.mix.nuance.com/asr-grpc/v1/#recognizer-api).
+  google.protobuf.UInt32Value abs_end_ms = 6;
+  // Optional. Silence observed before start of utterance. Range and semantic is the same values as returned by [Nuance Recognizer API](https://docs.mix.nuance.com/asr-grpc/v1/#recognizer-api).
+  google.protobuf.Duration initial_silence = 7;
+  // Optional. Number of audio input channels. Values are 1 for mono and 2 for stereo.
+  google.protobuf.UInt32Value media_number_of_channels = 8;
+  // Optional. Sampling rate of the input audio in Hertz. It can be different from the one used for processing.
+  google.protobuf.UInt32Value media_sampling_rate_hz = 9;
+  // Optional. Specifies the processed channel when processing media with multiple channels. This parameter is not set if the media has a single channel.
+  nuance.biosec.v1.AudioChannelSelector selected_channel = 10;
+  // Optional. Number of audio channels in the processed audio. Values are 1 for mono and 2 for stereo.
+  google.protobuf.UInt32Value processed_audio_number_of_channels = 11;
+  // Optional. Sampling rate used for processing the audio. Value is in Hertz and can differ from the value of the input audio.
+  google.protobuf.UInt32Value processed_audio_sampling_rate_hz = 12;
+}
+
+// Contains details about the transcribed text.
+message TextDetails {
+  // Optional. Unique ID of the transcribed text.
+  nuance.biosec.v1.UniqueId gk_text_id = 1;
+  // Optional. Formatted text of the result, for example, $500. Word details are referred to this field.
+  google.protobuf.StringValue formatted_text = 2;
+  // Optional. Slightly formatted text of the result, for example, five hundred dollars.
+  google.protobuf.StringValue minimally_formatted_text = 3;
+  // Optional. Data pack information.
+  DataPack data_pack = 4;
+  // Optional. Repeated. One or more recognized words in the result.
+  repeated WordDetails word_details = 5;
+  // Optional. Indicates if the text is plain, masked, or redacted.
+  RedactionStatus redaction_status = 6;
+  //------------------
+  // Convoprints-Only
+  //------------------
+  // Optional. A score between 0 and 1 that represents the quality of the text. Relevant only for Convoprint APIs.
+  google.protobuf.FloatValue quality_check = 7;
+  // Optional. A uncapped score that represents the quality of the text. Relevant only for Convoprint APIs.
+  google.protobuf.FloatValue raw_quality = 8;
+  // Optional. Unique ID of the calibration model that the system used to create the text model.
+  nuance.biosec.v1.UniqueId gk_calibration_model_revision_id = 9;
+  // Optional. Indicates if a text model has been created.
+  google.protobuf.BoolValue text_model_created = 10;
+}
+
+// Contains details about the data pack that the system used to perform transcription.
+message DataPack {
+  // Optional. Data pack language. List of available languages can be found here: https://docs.nuance.com/mix/overview/mix-geographies/.
+  google.protobuf.StringValue language = 1;
+  // Optional. Data pack topic. Range and semantic is the same values as returned by [Nuance Recognizer API](https://docs.mix.nuance.com/asr-grpc/v1/#recognizer-api).
+  google.protobuf.StringValue topic = 2;
+  // Optional. Data pack version. Range and semantic is the same values as returned by [Nuance Recognizer API](https://docs.mix.nuance.com/asr-grpc/v1/#recognizer-api).
+  google.protobuf.StringValue version = 3;
+  // Optional. Data pack identifier string, including nightly build information if applicable. Range and semantic is the same values as returned by [Nuance Recognizer API](https://docs.mix.nuance.com/asr-grpc/v1/#recognizer-api).
+  google.protobuf.StringValue id = 4;
+}
+
+// Contains details about the transcribed words.
+message WordDetails {
+  // Optional. The recognized word.
+  google.protobuf.StringValue text = 1;
+  // Optional. The confidence score of the recognized word, 0 to 1. Range and semantic is the same values as returned by [Nuance Recognizer API](https://docs.mix.nuance.com/asr-grpc/v1/#recognizer-api).
+  google.protobuf.FloatValue confidence = 2;
+  // Optional. Word start offset in the audio stream. Range and semantic is the same values as returned by [Nuance Recognizer API](https://docs.mix.nuance.com/asr-grpc/v1/#recognizer-api).
+  google.protobuf.UInt32Value start_ms = 3;
+  // Optional. Word end offset in the audio stream. Range and semantic is the same values as returned by [Nuance Recognizer API](https://docs.mix.nuance.com/asr-grpc/v1/#recognizer-api).
+  google.protobuf.UInt32Value end_ms = 4;
+  // Optional. The amount of silence, in ms, detected after the word. Range and semantic is the same values as returned by [Nuance Recognizer API](https://docs.mix.nuance.com/asr-grpc/v1/#recognizer-api).
+  google.protobuf.Duration silence_after_word = 5;
+  // Optional. Indicates if the word is plain, masked, or redacted.
+  RedactionStatus redaction_status = 6;
+}

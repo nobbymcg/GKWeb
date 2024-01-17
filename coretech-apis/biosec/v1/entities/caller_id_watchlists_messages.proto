@@ -1,0 +1,313 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.entities;
+
+option java_package = "com.nuance.rpc.biosec.v1.entities";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/entities/entities_manager_enums.proto";
+import "nuance/biosec/v1/common_types.proto";
+import "nuance/rpc/status.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+
+
+// Input message that defines parameters for [AddCallerIdRuleToWatchlist](#AddCallerIdRuleToWatchlist).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message AddCallerIdRuleToWatchlistRequest {
+  // Mandatory. General request context. Defines the scope in which the caller ID rule should be created.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. The ID of the watchlist in which caller ID rule should be added.
+  // For each scope there is a default caller ID watchlist with the ID "00000000-0000-0000-0000-000000000000" created at the time of the scope creation, empty by default.
+  nuance.biosec.v1.UniqueId gk_callerid_watchlist_id = 2;
+  // Mandatory. Provides information about the caller ID rule.
+  CallerIdWatchlistDetailsForCreate details = 3;
+  // Optional. A field mask used to specify the [CallerIdWatchlistDetailsForCreate](#nuance.biosec.v1.entities.CallerIdWatchlistDetailsForCreate) fields that the method sets.
+  google.protobuf.FieldMask field_mask = 4;
+}
+
+// Output message that defines parameters returned by [AddCallerIdRuleToWatchlist](#AddCallerIdRuleToWatchlist).
+message AddCallerIdRuleToWatchlistResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // The unique ID of newly created caller ID rule.
+  nuance.biosec.v1.UniqueId gk_callerid_rule_id =  2;
+}
+
+// Input message that defines parameters for [UpdateCallerIdRuleInWatchlist](#UpdateCallerIdRuleInWatchlist).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message UpdateCallerIdRuleInWatchlistRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. The ID of the caller ID watchlist containing caller ID rule.
+  // For each scope there is a default caller ID watchlist with the ID "00000000-0000-0000-0000-000000000000" created at the time of the scope creation, empty by default.
+  nuance.biosec.v1.UniqueId gk_callerid_watchlist_id = 2;
+  // Mandatory. The unique ID of the caller ID rule to be updated.
+  nuance.biosec.v1.UniqueId gk_callerid_rule_id =  3;
+  // Mandatory. Defines the parameter to be updated.
+  CallerIdWatchlistDetailsForUpdate details = 4;
+  // Mandatory. A field mask used to specify the [CallerIdWatchlistDetailsForUpdate](#nuance.biosec.v1.entities.CallerIdWatchlistDetailsForUpdate) fields that the method sets.
+  google.protobuf.FieldMask field_mask = 5;
+}
+
+// Output message that defines parameters returned by [UpdateCallerIdRuleInWatchlist](#UpdateCallerIdRuleInWatchlist).
+message UpdateCallerIdRuleInWatchlistResponse {
+  // General operation status. Returns a ALREADY_EXISTS [status code](#nuance.rpc.StatusCode) when caller ID rule, with already existing caller ID regex or phone number, is updated.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [DeleteCallerIdRuleFromWatchlist](#DeleteCallerIdRuleFromWatchlist).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message DeleteCallerIdRuleFromWatchlistRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. The ID of the caller ID watchlist containing caller ID rule.
+  // For each scope there is a default caller ID watchlist with the ID "00000000-0000-0000-0000-000000000000" created at the time of the scope creation, empty by default.
+  nuance.biosec.v1.UniqueId gk_callerid_watchlist_id = 2;
+  //Mandatory. The ID of the deleted caller ID rule.
+  nuance.biosec.v1.UniqueId gk_callerid_rule_id =  3;
+}
+
+// Output message that defines parameters returned by [DeleteCallerIdRuleFromWatchlist](#DeleteCallerIdRuleFromWatchlist).
+message DeleteCallerIdRuleFromWatchlistResponse {
+  // General operation status. Returns the NOT_FOUND [status code](#nuance.rpc.StatusCode when caller ID rule with the given callerId rule id is not found.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [ListWatchlistCallerIdRules](#ListWatchlistCallerIdRules).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message ListWatchlistCallerIdRulesRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Returns all caller ID rules of a given caller ID watchlist.
+  // For each scope there is a default caller ID watchlist with the ID "00000000-0000-0000-0000-000000000000" created at the time of the scope creation, empty by default.
+  nuance.biosec.v1.UniqueId gk_callerid_watchlist_id = 2;
+  // Optional. Starting index of the caller ID rule in the list.
+  string offset = 3;
+  // Optional. The number of caller ID rules to be returned. Max limit is 100.
+  int32 max_results = 4;
+  // Optional. Defines the filters for caller ID rules.
+  ListCallerIdRulesFilters filters = 5;
+  // Optional. A field mask used to specify the [CallerIdWatchlistDetailsForRead](#nuance.biosec.v1.entities.CallerIdWatchlistDetailsForRead) fields that the method sets.
+  google.protobuf.FieldMask field_mask = 6;
+}
+
+
+// Output message that defines parameters returned by [ListWatchlistCallerIdRules](#ListWatchlistCallerIdRules).
+message ListWatchlistCallerIdRulesResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Provides the caller ID rules detail.
+  repeated CallerIdWatchlistDetailsForRead details = 2;
+  // Total number of caller ID rules.
+  int64 total_results = 3;
+  // Ending index of the caller ID rule in the list.
+  string offset = 4;
+  // Returns true on reaching the end of list.
+  bool end_of_list = 5;
+}
+
+// Input message that defines parameters for [ImportCallerIdRulesToWatchlist](#ImportCallerIdRulesToWatchlist).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message ImportCallerIdRulesToWatchlistRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. The ID of caller ID watchlist to which caller ID rules are imported.
+  // For each scope there is a default caller ID watchlist with the ID "00000000-0000-0000-0000-000000000000" created at the time of the scope creation, empty by default.
+  nuance.biosec.v1.UniqueId gk_callerid_watchlist_id = 2;
+  // Mandatory. The CSV file containing the caller ID rule.
+  // The following headers columns are supported:
+  // Legacy format: PhoneRegex    RiskLevel   Description
+  // New Format: PhoneRegex    RiskLevel    Description    PhoneNumber    Username    CreationTimestamp.
+  // It must contain header line that starts with the Hash symbol (#).
+  // RiskLvel and either PhoneRegex or PhoneNumber are mandatory columns.
+  // CSV must contain either PhoneRegex or PhoneNumber in a row.
+  // CSV must be tab delimited.
+  string csv_data = 3;
+  // Mandatory. File can be uploaded in either MERGE mode or REPLACE mode.
+  UploadType upload_type = 4;
+  // Mandatory. CSV data encoding type.
+  CallerIdDataEncoding data_encoding = 5;
+}
+
+// Output message that defines parameters returned by [ImportCallerIdRulesToWatchlist](#ImportCallerIdRulesToWatchlist).
+message ImportCallerIdRulesToWatchlistResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // The list of caller ID rules that failed to import.
+  repeated FailedCallerIdRule failures = 2;
+}
+
+// Input message that defines parameters for [ExportCallerIdRulesFromWatchlist](#ExportCallerIdRulesFromWatchlist).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message ExportCallerIdRulesFromWatchlistRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Export the rules of a given caller ID watchlist ID.
+  // For each scope there is a default caller ID watchlist with the ID "00000000-0000-0000-0000-000000000000" created at the time of the scope creation, empty by default.
+  nuance.biosec.v1.UniqueId gk_callerid_watchlist_id = 2;
+  // Mandatory. CSV data encoding type.
+  CallerIdDataEncoding data_encoding = 3;
+}
+
+// Output message that defines parameters returned by [ExportCallerIdRulesFromWatchlist](#ExportCallerIdRulesFromWatchlist).
+message ExportCallerIdRulesFromWatchlistResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // The CSV file contains the caller ID rules. It is base64 encoded.
+  string csv_data = 2;
+}
+
+// Input message that defines parameters for [TestCallerIdRule](#TestCallerIdRule).
+//
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Not used
+// * gk_session_id: Not used
+// * gk_scope_id: Mandatory
+// * configset_id: Not used
+message TestCallerIdRuleRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. The caller ID regex.
+  string caller_id_regex = 2;
+  // Mandatory. The phone number to be tested against caller ID regex.
+  string phone_number = 3;
+}
+
+// Output message that defines parameters returned by [TestCallerIdRule](#TestCallerIdRule).
+message TestCallerIdRuleResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Returns true if the given phone number matches the caller ID regex.
+  bool is_matched =  2;
+}
+
+// Contain fields that the system uses to create a caller ID rule entity. Included in [AddCallerIdRuleToWatchlistRequest](#nuance.biosec.v1.entities.AddCallerIdRuleToWatchlistRequest).
+message CallerIdWatchlistDetailsForCreate {
+  // Mandatory. One of both(phone_number or caller_id_regex) is required.
+  oneof caller_id {
+    // The exact phone number.
+    string phone_number = 1;
+    // The regular expression representing set of phone numbers.
+    string caller_id_regex = 2;
+  }
+  // Optional. The description of caller ID rule.
+  string description = 3;
+  // Mandatory. The risk level of caller ID rule.
+  CallerIdRiskLevel risk_level = 4;
+}
+
+// Contain the writable fields of the caller ID watchlist. Included in [UpdateCallerIdRuleInWatchlistRequest](#nuance.biosec.v1.entities.UpdateCallerIdRuleInWatchlistRequest).
+message CallerIdWatchlistDetailsForUpdate {
+  // Optional.
+  oneof caller_id {
+    // The exact phone number.
+    string phone_number = 1;
+    // The regular expression representing set of phone numbers.
+    string caller_id_regex = 2;
+  }
+  // Optional. The description of caller ID rule.
+  string description = 3;
+  // Optional. The risk level of caller ID rule.
+  CallerIdRiskLevel risk_level = 4;
+}
+// Contain the readable fields of the caller ID rule. Included in [ListWatchlistCallerIdRulesResponse](#nuance.biosec.v1.entities.ListWatchlistCallerIdRulesResponse).
+message CallerIdWatchlistDetailsForRead {
+  // The unique ID of caller ID rule.
+  nuance.biosec.v1.UniqueId gk_callerid_rule_id = 1;
+  oneof caller_id {
+    // The exact phone number.
+    string phone_number = 2;
+    // The regular expression representing set of phone numbers.
+    string caller_id_regex = 3;
+  }
+  // User who created or modified the caller ID rule last.
+  oneof member {
+    string client_id = 4;
+    string analyst_id = 5;
+  }
+  // The description of caller ID rule.
+  string description = 6;
+  // The risk level of caller ID rule.
+  CallerIdRiskLevel risk_level = 7;
+  // Creation timestamp when the caller ID rule ID added to the watchlist.
+  google.protobuf.Timestamp creation_timestamp = 997;
+  // Modification timestamp when the caller ID rule is updated.
+  google.protobuf.Timestamp modification_timestamp = 998;
+}
+
+// Define the filters for caller ID rules.
+message ListCallerIdRulesFilters {
+  // Optional. Substring to look for in all the rules.
+  google.protobuf.StringValue search_substring = 1;
+  // Optional. Return all rules that are created within given days.
+  google.protobuf.Int32Value max_age_days = 2;
+}
+
+
+// Contains the detail about the caller ID rule which is not imported.
+message FailedCallerIdRule {
+  // Phone number or caller ID regex of the failed caller ID rule.
+  oneof caller_id {
+    string phone_number = 1;
+    string caller_id_regex = 2;
+  }
+  // The line number of failed the caller ID rule.
+  int32 line_number = 3;
+  // The reason of failure.
+  string reason = 4;
+
+}

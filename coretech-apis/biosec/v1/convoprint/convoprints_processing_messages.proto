@@ -1,0 +1,558 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.convoprint;
+
+option java_package = "com.nuance.rpc.biosec.v1.convoprint";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/audio/audio_processing_messages.proto";
+import "nuance/biosec/v1/convoprint/convoprints_common_types.proto";
+import "nuance/biosec/v1/common_types.proto";
+import "nuance/rpc/status.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+/////////////////
+// ProcessText //
+/////////////////
+
+// Input message that defines parameters for [ProcessText](#ProcessText).
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Mandatory
+message ProcessTextRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Specifies the input text or audio (if an audio is specified, it's converted into text by transcribing it).
+  oneof input {
+    // Unique ID of the new media segment.
+    nuance.biosec.v1.UniqueId gk_media_segment_id = 2;
+    // Unique ID of the processed audio.
+    nuance.biosec.v1.UniqueId gk_processed_audio_id = 3;
+    // Unique ID of an already existing text segment.
+    nuance.biosec.v1.UniqueId gk_text_id = 4;
+    // Raw text.
+    google.protobuf.StringValue raw_text = 5;
+  }
+  // Optional. Text language. If not specified, the method uses one of the following: the actual_language processed audio attribute, the actual_language text attribute, or the configuration parameter. At least one of them must be valid.
+  // List of available languages can be found here: https://docs.nuance.com/mix/overview/mix-geographies/
+  // Contact Nuance account manager to get the list of available languages in your region.
+  string language = 6;
+
+  // Optional, owner of the audio or text.
+  // When set, the system handles the audio or text as personal information.
+  nuance.biosec.v1.UniqueId gk_person_id = 7;
+
+  // Optional. Specifies the processed channel when processing media with multiple channels. This parameter is ignored if the media has a single channel or if the input is not gk_media_segment_id.
+  nuance.biosec.v1.AudioChannelSelector channel_selector = 8;
+
+  // Mandatory. Specifies if final transcription results must be returned.
+  bool return_final_transcription = 9;
+}
+
+// Output message that defines parameters returned by [ProcessText](#ProcessText).
+message ProcessTextResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Audio processing result.
+  TextProcessingResult result = 2;
+}
+
+// Contains audio/text metrics and information about the text model. Included in [ProcessTextResponse](#nuance.biosec.v1.convoprint.ProcessTextResponse).
+message TextProcessingResult {
+  // Optional. Text language. List of available languages can be found here: https://docs.nuance.com/mix/overview/mix-geographies/.
+  string language = 1;
+  // Optional. Text.
+  string text = 2;
+  // Indicates if a transcription has been triggered.
+  bool transcribed = 3;
+  // Optional. The media ID of the audio segment.
+  nuance.biosec.v1.UniqueId gk_media_segment_id = 4;
+  // Optional. Unique ID of the processed audio.
+  nuance.biosec.v1.UniqueId gk_processed_audio_id = 5;
+  // Optional. Unique ID of the processed text.
+  nuance.biosec.v1.UniqueId gk_text_id = 6;
+  // Optional. Transcription audio metrics, such as gross audio, net audio, and SNR.
+  nuance.biosec.v1.audio.TranscribeAudioDetails transcribe_audio_details = 7;
+  // Optional. Text details, such as confidence, formatted text, and word details.
+  nuance.biosec.v1.audio.TextDetails text_details = 8;
+  // Text validity status. Indicates invalidity reason in case of invalid text.
+  TextValidity validity = 9;
+  // Unique ID of the calibration model that the system uses to create the text model.
+  nuance.biosec.v1.UniqueId gk_calibration_model_revision_id = 10;
+}
+
+////////////
+// Enroll //
+////////////
+
+// Input message that defines parameters for [Enroll](#Enroll).
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Mandatory
+message EnrollRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Unique ID of the convoprint profile for enrollment.
+  nuance.biosec.v1.UniqueId gk_convoprint_profile_id = 2;
+  // Mandatory. Unique ID of text that is processed and added to the convoprint's enrollment segments collection. The ID is returned by [ProcessText](#ProcessText).
+  nuance.biosec.v1.UniqueId gk_text_id = 3;
+  // Mandatory. Specifies if final transcription results must be returned.
+  bool return_final_transcription = 4;
+}
+
+// Output message that defines parameters returned by [Enroll](#Enroll).
+message EnrollResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Enrollment result.
+  EnrollResult result = 2;
+}
+
+// Contains information about the convoprint profile and the text that belongs to the enrollment set. Included in [EnrollResponse](#nuance.biosec.v1.convoprint.EnrollResponse).
+message EnrollResult {
+  // Status of the convoprint profile after adding the new enrollment segment. Indicates whether the convoprint can or should be trained.
+  EnrollStatus enroll_status = 1;
+  // General information about the convoprint profile.
+  ConvoprintDetails convoprint_details = 2;
+  // It is true if text is added to print, false otherwise.
+  google.protobuf.BoolValue enrolled = 3;
+  // In case of failed enrollment, reason of the failure.
+  EnrollReason reason = 4;
+  // Text details, such as confidence, formatted text, and word details.
+  nuance.biosec.v1.audio.TextDetails text_details = 5;
+}
+
+/////////////////////
+// GetEnrollStatus //
+/////////////////////
+
+// Input message that defines parameters for [GetEnrollStatus](#GetEnrollStatus). Contains information about whether the convoprint can or should be trained.
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Mandatory
+message GetEnrollStatusRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Unique ID of the convoprint profile.
+  nuance.biosec.v1.UniqueId gk_convoprint_profile_id = 2;
+}
+
+// Output message that defines parameters returned by [GetEnrollStatus](#GetEnrollStatus).
+message GetEnrollStatusResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // The status of the convoprint profile. Indicates whether the convoprint can or should be trained.
+  EnrollStatus result = 2;
+  // Indicates if the convoprint is trained and can be used for verification.
+  google.protobuf.BoolValue is_trained = 3;
+}
+
+///////////
+// Train //
+///////////
+
+// Input message that defines parameters for [Train](#Train).
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Mandatory
+message TrainRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Unique ID of the convoprint profile for training.
+  nuance.biosec.v1.UniqueId gk_convoprint_profile_id = 2;
+  // Mandatory. Specifies if final transcription results must be returned.
+  bool return_final_transcription = 3;
+}
+
+// Output message that defines parameters returned by [Train](#Train).
+message TrainResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // The result of the train operation.
+  TrainResult result = 2;
+}
+
+// Contains information about the outcome of the operation and the current status of the convoprint profile. Included in [TrainResponse](#nuance.biosec.v1.convoprint.TrainResponse).
+message TrainResult {
+  // Specifies the completion status of the train operation.
+  TrainStatus train_status = 1;
+  // Specifies the outcome of the train operation and failure reason, when applicable.
+  convoprint.TrainReason reason = 2;
+  // Indicates whether the convoprint profile is trained or not.
+  ConvoprintProfileStatus status = 3;
+  // General information about the convoprint profile.
+  ConvoprintDetails convoprint_details = 4;
+  // Unique ID of the calibration model that the system uses to train the template.
+  nuance.biosec.v1.UniqueId gk_calibration_model_revision_id = 5;
+  // Total number of enrollment segments considered in the template training.
+  google.protobuf.Int32Value total_segments = 6;
+  // Number of enrollment segments that are used to create the template.
+  google.protobuf.Int32Value total_valid_segments = 7;
+  // Additional information about the enrollment segments that are used for training.
+  repeated EnrollmentSegmentDetails enrollment_segments_details = 8;
+}
+
+// Contains detailed information about a single enrollment segment that the system uses in the training process.
+// Included in [TrainResponse](#nuance.biosec.v1.convoprint.TrainResponse) and in [ListEnrollmentSegments](#ListEnrollmentSegments).
+message EnrollmentSegmentDetails {
+  // Unique ID of the text.
+  nuance.biosec.v1.UniqueId gk_text_id = 1;
+  // Indicates whether the segment was used for training for reasons, such as missing model and missing text.
+  google.protobuf.BoolValue used_for_train = 2;
+  // Optional. Text details, such as confidence, formatted text, and word details.
+  nuance.biosec.v1.audio.TextDetails text_details = 3;
+  // Unique ID of the calibration model that the system uses to create the text model.
+  nuance.biosec.v1.UniqueId gk_calibration_model_revision_id = 4;
+}
+
+////////////
+// Verify //
+////////////
+
+// Input message that defines parameters for [Verify](#Verify).
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Mandatory
+message VerifyRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Specifies the input text or audio (if an audio is specified, it's converted into text by transcribing it).
+  oneof input {
+    // Unique ID of the new media segment.
+    nuance.biosec.v1.UniqueId gk_media_segment_id = 2;
+    // Unique ID of the processed audio.
+    nuance.biosec.v1.UniqueId gk_processed_audio_id = 3;
+    // Unique ID of an already existing text segment.
+    nuance.biosec.v1.UniqueId gk_text_id = 4;
+    // Raw text.
+    google.protobuf.StringValue raw_text = 5;
+  }
+  // Optional. Text language. If not specified, the method uses one of the following: the actual_language processed audio attribute, the actual_language text attribute, or the configuration parameter. At least one of them must be valid.
+  // List of available languages can be found here: https://docs.nuance.com/mix/overview/mix-geographies/
+  // Contact Nuance account manager to get the list of available languages in your region.
+  string language = 6;
+
+  // Optional. Specifies the processed channel when processing media with multiple channels. This parameter is ignored if the media has a single channel, or if the input is not gk_media_segment_id.
+  nuance.biosec.v1.AudioChannelSelector channel_selector = 7;
+
+  // Mandatory. Unique ID of the convoprint profile that the method verifies.
+  nuance.biosec.v1.UniqueId gk_convoprint_profile_id = 8;
+
+  // Mandatory. Specifies if final transcription results must be returned.
+  bool return_final_transcription = 9;
+
+  // Optional. If true, disable the checkpoints defined in configset (checkpointsForAuthentication and checkpointsForFraudDetection configuration parameters are ignored) to process the whole text. If false or not defined, processing might stop before the end of text (for example, if a match is found for any of the checkpoints defined).
+  bool ignore_checkpoints = 10;
+}
+
+// Output message that defines parameters returned by [Verify](#Verify).
+message VerifyResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Result of the verify operation.
+  VerifyResult result = 2;
+}
+
+// Contains detailed information about the operation's result. Included in [VerifyResponse](#nuance.biosec.v1.convoprint.VerifyResponse).
+message VerifyResult {
+  // Optional. Text language. List of available languages can be found here: https://docs.nuance.com/mix/overview/mix-geographies/.
+  string language = 1;
+  // Optional. Text.
+  string text = 2;
+  // Indicates if a transcription has been triggered.
+  bool transcribed = 3;
+  // Optional. The media ID of the audio segment.
+  nuance.biosec.v1.UniqueId gk_media_segment_id = 4;
+  // Optional. Unique ID of the processed audio. In case, the system needs to reprocess the audio,
+  // a new gk_processed_audio_id is created, even if the input audio has been specified by gk_processed_audio_id.
+  nuance.biosec.v1.UniqueId gk_processed_audio_id = 5;
+  // Optional. Unique ID of the processed text.
+  nuance.biosec.v1.UniqueId gk_text_id = 6;
+  // Optional. Transcription audio metrics, such as gross audio, net audio, and SNR.
+  nuance.biosec.v1.audio.TranscribeAudioDetails transcribe_audio_details = 7;
+  // Optional. Text details, such as confidence, formatted text, and word details.
+  nuance.biosec.v1.audio.TextDetails text_details = 8;
+  // Text validity status. Indicates invalidity reason in case of invalid text.
+  TextValidity validity = 9;
+  // Unique ID of the calibration model that the system uses to create the text model.
+  nuance.biosec.v1.UniqueId gk_calibration_model_revision_id = 10;
+  // General information about the convoprint profile.
+  ConvoprintDetails convoprint_details = 11;
+  // Indicates if the given text matches the specified convoprint profile.
+  nuance.biosec.v1.Decision decision = 12;
+  // The reason for the decision.
+  convoprint.DecisionReason reason = 13;
+  // Authentication scores. 
+  AuthenticationScore authentication_score = 14;
+  // Level of risk and reliability, computed by the risk engine.
+  nuance.biosec.v1.RiskEngineResult risk_engine_result = 15;
+}
+
+//////////////
+// Identify //
+//////////////
+
+// Input message that defines parameters for [Identify](#Identify).
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Mandatory
+message IdentifyRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Specifies the input text or audio (if an audio is specified, it's converted into text by transcribing it).
+  oneof input {
+    // Unique ID of the new media segment.
+    nuance.biosec.v1.UniqueId gk_media_segment_id = 2;
+    // Unique ID of the processed audio.
+    nuance.biosec.v1.UniqueId gk_processed_audio_id = 3;
+    // Unique ID of an already existing text segment.
+    nuance.biosec.v1.UniqueId gk_text_id = 4;
+    // Raw text.
+    google.protobuf.StringValue raw_text = 5;
+  }
+  // Optional. Text language. If not specified the method uses one of the following: the actual_language processed audio attribute, the actual_language text attribute, or the configuration parameter. At least one of them must be valid.
+  // List of available languages can be found here: https://docs.nuance.com/mix/overview/mix-geographies/
+  // Contact Nuance account manager to get the list of available languages in your region.
+  string language = 6;
+
+  // Optional. Specifies the processed channel when processing media with multiple channels. This parameter is ignored if the media has a single channel, or if the input is not gk_media_segment_id.
+  nuance.biosec.v1.AudioChannelSelector channel_selector = 7;
+
+  // Mandatory. The set of prints, specified as an array of convoprint IDs or as a group ID and tag.
+  oneof target {
+    // An array of convoprint profile IDs.
+    nuance.biosec.v1.ListOfUniqueId gk_convoprint_profile_ids = 8;
+    // A group ID and a tag used as a filter to select the right prints, in case persons have more than one print.
+    nuance.biosec.v1.UniqueIdAndTag group = 9;
+  }
+
+  // Mandatory. Specifies if final transcription results must be returned.
+  bool return_final_transcription = 10;
+
+  // Optional. If true, disable the checkpoints defined in configset (checkpointsForAuthentication and checkpointsForFraudDetection configuration parameters are ignored) to process the whole text. If false or not defined, processing might stop before the end of text (for example, if a match is found for any of the checkpoints defined).
+  bool ignore_checkpoints = 11;
+}
+
+// Output message that defines parameters returned by [Identify](#Identify).
+message IdentifyResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Result of the identify operation.
+  IdentifyResult result = 2;
+}
+
+// Contains detailed information about the operation's outcome. Included in [IdentifyResponse](#nuance.biosec.v1.convoprint.IdentifyResponse).
+message IdentifyResult {
+  // Optional. Text language. List of available languages can be found here: https://docs.nuance.com/mix/overview/mix-geographies/.
+  string language = 1;
+  // Optional. Text.
+  string text = 2;
+  // Indicates if a transcription has been triggered.
+  bool transcribed = 3;
+  // Optional. The media ID of the audio segment.
+  nuance.biosec.v1.UniqueId gk_media_segment_id = 4;
+  // Optional. Unique ID of the processed audio. In case the system needs to reprocess the audio,
+  // a new gk_processed_audio_id is created, even if input audio has been specified by gk_processed_audio_id.
+  nuance.biosec.v1.UniqueId gk_processed_audio_id = 5;
+  // Optional. Unique ID of the processed text.
+  nuance.biosec.v1.UniqueId gk_text_id = 6;
+  // Optional. Transcription audio metrics, such as gross audio, net audio, and SNR.
+  nuance.biosec.v1.audio.TranscribeAudioDetails transcribe_audio_details = 7;
+  // Optional. Text details, such as Confidence, formatted text, and word details.
+  nuance.biosec.v1.audio.TextDetails text_details = 8;
+  // Text validity status. Indicates invalidity reason in case of invalid text.
+  TextValidity validity = 9;
+  // Unique ID of the calibration model that the system uses to create the text model.
+  nuance.biosec.v1.UniqueId gk_calibration_model_revision_id = 10;
+  // General information about the convoprint profile.
+  ConvoprintDetails convoprint_details = 11;
+  // The decision if the given text matches any of the specified convoprint profiles.
+  nuance.biosec.v1.Decision decision = 12;
+  // The reason for the decision.
+  DecisionReason reason = 13;
+  // Authentication scores.
+  AuthenticationScore authentication_score = 14;
+  // Level of risk and reliability, computed by the risk engine.
+  nuance.biosec.v1.RiskEngineResult risk_engine_result = 15;
+  // Detailed results for a specific convoprint profile.
+  repeated ConvoprintResult convoprint_results = 16;
+}
+
+///////////////////////////
+// DetectKnownFraudsters //
+///////////////////////////
+
+// Input message that defines parameters for [DetectKnownFraudsters](#DetectKnownFraudsters).
+// Uses the context field as follows:
+//
+// * gk_engagement_id: Mandatory
+// * gk_session_id: Mandatory
+// * gk_scope_id: Mandatory
+// * configset_id: Mandatory
+message DetectKnownFraudstersRequest {
+  // Mandatory. General request context.
+  nuance.biosec.v1.Context context = 1;
+  // Mandatory. Specifies the input text or audio (if an audio is specified, it's converted into text by transcribing it).
+  oneof input {
+    // Unique ID of the new media segment.
+    nuance.biosec.v1.UniqueId gk_media_segment_id = 2;
+    // Unique ID of the processed audio.
+    nuance.biosec.v1.UniqueId gk_processed_audio_id = 3;
+    // Unique ID of an already existing text segment.
+    nuance.biosec.v1.UniqueId gk_text_id = 4;
+    // Raw text.
+    google.protobuf.StringValue raw_text = 5;
+  }
+  // Optional. Text language. If not specified, the method uses one of the following: the actual_language processed audio attribute, the actual_language text attribute, or the configuration parameter. At least one of them must be valid.
+  // List of available languages can be found here: https://docs.nuance.com/mix/overview/mix-geographies/
+  // Contact Nuance account manager to get the list of available languages in your region.
+  string language = 6;
+
+  // Optional. Specifies the processed channel when processing media with multiple channels. This parameter is ignored if the media has a single channel, or if the input is not gk_media_segment_id.
+  nuance.biosec.v1.AudioChannelSelector channel_selector = 7;
+
+  // Mandatory. The set of prints, specified as an array of convoprint IDs or as a watchlist ID and tag.
+  oneof target {
+    // An array of convoprint profile IDs.
+    nuance.biosec.v1.ListOfUniqueId gk_convoprint_profile_ids = 8;
+    // A watchlist ID and a tag used as a filter to select the right prints, in case persons have more than one print.
+    nuance.biosec.v1.UniqueIdAndTag watchlist = 9;
+  }
+
+  // Mandatory. Specifies if final transcription results must be returned.
+  bool return_final_transcription = 10;
+
+  // Optional. If true, disable the checkpoints defined in configset (checkpointsForAuthentication and checkpointsForFraudDetection configuration parameters are ignored) to process the whole text. If false or not defined, processing might stop before the end of text (for example, if a match is found for any of the checkpoints defined).
+  bool ignore_checkpoints = 11;
+}
+
+// Output message that defines parameters returned by [DetectKnownFraudsters](#DetectKnownFraudsters).
+message DetectKnownFraudstersResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Result of the DetectKnownFraudsters operation.
+  DetectKnownFraudstersResult result = 2;
+}
+
+// Contains detailed information about the operation's outcome. Included in [DetectKnownFraudsters](#DetectKnownFraudsters).
+message DetectKnownFraudstersResult {
+  // Optional. Text language. List of available languages can be found here: https://docs.nuance.com/mix/overview/mix-geographies/.
+  string language = 1;
+  // Optional. Text.
+  string text = 2;
+  // Indicates if a transcription has been triggered.
+  bool transcribed = 3;
+  // Optional. The media ID of the audio segment.
+  nuance.biosec.v1.UniqueId gk_media_segment_id = 4;
+  // Optional. Unique ID of the processed audio. In case, the system needs to reprocess the audio,
+  // a new gk_processed_audio_id is created, even if input audio has been specified by gk_processed_audio_id.
+  nuance.biosec.v1.UniqueId gk_processed_audio_id = 5;
+  // Optional. Unique ID of the processed text.
+  nuance.biosec.v1.UniqueId gk_text_id = 6;
+  // Optional. Transcription audio metrics, such as gross audio, net audio, and SNR.
+  nuance.biosec.v1.audio.TranscribeAudioDetails transcribe_audio_details = 7;
+  // Optional. Text details, such as Confidence, formatted text, and word details.
+  nuance.biosec.v1.audio.TextDetails text_details = 8;
+  // Text validity status. Indicates invalidity reason in case of invalid text.
+  TextValidity validity = 9;
+  // Unique ID of the calibration model that the system uses to create the text model.
+  nuance.biosec.v1.UniqueId gk_calibration_model_revision_id = 10;
+  // General information about the convoprint profile.
+  ConvoprintDetails convoprint_details = 11;
+  // Indicates whether the given text matches any of the specified fraudsters convoprint profiles.
+  nuance.biosec.v1.Decision decision = 12;
+  // Reason of the decision.
+  DecisionReason reason = 13;
+  // The fraud detection scores.
+  FraudDetectionScore fraud_detection_score = 14;
+  // Level of risk and reliability, computed by the risk engine.
+  nuance.biosec.v1.RiskEngineResult risk_engine_result = 15;
+  // Detailed results for a specific convoprint profile.
+  repeated ConvoprintResult convoprint_results = 16;
+  // Number of valid print used for known fraudster detection.
+  int32 number_of_prints = 17;
+}
+
+//////////////////////
+// Common messages  //
+//////////////////////
+
+// Contains general information about a single convoprint profile.
+message ConvoprintDetails {
+  // Unique ID of the convoprint profile.
+  nuance.biosec.v1.UniqueId gk_convoprint_profile_id = 1;
+  // Unique ID of the person or fraudster that the print belongs to.
+  nuance.biosec.v1.UniqueId gk_owner_id = 2;
+  // The type of owner (person or fraudster).
+  OwnerType owner_type = 3;
+  // The profile tag is used to label one of the owner's prints.
+  string profile_tag = 4;
+  // Print version, incremented each time a print is retrained.
+  google.protobuf.Int32Value print_version = 5;
+  // A score between 0 and 1 that represents the quality of the convoprint profile.
+  google.protobuf.FloatValue quality_check = 6;
+  // A uncapped score that represents the quality of the convoprint profile.
+  google.protobuf.FloatValue raw_quality = 7;
+  // Text language. List of available languages can be found here: https://docs.nuance.com/mix/overview/mix-geographies/.
+  string language = 8;
+}
+
+// Detailed results of a specific print used in [Verify](#Verify), [Identify](#Identify), and [DetectKnownFraudsters](#DetectKnownFraudsters).
+message ConvoprintResult {
+  // Unique ID of the convoprint profile.
+  nuance.biosec.v1.UniqueId gk_convoprint_profile_id = 1;
+  // The print score.
+  oneof score {
+    // The person's print score, used in [Verify](#Verify) or [Identify](#Identify).
+    AuthenticationScore authentication_score = 2;
+    // The fraudster's print score, used in [DetectKnownFraudsters](#DetectKnownFraudsters).
+    FraudDetectionScore fraud_detection_score = 3;
+  }
+}
+
+// Authentication score for a person's print, used in [Verify](#Verify) or [Identify](#Identify).
+message AuthenticationScore {
+  // Raw biometric score of the comparison between the print and the text.
+  google.protobuf.FloatValue biometric_score = 1;
+}
+
+// Fraud Detection score for a fraudster's print, used in [DetectKnownFraudsters](#DetectKnownFraudsters).
+message FraudDetectionScore {
+  // Raw biometric score of the comparison between the print and the text.
+  google.protobuf.FloatValue biometric_score = 1;
+}

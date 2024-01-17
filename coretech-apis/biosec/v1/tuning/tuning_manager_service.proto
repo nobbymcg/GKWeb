@@ -1,0 +1,125 @@
+/*-
+ * #%L
+ * gatekeeper-api-protoc
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.biosec.v1.tuning;
+
+option java_package = "com.nuance.rpc.biosec.v1.tuning";
+option java_multiple_files = true;
+
+import "nuance/biosec/v1/tuning/calibration_models_messages.proto";
+import "google/api/annotations.proto";
+
+// This service allows managing calibration models of various types that are used to optimize the system's algorithm.
+service TuningManager {
+
+  ///////////////////////
+  // Calibration Model //
+  ///////////////////////
+
+  // Creates a new calibration model or a new revision of an existing calibration model.
+  // The newly created calibration model's [state](#nuance.biosec.v1.tuning.CalibrationModelState) is INITIALIZING (not ACTIVE).
+  // The client should call [ValidateCalibrationModelRevision](#ValidateCalibrationModelRevision) explicitly to validate the integrity of the calibration model
+  // and to call [ActivateCalibrationModelRevision](#ActivateCalibrationModelRevision) when it is ready to be used.
+  rpc CreateCalibrationModel (CreateCalibrationModelRequest) returns (CreateCalibrationModelResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      post: "/nuance/biosec/v1/calibrations"
+      body: "*"
+      additional_bindings {
+        post: "/v1/calibrations"
+        body: "*"
+      }
+    };
+  }
+
+  // Updates calibration model details.
+  rpc UpdateCalibrationModel (UpdateCalibrationModelRequest) returns (UpdateCalibrationModelResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      patch: "/nuance/biosec/v1/calibrations/{calibration_model_id}"
+      body: "*"
+      additional_bindings {
+        patch: "/v1/calibrations/{calibration_model_id}"
+        body: "*"
+      }
+    };
+  }
+
+  // Validates the integrity of the calibration model.
+  // If validated successfully, the calibration model's [state](#nuance.biosec.v1.tuning.CalibrationModelState) is set to VALIDATED.
+  rpc ValidateCalibrationModelRevision (ValidateCalibrationModelRevisionRequest) returns (ValidateCalibrationModelRevisionResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      put: "/nuance/biosec/v1/calibrations/revisions/{gk_calibration_model_revision_id.value}/validate"
+      body: "*"
+      additional_bindings {
+        put: "/v1/calibrations/revisions/{gk_calibration_model_revision_id.value}:validate"
+        body: "*"
+      }
+    };
+  }
+
+  // Activates the specified revision of a calibration model, setting the [state](#nuance.biosec.v1.tuning.CalibrationModelState) to ACTIVE.
+  // If a calibration model with the ID already exists, its [state](#nuance.biosec.v1.tuning.CalibrationModelState) is set to INACTIVE.
+  rpc ActivateCalibrationModelRevision (ActivateCalibrationModelRevisionRequest) returns (ActivateCalibrationModelRevisionResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      put: "/nuance/biosec/v1/calibrations/revisions/{gk_calibration_model_revision_id.value}/activate"
+      body: "*"
+      additional_bindings {
+        put: "/v1/calibrations/revisions/{gk_calibration_model_revision_id.value}:activate"
+        body: "*"
+      }
+    };
+  }
+
+  // Deactivates the active revision of a calibration model, setting the [state](#nuance.biosec.v1.tuning.CalibrationModelState) to INACTIVE.
+  rpc DeactivateCalibrationModelRevision (DeactivateCalibrationModelRevisionRequest) returns (DeactivateCalibrationModelRevisionResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      put: "/nuance/biosec/v1/calibrations/revisions/{gk_calibration_model_revision_id.value}/deactivate"
+      body: "*"
+      additional_bindings {
+        put: "/v1/calibrations/revisions/{gk_calibration_model_revision_id.value}:deactivate"
+        body: "*"
+      }
+    };
+  }
+
+  // Lists calibration models and their revisions. It is possible to filter calibration models by ID and state.
+  rpc ListCalibrationModelRevisions (ListCalibrationModelRevisionsRequest) returns (ListCalibrationModelRevisionsResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/calibrations/revisions"
+      additional_bindings {
+        get: "/v1/calibrations/revisions"
+      }
+    };
+  }
+
+  // Returns URL from which the calibration model can be downloaded.
+  rpc DownloadCalibrationModelRevision (DownloadCalibrationModelRevisionRequest) returns (DownloadCalibrationModelRevisionResponse) {
+    option (google.api.http) = {
+      // Deprecated. Use the endpoint from additional bindings
+      get: "/nuance/biosec/v1/calibrations/revisions/{gk_calibration_model_revision_id.value}/download-url"
+      additional_bindings {
+        post: "/v1/calibrations/revisions/{gk_calibration_model_revision_id.value}/download-url"
+        body: "*"
+      }
+    };
+  }
+
+}

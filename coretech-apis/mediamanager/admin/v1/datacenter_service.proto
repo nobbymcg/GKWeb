@@ -1,0 +1,150 @@
+/*-
+ * #%L
+ * admin-proto
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.mediamanager.admin.v1;
+
+import "nuance/rpc/status.proto";
+
+option java_package = "com.nuance.rpc.mediamanager.admin.v1";
+option java_multiple_files = true;
+
+
+// The DatacenterService is responsible for managing and organizing data centers associated to tenants within Media Manager.
+// The data centers are the locations where the tenant's IT and telephony components are deployed, a tenant may have one or
+// more data centers.
+service DatacenterService {
+
+  // Creates a new Datacenter for the specified Tenant.
+  // When a request to create a new Datacenter is made the service will verify if Datacenter already exists in storage.
+  // If the Datacenter exists the service will apply an update to the Datacenter and return the status
+  // already exists. If the Datacenter does not exist the service will create and return the new Datacenter and
+  // add the Datacenter ID to the Tenant's set mapped Environments.
+  // If mandatory fields are missing or incorrectly formatted the response will return a listing of the violations.
+  rpc CreateDatacenter (CreateDatacenterRequest) returns (CreateDatacenterResponse) {}
+
+  // Get specified Datacenter.
+  // When request to get a Datacenter is made the service will search based on the provided Datacenter ID.
+  // If found service will return the Datacenter otherwise will return status not found.
+  // If mandatory fields are missing or incorrectly formatted the response will return a listing of the violations.
+  rpc GetDatacenter (GetDatacenterRequest) returns (GetDatacenterResponse) {}
+
+  // Update specified Datacenter.
+  // When a request to update a Datacenter is made the service will verify if it exist in storage.
+  // If the Datacenter exists the service will apply an update to the Datacenter and return the updated
+  // Datacenter in the response. If the Datacenter does not exist the service will return a response with a status not found.
+  // If mandatory fields are missing or incorrectly formatted the response will return a listing of the violations.
+  rpc UpdateDatacenter (UpdateDatacenterRequest) returns (UpdateDatacenterResponse) {}
+
+  // Delete specified Datacenter.
+  // When request to delete a Datacenter is made the service will search based on the provided Datacenter ID.
+  // If found the Datacenter is flagged as deleted and removed from the Tenants Datacenter listing, otherwise service
+  // returns the status not found.
+  // If mandatory fields are missing or incorrectly formatted the response will return a listing of the violations.
+  rpc DeleteDatacenter (DeleteDatacenterRequest) returns (DeleteDatacenterResponse) {}
+
+  // List specified Datacenters.
+  // When request to get a listing of Datacenters is made the service will search based on the provided Tenant ID.
+  // If found, the list of Datacenters will be returned, otherwise service returns the status not found.
+  rpc ListDatacenters (ListDatacentersRequest) returns (ListDatacentersResponse) {}
+}
+
+// Input message that defines parameters for [CreateDatacenter](#CreateDatacenter).
+message CreateDatacenterRequest {
+  // Mandatory. Message containing Datacenter information.
+  DatacenterInfo datacenter_info = 1;
+}
+
+// Output message that defines the parameters returned by [CreateDatacenter](#CreateDatacenter).
+message CreateDatacenterResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Datacenter details.
+  Datacenter datacenter = 2;
+}
+
+// Input message that defines parameters for [GetDatacenter](#GetDatacenter).
+message GetDatacenterRequest {
+  // Mandatory. Unique ID for Datacenter.
+  string datacenter_id = 1;
+}
+
+// Output message that defines the parameters returned by [GetDatacenter](#GetDatacenter).
+message GetDatacenterResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Datacenter details.
+  Datacenter datacenter = 2;
+}
+
+// Input message that defines parameters for [UpdateDatacenter](#UpdateDatacenter).
+message UpdateDatacenterRequest {
+  // Mandatory. Unique ID for Datacenter.
+  string datacenter_id = 1;
+  // Mandatory. Datacenter fields to set or update.
+  DatacenterInfo datacenter_info = 2;
+}
+
+// Output message that defines the parameters returned by [UpdateDatacenter](#UpdateDatacenter).
+message UpdateDatacenterResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Datacenter details.
+  Datacenter datacenter = 2;
+}
+
+// Input message that defines parameters for [DeleteDatacenter](#DeleteDatacenter).
+message DeleteDatacenterRequest {
+  // Mandatory. Unique ID for Datacenter
+  string datacenter_id = 1;
+}
+
+// Output message that defines the parameters returned by [DeleteDatacenter](#DeleteDatacenter).
+message DeleteDatacenterResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+}
+
+// Input message that defines parameters for [ListDatacenters](#ListDatacenters).
+message ListDatacentersRequest {
+  // Mandatory. Unique ID for Tenant.
+  string tenant_id = 1;
+}
+
+// Output message that defines the parameters returned by [ListDatacenters](#ListDatacenters).
+message ListDatacentersResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // The list of Datacenters.
+  repeated Datacenter datacenters = 2;
+}
+
+// Input message that defines parameters for [CreateDatacenter](#CreateDatacenter).
+message Datacenter {
+  // Unique ID for Datacenter
+  string datacenter_id = 1;
+  // DatacenterInfo message.
+  DatacenterInfo datacenter_info = 2;
+}
+
+// Contains information about the Datacenter.
+message DatacenterInfo {
+  // Mandatory. Unique ID for Tenant.
+  string tenant_id = 1;
+  // Mandatory. Datacenter name (minimum length 2 maximum length 50).
+  string name = 2;
+  // Optional. Datacenter description (minimum length 2 maximum length 250).
+  string description = 3;
+}

@@ -1,0 +1,156 @@
+/*-
+ * #%L
+ * media-manager-api-proto
+ * %%
+ * Copyright (C) 2021 - 2026 Nuance Communications Inc. All Rights Reserved.
+ * %%
+ * The copyright to the computer program(s) herein is the property of
+ * Nuance Communications Inc. The program(s) may be used and/or copied
+ * only with the written permission from Nuance Communications Inc.
+ * or in accordance with the terms and conditions stipulated in the
+ * agreement/contract under which the program(s) have been supplied.
+ * #L%
+ */
+
+syntax = "proto3";
+
+package nuance.mediamanager.media.v1;
+
+import "nuance/rpc/status.proto";
+import "nuance/mediamanager/media/v1/media_resources.proto";
+import "google/protobuf/duration.proto";
+
+option java_multiple_files = true;
+option java_package = "com.nuance.rpc.mediamanager.media.v1";
+
+
+// This service allows to start, stop, pause, and resume a recording for a placed call.
+service RecordingService {
+  // Requests the Media Manager to start recording media such as a call.
+  // If a recording is already in progress for the specified call,
+  // a new media segment is created instead to represent the recording duration.
+  rpc StartRecord (StartRecordRequest) returns (StartRecordResponse);
+  
+  // Requests the Media Manager to stop recording media such as a call.
+  // If there are multiple segments associated with the recording, this API will not stop the recording, but only end the input media segment.
+  // The recording will be stopped only when there is only one segment associated with it.
+  // Because of this, if multiple segments exist, this API should be called multiple times with all media segments to end them,
+  // and stop the recording eventually.
+  rpc StopRecord (StopRecordRequest) returns (StopRecordResponse);
+  
+  // Requests the Media Manager to pause recording media such as a call.
+  // The recording can be paused even when there are multiple segments associated with it.
+  rpc PauseRecord (PauseRecordRequest) returns (PauseRecordResponse);
+  
+  // Requests the Media Manager to resume recording media such as a call.
+  // The recording can be resumed even when there are multiple segments associated with it.
+  rpc ResumeRecord (ResumeRecordRequest) returns (ResumeRecordResponse);
+}
+
+// Input message that defines parameters for StartRecord. Included in [RecordingClient](#recordingclient).
+message StartRecordRequest {
+  // Required. Determines the realm.
+  string realm_id = 1;
+  // Optional. Media Connector recording profile.
+  // If not provided, the default profile configured in the Media Connector will be used..
+  string recording_profile = 2;
+
+  // The side to be recorded
+  RecordingSide recording_side = 3;
+
+  // Optional. Specifies the maximum recording duration. This value will override the one from realm configuration.
+  // If not specified, the max recording duration will default to the one from realm configuration.
+  // A negative value or 0, max recording duration will be disabled.
+  google.protobuf.Duration max_recording_duration = 4;
+
+  oneof recording_identifier {
+    // Required. The identifier of the call to be recorded.
+    CallIdentifier call_identifier = 10;
+  }
+}
+
+// Listing of the possible recording sides.
+// The side 1 could be the caller, and side 2 could be the agent, or vice versa, which depends on the configuration in the recorder.
+enum RecordingSide {
+  RECORDING_SIDE_UNSPECIFIED = 0;
+  RECORDING_SIDE_1 = 1;
+  RECORDING_SIDE_2 = 2;
+  RECORDING_SIDE_ALL = 10;
+}
+
+// Output message that defines parameters returned by StartRecord. Included in [RecordingClient](#recordingclient).
+message StartRecordResponse {
+  // Mandatory. General operation status.
+  nuance.rpc.Status status = 1;
+  // Mandatory. The media identifier of the recording.
+  string media_urn = 2;
+  // Optional. Provides information used for troubleshooting.
+  repeated DiagnosticTrace diagnostic_trace = 3;
+}
+
+// Input message that defines parameters for StopRecord. Included in [RecordingClient](#recordingclient).
+message StopRecordRequest {
+  // Optional. Determines the realm. Ignored if media_urn is in version 2 format.
+  string realm_id = 1;
+  // Required. Represents the identifier of media segment.
+  string media_urn = 2;
+}
+
+// Output message that defines parameters returned by StopRecord. Included in [RecordingClient](#recordingclient).
+message StopRecordResponse {
+  // Mandatory. General operation status.
+  // status_sub_code may be returned, and it's defined as below
+  // Numerical values of the [StopReasonSubCode] enum can be used as values status_sub_code to provide more details
+  // about the outcome of StopRecord operation
+  nuance.rpc.Status status = 1;
+  // Optional. Provides information used for troubleshooting.
+  repeated DiagnosticTrace diagnostic_trace = 2;
+}
+
+enum StopReasonSubCode {
+  STOP_REASON_SUB_CODE_UNSPECIFIED = 0;
+  MAX_RECORDING_LENGTH_REACHED = 1; // Already stopped before due to reaching max recording length
+  ALREADY_STOPPED = 2; // Already stopped before by a client
+}
+
+// Input message that defines parameters for PauseRecord. Included in [RecordingClient](#recordingclient).
+message PauseRecordRequest {
+  // Optional. Determines the realm. Ignored if media_urn is in version 2 format.
+  string realm_id = 1;
+  // Required. Represents the identifier of media segment.
+  // If there are multiple segments associated with the recording, you can pass the media_urn of any one.
+  string media_urn = 2;
+}
+
+// Output message that defines parameters returned by PauseRecord. Included in [RecordingClient](#recordingclient).
+message PauseRecordResponse {
+  // General operation status
+  nuance.rpc.Status status = 1;
+  // Optional. Provides information used for troubleshooting.
+  repeated DiagnosticTrace diagnostic_trace = 2;
+}
+
+// Input message that defines parameters for ResumeRecord. Included in [RecordingClient](#recordingclient).
+message ResumeRecordRequest {
+  // Optional. Determines the realm. Ignored if media_urn is in version 2 format.
+  string realm_id = 1;
+  // Required. Represents the identifier of media or media segment.
+  // If there are multiple segments associated with the recording, you can pass the media_urn of any one.
+  string media_urn = 2;
+}
+
+// Output message that defines parameters returned by ResumeRecord. Included in [RecordingClient](#recordingclient).
+message ResumeRecordResponse {
+  // General operation status.
+  nuance.rpc.Status status = 1;
+  // Optional. Provides information used for troubleshooting.
+  repeated DiagnosticTrace diagnostic_trace = 2;
+}
+
+// Provides information about a Call Identifier.
+message CallIdentifier {
+  // Required. Call identifier.
+  string call_id = 1;
+  // Optional. Agent extension.
+  string agent_extension = 2;
+}

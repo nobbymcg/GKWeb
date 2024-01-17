@@ -1,0 +1,25 @@
+* {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+button {
+    border: none;
+    color: white;
+    background-color: white;
+}
+
+html,body,#container {
+    height:100%;
+}
+#container {
+    width:100%;
+    position:relative;
+}
+
+#container > img {
+    width:100%;
+    max-width: 400px;
+    position:absolute;
+    top:0; left:0; right:0; bottom:0;
+    margin:auto;
+}
